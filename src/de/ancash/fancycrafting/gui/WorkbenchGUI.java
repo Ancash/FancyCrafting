@@ -51,7 +51,7 @@ public class WorkbenchGUI{
 		ItemStack background = null;
 		ItemStack close = null;
 		configuration.load();
-		background = MiscUtils.get(configuration, "workbench.background");
+		background = MiscUtils.get(configuration, "background");
 		size = configuration.getInt("workbench.size");
 		int cnt = 0;
 		for(String slot : configuration.getStringList("workbench.crafting-slots")) {
@@ -64,7 +64,7 @@ public class WorkbenchGUI{
 		resultSlot = configuration.getInt("workbench.result-slot");
 		closeSlot = configuration.getInt("workbench.close-slot");
 		name = configuration.getString("workbench.title");
-		close = MiscUtils.get(configuration, "workbench.close");
+		close = MiscUtils.get(configuration, "close");
 		configuration.save();
 		
 		template = new ItemStack[size];
@@ -125,6 +125,10 @@ public class WorkbenchGUI{
 		if(event.getClickedInventory() != null && event.getClickedInventory().equals(event.getWhoClicked().getInventory())) event.setCancelled(false);
 		
 		int slot = event.getSlot();
+		if(event.getAction().equals(InventoryAction.COLLECT_TO_CURSOR)) {
+			event.setCancelled(true);
+			return;
+		}
 		if(workbenchInv && isCraftingSlot(slot)) {
 			event.setCancelled(false);
 		} else if(workbenchInv && slot == closeSlot) {
@@ -133,15 +137,13 @@ public class WorkbenchGUI{
 			event.setCancelled(true);
 			if(event.getInventory().getItem(resultSlot) != null) {
 				CompactMap<Integer, ItemStack> ingredients = getIngredientsFromInventory(event.getInventory());
-				Duplet<Integer, Integer> moves = IRecipe.optimize(ingredients);
-				List<IRecipe> byResult = plugin.getRecipeManager().getByResult(event.getInventory().getItem(resultSlot));
-				IRecipe recipe = plugin.getRecipeManager().match(ingredients, byResult);
-				craftItem(event, recipe, moves);
+				IRecipe recipe = plugin.getRecipeManager().match(ingredients, 
+						plugin.getRecipeManager().getByResult(event.getInventory().getItem(resultSlot)));
+				craftItem(event, recipe, IRecipe.optimize(ingredients));
 			}
 		} else if(workbenchInv) {
 			event.setCancelled(true);
 		}
-		if(event.getAction().equals(InventoryAction.COLLECT_TO_CURSOR)) event.setCancelled(true);
 		checkRecipe(event.getInventory());
 	}
 	
@@ -253,15 +255,31 @@ public class WorkbenchGUI{
 	}
 	
 	public void close(HumanEntity owner, boolean event) {
-		openGuis.get(owner.getUniqueId()).onClose(craftingSlots);
+		onClose(owner, openGuis.get(owner.getUniqueId()).getInventory());
 		if(!event) owner.closeInventory();
 		openGuis.remove(owner.getUniqueId());
 	}
+	
+	public void onClose(HumanEntity owner, Inventory inventory) {
+    	for(int i : craftingSlots) {
+    		ItemStack is = inventory.getItem(i);
+    		if(is == null) continue;
+    		if(owner.getInventory().firstEmpty() != -1) {
+    			owner.getInventory().addItem(is);
+    		} else {
+    			owner.getWorld().dropItem(owner.getLocation(), is);
+    		}
+    	}
+    }
 	
 	public void closeAll() {
 		openGuis.forEach((id, gui) ->{
 			close(gui.getOwner(), false);
 		});
+	}
+	
+	public Integer[] getCraftingSlots() {
+		return craftingSlots;
 	}
 	
 	public boolean hasInventoryOpen(HumanEntity owner) {

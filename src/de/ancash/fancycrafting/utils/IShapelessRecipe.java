@@ -1,12 +1,12 @@
 package de.ancash.fancycrafting.utils;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.bukkit.inventory.ItemStack;
 
 public class IShapelessRecipe extends IRecipe{
 	  	  
-	private final List<ItemStack> ingredients;
+	private final Collection<ItemStack> ingredients;
 	private final ItemStack result;
 	
 	@Override
@@ -22,13 +22,13 @@ public class IShapelessRecipe extends IRecipe{
 		return new IShapelessRecipe(result, ingredients);
 	}
 	
-	public IShapelessRecipe(ItemStack result, List<ItemStack> ingredients) {
+	public IShapelessRecipe(ItemStack result, Collection<ItemStack> ingredients) {
 		super(result, ingredients);
 		this.ingredients = ingredients;
 		this.result = result;
 	}
 
-	public List<ItemStack> getIngredientsList() {
+	public Collection<ItemStack> getIngredientsList() {
 		return ingredients;
 	}
 	

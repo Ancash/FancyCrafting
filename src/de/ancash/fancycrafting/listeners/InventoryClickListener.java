@@ -18,19 +18,33 @@ public class InventoryClickListener implements Listener{
 	
 	@EventHandler
 	public void onInvClick(InventoryClickEvent event) {
-		if(!plugin.getWorkbenchGUI().hasInventoryOpen(event.getWhoClicked())) return;
-		plugin.getWorkbenchGUI().onWorkbenchClick(event);
+		if(plugin.getWorkbenchGUI().hasInventoryOpen(event.getWhoClicked())) {
+			plugin.getWorkbenchGUI().onWorkbenchClick(event);
+			return;
+		}
+		if(plugin.getRecipeCreateGUI().hasInventoryOpen(event.getWhoClicked())) {
+			plugin.getRecipeCreateGUI().onClick(event);
+			return;
+		}
 	}
 	
 	@EventHandler
 	public void onInventoryClose(InventoryCloseEvent event) {
-		if(!plugin.getWorkbenchGUI().hasInventoryOpen(event.getPlayer())) return;
-		plugin.getWorkbenchGUI().close(event.getPlayer(), true);
+		if(plugin.getWorkbenchGUI().hasInventoryOpen(event.getPlayer())) {
+			plugin.getWorkbenchGUI().close(event.getPlayer(), true);
+			return;
+		}
+		if(plugin.getRecipeCreateGUI().hasInventoryOpen(event.getPlayer())) {
+			plugin.getRecipeCreateGUI().close(event.getPlayer(), true);
+			return;
+		}
 	}
 	
 	@EventHandler
 	public void onInventoryDrag(InventoryDragEvent event) {
-		if(!plugin.getWorkbenchGUI().hasInventoryOpen(event.getWhoClicked())) return;
-		plugin.getWorkbenchGUI().onWorkbenchDrag(event);
+		if(plugin.getWorkbenchGUI().hasInventoryOpen(event.getWhoClicked())) {
+			plugin.getWorkbenchGUI().onWorkbenchDrag(event);
+			return;
+		}
 	}
 }

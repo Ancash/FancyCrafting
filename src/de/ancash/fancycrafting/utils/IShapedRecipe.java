@@ -25,7 +25,7 @@ public class IShapedRecipe extends IRecipe implements Cloneable{
 	private final CompactMap<Integer, ItemStack> ingredientsMap;
 	private final ItemStack result;
 	
-	private IShapedRecipe(CompactMap<Integer, ItemStack> ingredientsMap, ItemStack result) {
+	public IShapedRecipe(CompactMap<Integer, ItemStack> ingredientsMap, ItemStack result) {
 		super(result, ingredientsMap.values());
 		this.ingredientsMap = ingredientsMap;
 		this.result = result;

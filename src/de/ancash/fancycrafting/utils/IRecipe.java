@@ -58,18 +58,18 @@ public abstract class IRecipe {
 		return true;
 	}
 	
-	public static boolean matchesShapeless(List<ItemStack> a, Collection<ItemStack> b, boolean ignoreData) {
-		if(a.size() != b.size()) return false;
+	public static boolean matchesShapeless(Collection<ItemStack> ingredients, Collection<ItemStack> b, boolean ignoreData) {
+		if(ingredients.size() != b.size()) return false;
 		List<ItemStack> copyOfB = new ArrayList<ItemStack>();
 		b.forEach(is -> {
 			copyOfB.add(is.clone());
 		});
 		List<ItemStack> copyOfA = new ArrayList<ItemStack>();
-		a.forEach(is -> {
+		ingredients.forEach(is -> {
 			copyOfA.add(is.clone());
 		});
 		
-		for(int i1 = 0; i1<a.size(); i1++) {
+		for(int i1 = 0; i1<ingredients.size(); i1++) {
 			ItemStack bIs = copyOfB.get(i1);
 			boolean matches = false;
 			for(int i2 = 0; i2<copyOfA.size(); i2++) {

@@ -1,3 +1,14 @@
+#the item to click to close the inventory
+close:
+  type: BARRIER
+  meta:
+     displayname: "§cClose"
+  #the item around the crafting slots
+background:
+   type: STAINED_GLASS_PANE
+   meta:
+      data: 7
+      displayname: " "
 workbench:
   # Title of the GUI
   title: 'Crafting Table'
@@ -14,6 +25,7 @@ workbench:
   - 28
   - 29
   - 30
+  close-slot: 49
   # Slots in which the state of the craft will be shown (invalid recipe/valid recipe)
   craft-state-slots:
     - 45
@@ -25,16 +37,7 @@ workbench:
     - 52
     - 53
   # Slot in which the crafting result will end up
+  result-slot: 24    
+recipe-create-gui:
+  title: "Create Recipe"
   result-slot: 24
-  #the item to click to close the inventory
-  close:
-     type: BARRIER
-     meta:
-        displayname: "§cClose"
-  close-slot: 49
-  #the item around the crafting slots
-  background:
-     type: STAINED_GLASS_PANE
-     meta:
-        data: 7
-        displayname: " "    
