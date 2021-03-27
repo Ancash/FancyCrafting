@@ -92,7 +92,7 @@ public class WorkbenchGUI{
 			
 			@Override
 			public void run() {
-				CompactMap<Integer, ItemStack> ingredients = getIngredientsFromInventory(inventory);
+				CompactMap<Integer, ItemStack> ingredients = getIngredientsFromInventory(inventory, craftingSlots);
 				if(ingredients == null || ingredients.size() == 0) {
 					inventory.setItem(resultSlot, red);
 					craftStateSlots.forEach(slot -> inventory.setItem(slot, red));
@@ -110,11 +110,11 @@ public class WorkbenchGUI{
 		}.runTask(plugin);
 	}
 	
-	private CompactMap<Integer, ItemStack> getIngredientsFromInventory(Inventory inventory) {
+	public CompactMap<Integer, ItemStack> getIngredientsFromInventory(Inventory inventory, Integer[] slots) {
 		CompactMap<Integer, ItemStack> ingredientsMap = new CompactMap<>();
-		for(int i = 0; i<9; i++) {
-			ItemStack is = inventory.getItem(craftingSlots[i]);
-			if(is != null) ingredientsMap.put(i + 1, inventory.getItem(craftingSlots[i]));
+		for(int i = 0; i<slots.length; i++) {
+			ItemStack is = inventory.getItem(slots[i]);
+			if(is != null) ingredientsMap.put(i + 1, inventory.getItem(slots[i]));
 		}
 		return ingredientsMap;
 	}
@@ -136,10 +136,13 @@ public class WorkbenchGUI{
 		} else if(workbenchInv && slot == resultSlot) {
 			event.setCancelled(true);
 			if(event.getInventory().getItem(resultSlot) != null) {
-				CompactMap<Integer, ItemStack> ingredients = getIngredientsFromInventory(event.getInventory());
+				CompactMap<Integer, ItemStack> ingredients = getIngredientsFromInventory(event.getInventory(), craftingSlots);
+				Duplet<Integer, Integer> moves = IRecipe.optimize(ingredients);
 				IRecipe recipe = plugin.getRecipeManager().match(ingredients, 
 						plugin.getRecipeManager().getByResult(event.getInventory().getItem(resultSlot)));
-				craftItem(event, recipe, IRecipe.optimize(ingredients));
+				
+				craftItem(event, recipe, moves);
+				return;
 			}
 		} else if(workbenchInv) {
 			event.setCancelled(true);
@@ -160,12 +163,10 @@ public class WorkbenchGUI{
 			return;
 		}
 		if(event.getAction().equals(InventoryAction.PICKUP_ALL)) {
-			event.getInventory().setItem(resultSlot, red);
 			event.getWhoClicked().getInventory().addItem(recipe.getResult());
 			collectIngredients(event.getInventory(), recipe, moves);
 		}
 		if(event.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
-			event.getInventory().setItem(resultSlot, red);
 			int toAdd = shiftCollectIngredients(event.getInventory(), recipe, event.getWhoClicked(), moves);
 			ItemStack results = recipe.getResult().clone();
 			results.setAmount(toAdd * recipe.getResult().getAmount());
@@ -183,7 +184,7 @@ public class WorkbenchGUI{
 		
 		int shiftSize = freeSlots * recipe.getResult().getMaxStackSize() / recipe.getResult().getAmount();
 		if(recipe instanceof IShapedRecipe) {
-			CompactMap<Integer, ItemStack> ingredients = getIngredientsFromInventory(inventory);
+			CompactMap<Integer, ItemStack> ingredients = getIngredientsFromInventory(inventory, craftingSlots);
 			IRecipe.optimize(ingredients);
 			for (int i = 1; i < 10; ++i) {
 	            ItemStack ingredient = ((IShapedRecipe)recipe).getIngredientsMap().get(i);
@@ -194,7 +195,7 @@ public class WorkbenchGUI{
 		}
 		if(recipe instanceof IShapelessRecipe) {
 			IShapelessRecipe shapeless = (IShapelessRecipe) recipe;
-			Collection<ItemStack> currentItems = getIngredientsFromInventory(inventory).values();
+			Collection<ItemStack> currentItems = getIngredientsFromInventory(inventory, craftingSlots).values();
 			for(ItemStack ingredient : shapeless.getIngredientsList()) {
 				for(ItemStack currentItem : currentItems) {
 					if(ingredient == null || currentItem == null) continue;

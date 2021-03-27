@@ -1,11 +1,13 @@
 package de.ancash.fancycrafting.utils;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 
 import de.ancash.ilibrary.datastructures.maps.CompactMap;
+import de.ancash.ilibrary.minecraft.nbt.NBTItem;
 
 public class IShapedRecipe extends IRecipe implements Cloneable{
 
@@ -19,32 +21,28 @@ public class IShapedRecipe extends IRecipe implements Cloneable{
 	
 	@Override
 	public IShapedRecipe clone() {
-		return new IShapedRecipe(ingredientsMap, result);
+		return new IShapedRecipe(ingredientsMap, result, null);
 	}
 	
 	private final CompactMap<Integer, ItemStack> ingredientsMap;
 	private final ItemStack result;
 	
-	public IShapedRecipe(CompactMap<Integer, ItemStack> ingredientsMap, ItemStack result) {
+	public IShapedRecipe(CompactMap<Integer, ItemStack> ingredientsMap, ItemStack result, UUID id) {
 		super(result, ingredientsMap.values());
 		this.ingredientsMap = ingredientsMap;
-		this.result = result;
+		if(id != null) {
+			NBTItem nbt = new NBTItem(result);
+			nbt.setString("fancycrafting.id", id.toString());
+			this.result = nbt.getItem();
+		} else {
+			this.result = result;
+		}
 	}
 	
 	public IShapedRecipe(ItemStack result, Map<Character, ItemStack> ingredientsMap, String[] shapes) {
 		super(result, ingredientsMap.values());
 		this.result = result;
-		CompactMap<Integer, ItemStack> ings = new CompactMap<Integer, ItemStack>();
-		int row = 0;
-		for(String shape : shapes) {
-			int charCnt = 1;
-			for(char c : shape.toCharArray()) {
-				ings.put(row * 3 + charCnt, ingredientsMap.get(c));
-				charCnt++;
-			}
-			row++;
-		}
-		this.ingredientsMap = ings;
+		this.ingredientsMap = toMap(ingredientsMap, shapes);
 		optimize(this.ingredientsMap);
 	}
 
@@ -54,12 +52,12 @@ public class IShapedRecipe extends IRecipe implements Cloneable{
 	
 	@Override
 	public ItemStack getResult() {
-		return result;
+		return result.clone();
 	}
 	
 	@Override
 	public String toString() {
-		return "result=" + result + ", " + ingredientsMap;
+		return "result=" + result + ", ingredients=" + ingredientsMap;
 	}
 
 	@Override

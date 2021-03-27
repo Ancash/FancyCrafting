@@ -1,8 +1,13 @@
 package de.ancash.fancycrafting.utils;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
+
+import com.google.common.collect.ImmutableList;
+
+import de.ancash.ilibrary.minecraft.nbt.NBTItem;
 
 public class IShapelessRecipe extends IRecipe{
 	  	  
@@ -19,13 +24,19 @@ public class IShapelessRecipe extends IRecipe{
 	
 	@Override
 	public IShapelessRecipe clone() {
-		return new IShapelessRecipe(result, ingredients);
+		return new IShapelessRecipe(result, ingredients, null);
 	}
 	
-	public IShapelessRecipe(ItemStack result, Collection<ItemStack> ingredients) {
+	public IShapelessRecipe(ItemStack result, Collection<ItemStack> ingredients, UUID id) {
 		super(result, ingredients);
-		this.ingredients = ingredients;
-		this.result = result;
+		this.ingredients = ImmutableList.copyOf(ingredients);;
+		if(id != null) {
+			NBTItem nbt = new NBTItem(result);
+			nbt.setString("fancycrafting.id", id.toString());
+			this.result = nbt.getItem();
+		} else {
+			this.result = result;
+		}
 	}
 
 	public Collection<ItemStack> getIngredientsList() {
@@ -34,12 +45,12 @@ public class IShapelessRecipe extends IRecipe{
 	
 	@Override
 	public ItemStack getResult() {
-		return result;
+		return result.clone();
 	}
 
 	@Override
 	public String toString() {
-		return "result=" + result + ", " + ingredients;
+		return "result=" + result + ", ingredients=" + ingredients;
 	}
 	
 	@Override
