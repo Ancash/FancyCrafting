@@ -106,24 +106,26 @@ public class RecipeEditGUI extends IGUI{
 			int slot = event.getSlot();
 			ItemStack clicked = event.getInventory().getItem(slot);
 			if(clicked != null) {
-				if(slot < 9 && clicked.getType().equals(Material.ARROW)) {
-					event.setCancelled(true);
-					if(slot == 3) {
-						RecipeEditGUI edit = openGUIs.get(event.getWhoClicked().getUniqueId());
-						edit.setContent(edit.recipeViewPage.getPreviousPage());
+				if(event.getClickedInventory().getItem(5).getType().equals(Material.ARROW)) {
+					if(slot < 9 && clicked.getType().equals(Material.ARROW)) {
+						event.setCancelled(true);
+						if(slot == 3) {
+							RecipeEditGUI edit = openGUIs.get(event.getWhoClicked().getUniqueId());
+							edit.setContent(edit.recipeViewPage.getPreviousPage());
+							return;
+						}
+						if(slot == 5) {
+							RecipeEditGUI edit = openGUIs.get(event.getWhoClicked().getUniqueId());
+							edit.setContent(edit.recipeViewPage.getNextPage());
+							return;
+						}
+					}
+					NBTItem nbt = new NBTItem(clicked);
+					if(nbt.hasKey("fancycrafting.id")) {
+						event.setCancelled(true);
+						edit(event.getWhoClicked(), nbt.getString("fancycrafting.id"));
 						return;
 					}
-					if(slot == 5) {
-						RecipeEditGUI edit = openGUIs.get(event.getWhoClicked().getUniqueId());
-						edit.setContent(edit.recipeViewPage.getNextPage());
-						return;
-					}
-				}
-				NBTItem nbt = new NBTItem(clicked);
-				if(nbt.hasKey("fancycrafting.id")) {
-					event.setCancelled(true);
-					edit(event.getWhoClicked(), nbt.getString("fancycrafting.id"));
-					return;
 				}
 			}
 			if(event.getInventory().getItem(shapedSlot) == null || 
@@ -133,7 +135,10 @@ public class RecipeEditGUI extends IGUI{
 				return;
 			}
 			event.setCancelled(true);
-			for(int i : craftingSlots) if(i == slot) event.setCancelled(false);
+			for(int i : craftingSlots) {
+				if(i == slot) event.setCancelled(false); 
+				break;
+			}
 			if(slot == resultSlot) event.setCancelled(false);
 			boolean isShaped = event.getInventory().getItem(shapedSlot).getData().getData() == 5;
 			if(slot == saveSlot || slot == deleteSlot) event.setCancelled(true);
@@ -177,7 +182,7 @@ public class RecipeEditGUI extends IGUI{
 			return;
 		}
 		ItemStack[] template = editTemplate.clone();
-		template[resultSlot] = recipe.getResult();
+		template[resultSlot] = recipe.getResultWithId();
 		NBTItem temp = new NBTItem(template[saveSlot]);
 		temp.setString("fancycrafting.editid", recipeId);
 		template[saveSlot] = temp.getItem();

@@ -26,6 +26,7 @@ import de.ancash.fancycrafting.utils.IShapelessRecipe;
 import de.ancash.fancycrafting.utils.MiscUtils;
 import de.ancash.ilibrary.datastructures.maps.CompactMap;
 import de.ancash.ilibrary.datastructures.tuples.Duplet;
+import de.ancash.ilibrary.datastructures.tuples.Tuple;
 import de.ancash.ilibrary.yaml.configuration.file.YamlFile;
 import de.ancash.ilibrary.yaml.exceptions.InvalidConfigurationException;
 
@@ -41,7 +42,7 @@ public class WorkbenchGUI{
 	private final int closeSlot;
 	private final String name;
 	
-	private final CompactMap<UUID, IGUI> openGuis = new CompactMap<>();
+	private final CompactMap<UUID, Duplet<IGUI, IRecipe>> openGuis = new CompactMap<>();
 	private final ItemStack red = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
 	private final ItemStack green = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 5);
 	
@@ -76,7 +77,7 @@ public class WorkbenchGUI{
 	}
 	
 	public void open(Player owner) {
-		openGuis.put(owner.getUniqueId(), new IGUI(owner, template, name, size));
+		openGuis.put(owner.getUniqueId(), Tuple.of(new IGUI(owner, template, name, size), null));
 	}
 	
 	public void onWorkbenchDrag(InventoryDragEvent event) {
@@ -84,10 +85,10 @@ public class WorkbenchGUI{
 			event.setCancelled(true);
 			return;
 		}
-		checkRecipe(event.getInventory());
+		checkRecipe(event.getInventory(), event.getWhoClicked());
 	}
 	
-	private void checkRecipe(final Inventory inventory) {
+	private void checkRecipe(final Inventory inventory, HumanEntity owner) {
 		new BukkitRunnable() {
 			
 			@Override
@@ -105,6 +106,7 @@ public class WorkbenchGUI{
 				} else {
 					inventory.setItem(resultSlot, recipe.getResult());
 					craftStateSlots.forEach(slot -> inventory.setItem(slot, green));
+					openGuis.get(owner.getUniqueId()).setSecond(recipe);
 				}
 			}
 		}.runTask(plugin);
@@ -138,16 +140,14 @@ public class WorkbenchGUI{
 			if(event.getInventory().getItem(resultSlot) != null) {
 				CompactMap<Integer, ItemStack> ingredients = getIngredientsFromInventory(event.getInventory(), craftingSlots);
 				Duplet<Integer, Integer> moves = IRecipe.optimize(ingredients);
-				IRecipe recipe = plugin.getRecipeManager().match(ingredients, 
-						plugin.getRecipeManager().getByResult(event.getInventory().getItem(resultSlot)));
-				
+				IRecipe recipe = openGuis.get(event.getWhoClicked().getUniqueId()).getSecond();
 				craftItem(event, recipe, moves);
 				return;
 			}
 		} else if(workbenchInv) {
 			event.setCancelled(true);
 		}
-		checkRecipe(event.getInventory());
+		checkRecipe(event.getInventory(), event.getWhoClicked());
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -155,7 +155,7 @@ public class WorkbenchGUI{
 		if(recipe == null) {
 			if(event.getInventory().getItem(45).getData().getData() != 14)
 				System.err.println("§cCould not find recipe although there is a result!" + event.getInventory().getItem(resultSlot));
-			checkRecipe(event.getInventory());
+			checkRecipe(event.getInventory(), event.getWhoClicked());
 			return;
 		}
 		if(event.getWhoClicked().getInventory().firstEmpty() == -1) {
@@ -172,8 +172,8 @@ public class WorkbenchGUI{
 			results.setAmount(toAdd * recipe.getResult().getAmount());
 			event.getWhoClicked().getInventory().addItem(results);
 		}
-		
-		checkRecipe(event.getInventory());
+		openGuis.get(event.getWhoClicked().getUniqueId()).setSecond(null);
+		checkRecipe(event.getInventory(), event.getWhoClicked());
 	}
 	
 	private int shiftCollectIngredients(Inventory inventory, IRecipe recipe, HumanEntity owner, Duplet<Integer, Integer> moves) {
@@ -256,7 +256,7 @@ public class WorkbenchGUI{
 	}
 	
 	public void close(HumanEntity owner, boolean event) {
-		onClose(owner, openGuis.get(owner.getUniqueId()).getInventory());
+		onClose(owner, openGuis.get(owner.getUniqueId()).getFirst().getInventory());
 		if(!event) owner.closeInventory();
 		openGuis.remove(owner.getUniqueId());
 	}
@@ -275,7 +275,7 @@ public class WorkbenchGUI{
 	
 	public void closeAll() {
 		openGuis.forEach((id, gui) ->{
-			close(gui.getOwner(), false);
+			close(gui.getFirst().getOwner(), false);
 		});
 	}
 	

@@ -20,6 +20,7 @@ import de.ancash.fancycrafting.utils.IRecipe;
 import de.ancash.fancycrafting.utils.IShapedRecipe;
 import de.ancash.fancycrafting.utils.IShapelessRecipe;
 import de.ancash.ilibrary.datastructures.maps.CompactMap;
+import de.ancash.ilibrary.minecraft.nbt.NBTItem;
 import de.ancash.ilibrary.yaml.exceptions.InvalidConfigurationException;
 
 import static de.ancash.fancycrafting.utils.IShapedRecipe.*;
@@ -144,17 +145,18 @@ public class RecipeManager {
 		if(ingredientsMap.isEmpty()) return null;
 
 		if(possibleRecipes == null) return null;
+
 		if(possibleRecipes.size() == 0) return null;
 		for(IRecipe recipe : possibleRecipes) {
-			if(recipe instanceof IShapedRecipe) {
+			if(recipe instanceof IShapedRecipe){
 				if(IRecipe.matchesShaped(ingredientsMap, ((IShapedRecipe) recipe).getIngredientsMap(),
-						possibleRecipes.size() == 1)) {
+						possibleRecipes.size() == 1 && !new NBTItem(recipe.getResultWithId()).hasKey("fancycrafting.id"))) {
 					return recipe;
 				}
 			}
 			if(recipe instanceof IShapelessRecipe) {
 				if(IRecipe.matchesShapeless(((IShapelessRecipe) recipe).getIngredientsList(), ingredientsMap.values(),
-						possibleRecipes.size() == 1 )) {
+						possibleRecipes.size() == 1 && !new NBTItem(recipe.getResultWithId()).hasKey("fancycrafting.id"))) {
 					return recipe;
 				}
 			}

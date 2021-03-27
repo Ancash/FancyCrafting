@@ -13,6 +13,7 @@ public class IShapelessRecipe extends IRecipe{
 	  	  
 	private final Collection<ItemStack> ingredients;
 	private final ItemStack result;
+	private final ItemStack resultWithId;
 	
 	@Override
 	public boolean equals(Object obj) {
@@ -29,13 +30,14 @@ public class IShapelessRecipe extends IRecipe{
 	
 	public IShapelessRecipe(ItemStack result, Collection<ItemStack> ingredients, UUID id) {
 		super(result, ingredients);
-		this.ingredients = ImmutableList.copyOf(ingredients);;
+		this.ingredients = ImmutableList.copyOf(ingredients);
+		this.result = result;
 		if(id != null) {
 			NBTItem nbt = new NBTItem(result);
 			nbt.setString("fancycrafting.id", id.toString());
-			this.result = nbt.getItem();
+			this.resultWithId = nbt.getItem();
 		} else {
-			this.result = result;
+			this.resultWithId = result;
 		}
 	}
 
@@ -48,6 +50,11 @@ public class IShapelessRecipe extends IRecipe{
 		return result.clone();
 	}
 
+	@Override
+	public ItemStack getResultWithId() {
+		return resultWithId;
+	}
+	
 	@Override
 	public String toString() {
 		return "result=" + result + ", ingredients=" + ingredients;

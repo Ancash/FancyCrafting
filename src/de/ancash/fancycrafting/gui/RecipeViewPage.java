@@ -79,7 +79,7 @@ public class RecipeViewPage {
 		items[5] = next;
 		for(int i = 9; i<recipes.length + 9; i++) {
 			if(recipes[i - 9] == null) break;
-			items[i] = recipes[i - 9].getResult();
+			items[i] = recipes[i - 9].getResultWithId();
 		}
 		return items;
 	}

@@ -15,7 +15,7 @@ public class IShapedRecipe extends IRecipe implements Cloneable{
 	public boolean equals(Object obj) {
 		if(obj == this) return true;
 		if(!(obj instanceof IShapedRecipe)) return false;
-		return IRecipe.isSimilar(result, ((ShapedRecipe)obj).getResult(), false) &&
+		return IRecipe.isSimilar(result, ((ShapedRecipe)obj).getResult(),false) &&
 				IRecipe.matchesShaped(ingredientsMap, ((IShapedRecipe) obj).getIngredientsMap(), false);
 	}
 	
@@ -26,22 +26,25 @@ public class IShapedRecipe extends IRecipe implements Cloneable{
 	
 	private final CompactMap<Integer, ItemStack> ingredientsMap;
 	private final ItemStack result;
+	private final ItemStack resultWithId;
 	
 	public IShapedRecipe(CompactMap<Integer, ItemStack> ingredientsMap, ItemStack result, UUID id) {
 		super(result, ingredientsMap.values());
 		this.ingredientsMap = ingredientsMap;
+		this.result = result;
 		if(id != null) {
 			NBTItem nbt = new NBTItem(result);
 			nbt.setString("fancycrafting.id", id.toString());
-			this.result = nbt.getItem();
+			this.resultWithId = nbt.getItem();
 		} else {
-			this.result = result;
+			this.resultWithId = result;
 		}
 	}
 	
 	public IShapedRecipe(ItemStack result, Map<Character, ItemStack> ingredientsMap, String[] shapes) {
 		super(result, ingredientsMap.values());
 		this.result = result;
+		this.resultWithId = result;
 		this.ingredientsMap = toMap(ingredientsMap, shapes);
 		optimize(this.ingredientsMap);
 	}
@@ -53,6 +56,11 @@ public class IShapedRecipe extends IRecipe implements Cloneable{
 	@Override
 	public ItemStack getResult() {
 		return result.clone();
+	}
+	
+	@Override
+	public ItemStack getResultWithId() {
+		return resultWithId;
 	}
 	
 	@Override

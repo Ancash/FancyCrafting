@@ -30,6 +30,10 @@ public abstract class IRecipe {
 		return result.clone();
 	}
 	
+	public ItemStack getResultWithId() {
+		return result.clone();
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(obj == this) return true;
@@ -146,10 +150,15 @@ public abstract class IRecipe {
 	public static boolean isSimilar(ItemStack a, ItemStack b, boolean ignoreData) {
 		boolean bNull = b == null;
 		boolean aNull = a == null;
-		if(a == null && b == null) return true;
-		if(aNull != bNull) return false;
-		if(!a.getType().equals(b.getType())) return false;
-		
+		if(a == null && b == null) {
+			return true;
+		}
+		if(aNull != bNull) {
+			return false;
+		}
+		if(!a.getType().equals(b.getType())) {
+			return false;
+		}
 		if(!matchesMeta(a, b)) {
 			return false;
 		}
@@ -164,13 +173,11 @@ public abstract class IRecipe {
 			return false;
 		}
 		if(one.equals(two)) matches = true;
-		if(!ignoreData) {
-			if(a.getData().getData() != -1 
-					&& b.getData().getData() != -1 
-					&& a.getData().getData() != b.getData().getData()
-					&& !matches) {
-				return false;
-			}
+		if(!ignoreData && a.getData().getData() != -1 
+				&& b.getData().getData() != -1 
+				&& a.getData().getData() != b.getData().getData()
+				&& !matches) {
+			return false;
 		}
 		return true;
 	}
