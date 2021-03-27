@@ -150,16 +150,25 @@ public abstract class IRecipe {
 		if(aNull != bNull) return false;
 		if(!a.getType().equals(b.getType())) return false;
 		
-		if(!matchesMeta(a, b)) return false;
-		if(!matchesNBT(a, b)) return false;
+		if(!matchesMeta(a, b)) {
+			return false;
+		}
+		if(!matchesNBT(a, b)) {
+			return false;
+		}
 		
 		String one = a.toString().split("\\{")[1].split(" x")[0];
 		String two = b.toString().split("\\{")[1].split(" x")[0];
+		boolean matches = false;
 		if(!ignoreData && !one.equals(two)) {
 			return false;
 		}
+		if(one.equals(two)) matches = true;
 		if(!ignoreData) {
-			if(a.getData().getData() != -1 && b.getData().getData() != -1 && a.getData().getData() != b.getData().getData()) {
+			if(a.getData().getData() != -1 
+					&& b.getData().getData() != -1 
+					&& a.getData().getData() != b.getData().getData()
+					&& !matches) {
 				return false;
 			}
 		}
