@@ -215,9 +215,7 @@ public abstract class IRecipe {
 		if(aM.getLore() != null && bM.getLore() == null) return false;
 		if(aM.getLore() != null && !aM.getLore().equals(bM.getLore())) return false;
 		if(!aM.getEnchants().equals(bM.getEnchants())) return false;
-		if(aM.getDisplayName() != null && bM.getDisplayName() == null) return false;
-		if(aM.getDisplayName() == null && bM.getDisplayName() != null) return false;
-		if(aM.getDisplayName() != null && !aM.getDisplayName().equals(bM.getDisplayName())) return false;
+		if(!aM.getDisplayName().equals(bM.getDisplayName())) return false;
 		if(!aM.getItemFlags().equals(bM.getItemFlags())) return false;
 		return true;
 	}
