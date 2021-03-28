@@ -72,13 +72,14 @@ public class RecipeManager {
 	}
 	
 	private void reloadRecipes() throws InvalidConfigurationException, IOException, org.bukkit.configuration.InvalidConfigurationException {
+		long now = System.currentTimeMillis();
 		customRecipes = new ArrayList<>();
 		System.out.println("Reloading Recipes!");
 		for(int i = 1; i<=9; i++) recipesSortedBySize.put(i, new ArrayList<IRecipe>());
 		loadBukkitRecipes();
 		loadFileRecipes();
 		Collections.shuffle(recipes);
-		System.out.println("Reloaded!");
+		System.out.println("Reloaded! " + (System.currentTimeMillis() - now) + " ms");
 	}
 	
 	private void loadFileRecipes() throws InvalidConfigurationException, IOException, org.bukkit.configuration.InvalidConfigurationException {
