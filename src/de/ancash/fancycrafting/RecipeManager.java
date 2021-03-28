@@ -11,10 +11,12 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import de.ancash.fancycrafting.utils.IRecipe;
 import de.ancash.fancycrafting.utils.IShapedRecipe;
@@ -60,13 +62,48 @@ public class RecipeManager {
 		saveRecipe(result, ingredients, shaped, id);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void saveRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, UUID id) 
 			throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
 		fc.load(file);
 		fc.set(id + "", null);
-		fc.set(id + ".result", result);
+		result = result.clone();
+		if(result.getType().equals(Material.SKULL_ITEM) && result.getData().getData() == 3) {
+			String texture = null;
+			try {
+				texture = IRecipe.getTexure(result);
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException
+					| IllegalAccessException e) {
+				e.printStackTrace();
+			}
+			SkullMeta sm = (SkullMeta) result.getItemMeta();
+			if(sm.getOwner() == null) sm.setOwner("Ancash");
+			result.setItemMeta(sm);
+			fc.set(id + ".result", result);
+			if(texture != null) fc.set(id + ".result-texture", texture);
+		} else {
+			fc.set(id + ".result", result);
+		}
 		fc.set(id + ".shaped", shaped);
-		ingredients.entrySet().forEach(entry -> fc.set(id + ".ingredients." + entry.getKey(), entry.getValue()));
+		ingredients.entrySet().forEach(entry -> {
+			ItemStack is = entry.getValue().clone();
+			if(is.getType().equals(Material.SKULL_ITEM) && is.getData().getData() == 3) {
+				String texture = null;
+				try {
+					texture = IRecipe.getTexure(is);
+				} catch (NoSuchFieldException | SecurityException | IllegalArgumentException
+						| IllegalAccessException e) {
+					e.printStackTrace();
+				}
+				SkullMeta sm = (SkullMeta) is.getItemMeta();
+				if(sm.getOwner() == null) sm.setOwner("Ancash");
+				is.setItemMeta(sm);
+				fc.set(id + ".ingredients." + entry.getKey(), is);
+				if(texture != null) fc.set(id + ".ingredients." + entry.getKey() + "-texture", texture);
+			} else {
+				fc.set(id + ".ingredients." + entry.getKey(), is);
+			}
+		});
 		fc.save(file);
 		reloadRecipes();
 	}
@@ -85,7 +122,7 @@ public class RecipeManager {
 	private void loadFileRecipes() throws InvalidConfigurationException, IOException, org.bukkit.configuration.InvalidConfigurationException {
 		fc.load(file);
 		for(String key : fc.getKeys(false)) {
-			ItemStack result = fc.getItemStack(key + ".result");
+			ItemStack result = fc.getItemStack(key + ".result").clone();
 			if(result == null) {
 				System.err.println("Recipe result cannot be null! " + key);
 				continue;
@@ -98,15 +135,18 @@ public class RecipeManager {
 	}
 	
 	public IRecipe getRecipeFromFile(FileConfiguration fc, String key) {
-		ItemStack result = fc.getItemStack(key + ".result");
+		ItemStack result = fc.getItemStack(key + ".result").clone();
 		if(result == null) {
 			System.err.println("Recipe result cannot be null! " + key);
 			return null;
 		}
+		if(fc.getString(key + ".result-texture") != null) result = IRecipe.setTexture(result, fc.getString(key + ".result-texture"));
 		CompactMap<Integer, ItemStack> ingredientsMap = new CompactMap<>();
 		for(int i = 1; i<=9; i++) {
-			ItemStack ingredient = fc.getItemStack(key + ".ingredients." + i);
-			if(ingredient == null) continue;
+			ItemStack temp = fc.getItemStack(key + ".ingredients." + i);
+			if(temp == null) continue;
+			ItemStack ingredient = temp.clone();
+			if(fc.getString(key + ".ingredients." + i + "-texture") != null) ingredient = IRecipe.setTexture(ingredient, fc.getString(key + ".ingredients." + i + "-texture"));
 			ingredientsMap.put(i, ingredient);
 		}
 		if(fc.getBoolean(key + ".shaped")) {	
@@ -137,7 +177,15 @@ public class RecipeManager {
 		return true;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public String itemToString(ItemStack is) {
+		if(is.getType().equals(Material.SKULL_ITEM) && is.getData().getData() == 3) {
+			ItemStack temp = is.clone();
+			SkullMeta sm = (SkullMeta) temp.getItemMeta();
+			sm.setOwner("Ancash");
+			temp.setItemMeta(sm);
+			return temp.toString().replace(", skull-owner=Ancash","");
+		}
 		return is.toString();
 	}
 	

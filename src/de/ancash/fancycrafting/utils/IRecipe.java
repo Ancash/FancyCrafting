@@ -1,15 +1,22 @@
 package de.ancash.fancycrafting.utils;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 
 import de.ancash.ilibrary.datastructures.maps.CompactMap;
 import de.ancash.ilibrary.datastructures.tuples.Duplet;
@@ -166,13 +173,38 @@ public abstract class IRecipe {
 			return false;
 		}
 		
-		String one = a.toString().split("\\{")[1].split(" x")[0];
-		String two = b.toString().split("\\{")[1].split(" x")[0];
 		boolean matches = false;
-		if(!ignoreData && !one.equals(two)) {
-			return false;
+		if(!a.getType().equals(Material.SKULL_ITEM)) {
+			String one = a.toString().split("\\{")[1].split(" x")[0];
+			String two = b.toString().split("\\{")[1].split(" x")[0];
+			if(!ignoreData && !one.equals(two)) {
+				return false;
+			}
+			if(one.equals(two)) matches = true;
+		} else {
+			SkullMeta aM = (SkullMeta) a.getItemMeta();
+			SkullMeta bM = (SkullMeta) b.getItemMeta();
+			if(aM.getOwner() == null && bM.getOwner() != null && !bM.getOwner().equals("Ancash")) 
+				return false;
+			
+			if(aM.getOwner() != null && bM.getOwner() == null && !aM.getOwner().equals("Ancash")) 
+				return false;
+			
+			
+			if(aM.getOwner() != null && !aM.getOwner().equals(bM.getOwner()))  
+				return false;
+			
+			try {
+				String aT = getTexure(a);
+				String bT = getTexure(b);
+				if(aT != null && !aT.equals(bT)) return false;
+				if(bT != null && !aT.equals(aT)) return false;
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			matches = true;
 		}
-		if(one.equals(two)) matches = true;
 		if(!ignoreData && a.getData().getData() != -1 
 				&& b.getData().getData() != -1 
 				&& a.getData().getData() != b.getData().getData()
@@ -220,6 +252,35 @@ public abstract class IRecipe {
 		if(aM.getDisplayName() != null && !aM.getDisplayName().equals(bM.getDisplayName())) return false;
 		if(!aM.getItemFlags().equals(bM.getItemFlags())) return false;
 		return true;
+	}
+	
+	public static ItemStack setTexture(ItemStack pet, String texture) {
+		SkullMeta hm = (SkullMeta) pet.getItemMeta();
+		GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+		profile.getProperties().put("textures", new Property("textures", texture));
+		try {
+			Field field = hm.getClass().getDeclaredField("profile");
+			field.setAccessible(true);
+			field.set(hm, profile);
+		} catch(IllegalArgumentException  | NoSuchFieldException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		pet.setItemMeta(hm);
+		return pet;
+	}
+	
+	public static String getTexure(ItemStack pet) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		String texture = null;
+		if(!pet.getType().name().toLowerCase().contains("skull_item")) return null;
+		SkullMeta sm = (SkullMeta) pet.getItemMeta();
+		Field profileField = sm.getClass().getDeclaredField("profile");
+		profileField.setAccessible(true);
+		GameProfile profile = (GameProfile) profileField.get(sm);
+		Collection<Property> textures = profile.getProperties().get("textures");
+		for(Property p : textures) {
+			texture = p.getValue();
+		}
+		return texture;
 	}
 	
 	public static CompactMap<Integer, ItemStack> toMap(Map<Character, ItemStack> ingredients, String[] shapes) {
