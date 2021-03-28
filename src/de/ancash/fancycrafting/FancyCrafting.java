@@ -9,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.gui.RecipeCreateGUI;
+import de.ancash.fancycrafting.gui.RecipeEditGUI;
 import de.ancash.fancycrafting.gui.WorkbenchGUI;
 import de.ancash.fancycrafting.listeners.InventoryClickListener;
 import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
@@ -22,8 +23,10 @@ public class FancyCrafting extends JavaPlugin{
 	private RecipeManager recipeManager;
 	private WorkbenchGUI workbenchGUI;
 	private RecipeCreateGUI recipeCreateGUI;
+	private RecipeEditGUI recipeEditGUI;
 	
 	public void onEnable() {
+		
 		singleton = this;
 		try {
 			if(!new File("plugins/FancyCrafting/config.yml").exists()) 
@@ -33,6 +36,7 @@ public class FancyCrafting extends JavaPlugin{
 			recipeManager = new RecipeManager(this);
 			workbenchGUI = new WorkbenchGUI(this);
 			recipeCreateGUI = new RecipeCreateGUI(this);
+			recipeEditGUI = new RecipeEditGUI(this);
 		} catch (InvalidConfigurationException | IOException | org.bukkit.configuration.InvalidConfigurationException e) {
 			e.printStackTrace();
 		}
@@ -46,6 +50,10 @@ public class FancyCrafting extends JavaPlugin{
 	
 	public void onDisable() {
 		workbenchGUI.closeAll();
+	}
+	
+	public RecipeEditGUI getRecipeEditGUI() {
+		return recipeEditGUI;
 	}
 	
 	public WorkbenchGUI getWorkbenchGUI() {

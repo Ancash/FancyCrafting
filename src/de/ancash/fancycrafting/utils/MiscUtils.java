@@ -78,5 +78,4 @@ public class MiscUtils {
 		is.setItemMeta(hm);
 		return is;
 	}
-	
 }

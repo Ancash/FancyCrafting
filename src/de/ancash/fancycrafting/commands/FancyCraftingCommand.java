@@ -24,7 +24,6 @@ public class FancyCraftingCommand implements CommandExecutor{
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
 		if(!(sender instanceof Player)) return true;
 		Player player = (Player) sender;
-		if(!player.hasPermission("fancycrafting.create") && !player.isOp()) return true;
 		
 		if(args.length == 0) {
 			toSend.forEach(str -> player.sendMessage(str));
@@ -35,7 +34,12 @@ public class FancyCraftingCommand implements CommandExecutor{
 		
 		switch (command.toLowerCase()) {
 		case "create":
+			if(!player.hasPermission("fancycrafting.create") && !player.isOp()) return true;
 			plugin.getRecipeCreateGUI().open(player);
+			return true;
+		case "edit":
+			if(!player.hasPermission("fancycrafting.edit") && !player.isOp()) return true;
+			plugin.getRecipeEditGUI().open(player);
 			return true;
 		default:
 			break;

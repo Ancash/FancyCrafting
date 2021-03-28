@@ -40,4 +40,6 @@ workbench:
   result-slot: 24    
 recipe-create-gui:
   title: "Create Recipe"
-  result-slot: 24
+  result-slot: 23
+  shaped: 16
+  save: 34

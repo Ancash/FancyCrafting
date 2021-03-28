@@ -7,12 +7,12 @@ import org.bukkit.inventory.ItemStack;
 
 public class IGUI{
     
-	private final HumanEntity owner;
+	private HumanEntity owner;
 	private Inventory openInventory;
 	
 	public IGUI(HumanEntity owner, ItemStack[] template, String name, int size) {
-		this.owner = owner;
 		if(owner == null) return;
+		this.owner = owner;
 		openInventory = Bukkit.createInventory(null, size, name);
 		openInventory.setContents(template);
 		owner.openInventory(openInventory);
@@ -20,6 +20,10 @@ public class IGUI{
 
 	public Inventory getInventory() {
 		return openInventory;
+	}
+	
+	public void setContent(ItemStack[] contents) {
+		this.openInventory.setContents(contents);
 	}
 	
 	public HumanEntity getOwner() {
