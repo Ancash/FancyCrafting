@@ -136,8 +136,10 @@ public class RecipeEditGUI extends IGUI{
 			}
 			event.setCancelled(true);
 			for(int i : craftingSlots) {
-				if(i == slot) event.setCancelled(false); 
-				break;
+				if(i == slot) {
+					event.setCancelled(false); 
+					break;
+				}
 			}
 			if(slot == resultSlot) event.setCancelled(false);
 			boolean isShaped = event.getInventory().getItem(shapedSlot).getData().getData() == 5;
