@@ -1,9 +1,11 @@
 name: FancyCrafting
-version: 1.1
+version: 1.3
 main: de.ancash.fancycrafting.FancyCrafting
 
 commands:
    fc:
       usage:
       - "§aFancyCrafting Commands:"
-      - "§7/fc create §8(create a new recipe)"
+      - "§7/fc create (create a new recipe)"
+      - "§7/fc edit (edit custom recipes)"
+      - "§7/fc view <recipe-name> (view a recipe, replace ' ' with '-' in recipe name)"

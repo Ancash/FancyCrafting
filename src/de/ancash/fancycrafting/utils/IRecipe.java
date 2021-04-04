@@ -27,10 +27,16 @@ public abstract class IRecipe {
 
 	private final ItemStack result;
 	private final Collection<ItemStack> ings;
+	private final String name;
 	
-	public IRecipe(ItemStack result, Collection<ItemStack> ings) {
+	public IRecipe(ItemStack result, Collection<ItemStack> ings, String name) {
 		this.result = result;
 		this.ings = ings;
+		this.name = name;
+	}
+	
+	public String getName() {
+		return name;
 	}
 	
 	public ItemStack getResult() {

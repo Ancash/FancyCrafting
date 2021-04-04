@@ -6,9 +6,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -36,8 +38,9 @@ public class RecipeManager {
 	private final FancyCrafting plugin;
 	private final List<IRecipe> recipes = new ArrayList<IRecipe>();
 	private final CompactMap<Integer, List<IRecipe>> recipesSortedBySize = new CompactMap<Integer, List<IRecipe>>();
-	private final CompactMap<String, List<IRecipe>> recipesSortedByResult = new CompactMap<>();
+	private final Set<String> customRecipesName = new HashSet<>();
 	private List<IRecipe> customRecipes = new ArrayList<>();
+	private final CompactMap<String, IRecipe> customRecipesByName = new CompactMap<>();
 	
 	public RecipeManager(FancyCrafting plugin) throws InvalidConfigurationException, IOException, org.bukkit.configuration.InvalidConfigurationException {
 		this.plugin = plugin;
@@ -51,21 +54,30 @@ public class RecipeManager {
 		Collections.shuffle(recipes);
 	}
 	
-	public void updateRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, UUID id) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
+	public void updateRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, String id) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
 		optimize(ingredients);
 		saveRecipe(result, ingredients, shaped, id);
 	}
 	
-	public void createRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
+	public void createRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, String id) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
+		if(customRecipesName.contains(id)) {
+			System.err.println("Duplicated recipe name: " + id);
+			return;
+		}
+		customRecipesName.add(id);
 		optimize(ingredients);
-		UUID id = UUID.randomUUID();
 		saveRecipe(result, ingredients, shaped, id);
+	}
+	
+	public boolean exists(String recipeName) {
+		return customRecipesName.contains(recipeName);
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void saveRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, UUID id) 
+	public void saveRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, String id) 
 			throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
 		fc.load(file);
+		id = id.replace(" ", "-");
 		fc.set(id + "", null);
 		result = result.clone();
 		if(result.getType().equals(Material.SKULL_ITEM) && result.getData().getData() == 3) {
@@ -85,7 +97,7 @@ public class RecipeManager {
 			fc.set(id + ".result", result);
 		}
 		fc.set(id + ".shaped", shaped);
-		ingredients.entrySet().forEach(entry -> {
+		for(Entry<Integer, ItemStack> entry : ingredients.entrySet()) {
 			ItemStack is = entry.getValue().clone();
 			if(is.getType().equals(Material.SKULL_ITEM) && is.getData().getData() == 3) {
 				String texture = null;
@@ -103,14 +115,16 @@ public class RecipeManager {
 			} else {
 				fc.set(id + ".ingredients." + entry.getKey(), is);
 			}
-		});
+		}
 		fc.save(file);
 		reloadRecipes();
 	}
 	
 	private void reloadRecipes() throws InvalidConfigurationException, IOException, org.bukkit.configuration.InvalidConfigurationException {
 		long now = System.currentTimeMillis();
-		customRecipes = new ArrayList<>();
+		customRecipesName.clear();
+		customRecipes.clear();
+		customRecipesByName.clear();
 		System.out.println("Reloading Recipes!");
 		for(int i = 1; i<=9; i++) recipesSortedBySize.put(i, new ArrayList<IRecipe>());
 		loadBukkitRecipes();
@@ -128,8 +142,9 @@ public class RecipeManager {
 				continue;
 			}
 			IRecipe recipe = getRecipeFromFile(fc, key);
-			customRecipes.add(recipe);
 			registerRecipe(recipe);
+			customRecipes.add(recipe);
+			customRecipesByName.put(recipe.getName(), recipe);
 		}
 		fc.save(file);
 	}
@@ -150,9 +165,9 @@ public class RecipeManager {
 			ingredientsMap.put(i, ingredient);
 		}
 		if(fc.getBoolean(key + ".shaped")) {	
-			return new IShapedRecipe(ingredientsMap, result, UUID.fromString(key));
+			return new IShapedRecipe(ingredientsMap, result, key);
 		} else {
-			return new IShapelessRecipe(result, ingredientsMap.values(), UUID.fromString(key));
+			return new IShapelessRecipe(result, ingredientsMap.values(), key);
 		}
 	}
 	
@@ -169,11 +184,12 @@ public class RecipeManager {
 	
 	public boolean registerRecipe(IRecipe recipe) {
 		if(!(recipe instanceof IShapelessRecipe) && !(recipe instanceof IShapedRecipe)) return false;
+		if(recipe.getName() != null && customRecipesName.contains(recipe.getName())) {
+			System.err.println("Duplicated recipe name: " + recipe.getName());
+			return false;
+		}
 		recipes.add(recipe);
 		recipesSortedBySize.get(recipe.getIngredientsSize()).add(recipe);
-		if(!recipesSortedByResult.containsKey(itemToString(recipe.getResult())))
-			recipesSortedByResult.put(itemToString(recipe.getResult()), new ArrayList<>());
-		recipesSortedByResult.get(itemToString(recipe.getResult())).add(recipe);
 		return true;
 	}
 	
@@ -240,15 +256,15 @@ public class RecipeManager {
 		return recipes;
 	}
 	
+	public IRecipe getCustomRecipe(String name) {
+		return customRecipesByName.get(name);
+	}
+	
 	public List<IRecipe> getCustomRecipes() {
 		return customRecipes;
 	}
-	
-	public List<IRecipe> getByResult(ItemStack result) {
-		return recipesSortedByResult.get(itemToString(result));
-	}
 
-	public void delete(UUID fromString) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
+	public void delete(String fromString) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
 		fc.load(file);
 		fc.set(fromString + "", null);
 		fc.save(file);

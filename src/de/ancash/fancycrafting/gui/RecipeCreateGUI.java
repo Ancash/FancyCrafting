@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
@@ -18,18 +19,20 @@ import org.bukkit.inventory.meta.ItemMeta;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.utils.MiscUtils;
 import de.ancash.ilibrary.datastructures.maps.CompactMap;
+import de.ancash.ilibrary.minecraft.anvilgui.AnvilGUI;
 import de.ancash.ilibrary.yaml.exceptions.InvalidConfigurationException;
 
 public class RecipeCreateGUI extends IGUI{
 
 	private final FancyCrafting plugin;
 	private ItemStack[] template = new ItemStack[45];
-	private String name;
+	private String title;
 	private CompactMap<UUID, RecipeCreateGUI> openGUIs = new CompactMap<>();
 	private int resultSlot;
 	private Integer[] craftingSlots = new Integer[9];
 	private int shapedSlot;
 	private int saveSlot;
+	private String recipeName;
 	private static final ItemStack shapeless = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
 	private static final ItemStack shaped = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 5);
 	private static final ItemStack save = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 5);
@@ -53,7 +56,7 @@ public class RecipeCreateGUI extends IGUI{
 		FileConfiguration fc = YamlConfiguration.loadConfiguration(file);
 		fc.load(file);
 		this.template = new ItemStack[45];
-		this.name = fc.getString("recipe-create-gui.title");
+		this.title = fc.getString("recipe-create-gui.title");
 		this.shapedSlot = fc.getInt("recipe-create-gui.shaped");
 		this.saveSlot = fc.getInt("recipe-create-gui.save");
 		ItemStack background = MiscUtils.get(fc, "background");
@@ -71,8 +74,9 @@ public class RecipeCreateGUI extends IGUI{
 		fc.save(file);
 	}
 	
-	private RecipeCreateGUI(HumanEntity owner, FancyCrafting plugin) {
-		super(owner, plugin.getRecipeCreateGUI().template, plugin.getRecipeCreateGUI().name, 45);
+	private RecipeCreateGUI(HumanEntity owner, FancyCrafting plugin, String recipeName) {
+		super(owner, plugin.getRecipeCreateGUI().template, plugin.getRecipeCreateGUI().title + ": " + recipeName, 45);
+		this.recipeName = recipeName;
 		this.plugin = plugin;
 	}
 	
@@ -101,8 +105,7 @@ public class RecipeCreateGUI extends IGUI{
 					event.getWhoClicked().sendMessage("§cInvalid recipe!");
 					return;
 				}
-				
-				plugin.getRecipeManager().createRecipe(result, ingredients, isShaped);
+				plugin.getRecipeManager().createRecipe(result, ingredients, isShaped, openGUIs.get(event.getWhoClicked().getUniqueId()).recipeName);
 				event.getWhoClicked().sendMessage("§aCreated new recipe!");
 				event.getWhoClicked().closeInventory();
 			}	
@@ -127,7 +130,18 @@ public class RecipeCreateGUI extends IGUI{
 	}
 	
 	public void open(HumanEntity owner) {
-		openGUIs.put(owner.getUniqueId(), new RecipeCreateGUI(owner, plugin));
+		new AnvilGUI.Builder()
+			.itemLeft(new ItemStack(Material.DIAMOND_SWORD))
+			.onComplete((player, text) ->{
+				if(text != null && !plugin.getRecipeManager().exists(text)) {
+					openGUIs.put(owner.getUniqueId(), new RecipeCreateGUI(owner, plugin, text));
+				} else {
+					player.sendMessage("§cInvalid recipe name!");
+				}
+				return AnvilGUI.Response.close();
+			})
+			.plugin(plugin)
+			.open((Player) owner);
 	}
 	
 	public void onClose(HumanEntity owner, Inventory inventory) {

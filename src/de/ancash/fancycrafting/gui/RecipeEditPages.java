@@ -6,7 +6,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import de.ancash.fancycrafting.utils.IRecipe;
 
-public class RecipeViewPage {
+public class RecipeEditPages {
 
 	private static final ItemStack next = new ItemStack(Material.ARROW);
 	private static final ItemStack back = new ItemStack(Material.ARROW);
@@ -28,7 +28,7 @@ public class RecipeViewPage {
 	private int space;
 	private int currentPage = 1;
 	
-	public RecipeViewPage(IRecipe[] allRecipes, int inventorySize) {
+	public RecipeEditPages(IRecipe[] allRecipes, int inventorySize) {
 		this.space = inventorySize;
 		update(allRecipes);
 	}
@@ -79,7 +79,11 @@ public class RecipeViewPage {
 		items[5] = next;
 		for(int i = 9; i<recipes.length + 9; i++) {
 			if(recipes[i - 9] == null) break;
-			items[i] = recipes[i - 9].getResultWithId();
+			ItemStack wId = recipes[i - 9].getResultWithId().clone();
+			ItemMeta im = wId.getItemMeta();
+			im.setDisplayName(recipes[i - 9].getName().replace("-", " "));
+			wId.setItemMeta(im);
+			items[i] = wId;
 		}
 		return items;
 	}

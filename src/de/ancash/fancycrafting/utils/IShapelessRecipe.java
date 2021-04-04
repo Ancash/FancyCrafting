@@ -1,7 +1,6 @@
 package de.ancash.fancycrafting.utils;
 
 import java.util.Collection;
-import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
 
@@ -28,8 +27,8 @@ public class IShapelessRecipe extends IRecipe{
 		return new IShapelessRecipe(result, ingredients, null);
 	}
 	
-	public IShapelessRecipe(ItemStack result, Collection<ItemStack> ingredients, UUID id) {
-		super(result, ingredients);
+	public IShapelessRecipe(ItemStack result, Collection<ItemStack> ingredients, String id) {
+		super(result, ingredients, id);
 		this.ingredients = ImmutableList.copyOf(ingredients);
 		this.result = result;
 		if(id != null) {

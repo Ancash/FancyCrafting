@@ -1,7 +1,6 @@
 package de.ancash.fancycrafting.utils;
 
 import java.util.Map;
-import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
@@ -28,13 +27,13 @@ public class IShapedRecipe extends IRecipe implements Cloneable{
 	private final ItemStack result;
 	private final ItemStack resultWithId;
 	
-	public IShapedRecipe(CompactMap<Integer, ItemStack> ingredientsMap, ItemStack result, UUID id) {
-		super(result, ingredientsMap.values());
+	public IShapedRecipe(CompactMap<Integer, ItemStack> ingredientsMap, ItemStack result, String id) {
+		super(result, ingredientsMap.values(), id);
 		this.ingredientsMap = ingredientsMap;
 		this.result = result;
 		if(id != null) {
 			NBTItem nbt = new NBTItem(result);
-			nbt.setString("fancycrafting.id", id.toString());
+			nbt.setString("fancycrafting.id", id);
 			this.resultWithId = nbt.getItem();
 		} else {
 			this.resultWithId = result;
@@ -42,7 +41,7 @@ public class IShapedRecipe extends IRecipe implements Cloneable{
 	}
 	
 	public IShapedRecipe(ItemStack result, Map<Character, ItemStack> ingredientsMap, String[] shapes) {
-		super(result, ingredientsMap.values());
+		super(result, ingredientsMap.values(), null);
 		this.result = result;
 		this.resultWithId = result;
 		this.ingredientsMap = toMap(ingredientsMap, shapes);

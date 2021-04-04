@@ -100,7 +100,7 @@ public class WorkbenchGUI{
 					return;
 				}
 				IRecipe recipe = plugin.getRecipeManager().match(ingredients);
-				if(recipe == null) {
+				if(recipe == null || (recipe != null && canCraftRecipe(owner, recipe))) {
 					inventory.setItem(resultSlot, red);
 					craftStateSlots.forEach(slot -> inventory.setItem(slot, red));
 				} else {
@@ -110,6 +110,10 @@ public class WorkbenchGUI{
 				}
 			}
 		}.runTask(plugin);
+	}
+	
+	private boolean canCraftRecipe(HumanEntity p, IRecipe recipe) {
+		return recipe.getName() != null && !p.hasPermission("fancycrafting.craft." + recipe.getName().replace(" ", "-"));
 	}
 	
 	public CompactMap<Integer, ItemStack> getIngredientsFromInventory(Inventory inventory, Integer[] slots) {

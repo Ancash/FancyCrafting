@@ -30,8 +30,12 @@ public class InventoryClickListener implements Listener{
 			plugin.getRecipeCreateGUI().onClick(event);
 			return;
 		}
-		if(plugin.getRecipeEditGUI().hasOpenInventory(event.getWhoClicked())) {
+		if(plugin.getRecipeEditGUI().hasInventoryOpen(event.getWhoClicked())) {
 			plugin.getRecipeEditGUI().onClick(event);
+			return;
+		}
+		if(plugin.getRecipeViewGUI().hasInventoryOpen(event.getWhoClicked())) {
+			plugin.getRecipeViewGUI().onClick(event);
 			return;
 		}
 	}
@@ -46,8 +50,12 @@ public class InventoryClickListener implements Listener{
 			plugin.getRecipeCreateGUI().close(event.getPlayer(), true);
 			return;
 		}
-		if(plugin.getRecipeEditGUI().hasOpenInventory(event.getPlayer())) {
+		if(plugin.getRecipeEditGUI().hasInventoryOpen(event.getPlayer())) {
 			plugin.getRecipeEditGUI().close(event.getPlayer(), true);
+			return;
+		}
+		if(plugin.getRecipeViewGUI().hasInventoryOpen(event.getPlayer())) {
+			plugin.getRecipeViewGUI().close(event);
 			return;
 		}
 	}
@@ -62,8 +70,12 @@ public class InventoryClickListener implements Listener{
 			plugin.getRecipeCreateGUI().onDrag(event);
 			return;
 		}
-		if(plugin.getRecipeEditGUI().hasOpenInventory(event.getWhoClicked())) {
+		if(plugin.getRecipeEditGUI().hasInventoryOpen(event.getWhoClicked())) {
 			plugin.getRecipeEditGUI().onDrag(event);
+			return;
+		}
+		if(plugin.getRecipeViewGUI().hasInventoryOpen(event.getWhoClicked())) {
+			plugin.getRecipeViewGUI().onDrag(event);
 			return;
 		}
 	}

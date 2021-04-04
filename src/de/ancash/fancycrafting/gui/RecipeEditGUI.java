@@ -37,7 +37,7 @@ public class RecipeEditGUI extends IGUI{
 	private int shapedSlot = 16;
 	private int resultSlot = 23;
 	
-	private RecipeViewPage recipeViewPage;
+	private RecipeEditPages recipeEditPages;
 	
 	private static final ItemStack shapeless = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
 	private static final ItemStack shaped = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 5);
@@ -82,17 +82,17 @@ public class RecipeEditGUI extends IGUI{
 	
 	
 	
-	private RecipeEditGUI(FancyCrafting plugin, HumanEntity owner, RecipeViewPage pages, String name, int size) {
+	private RecipeEditGUI(FancyCrafting plugin, HumanEntity owner, RecipeEditPages pages, String name, int size) {
 		super(owner, pages.getFirstPage(), name, size);
-		this.recipeViewPage = pages;
+		this.recipeEditPages = pages;
 		this.plugin = plugin;
 	}
 	
 	public void open(HumanEntity owner) {
-		openGUIs.put(owner.getUniqueId(), new RecipeEditGUI(plugin, owner, new RecipeViewPage(plugin.getRecipeManager().getCustomRecipes().toArray(new IRecipe[plugin.getRecipeManager().getCustomRecipes().size()]), size),name, size));
+		openGUIs.put(owner.getUniqueId(), new RecipeEditGUI(plugin, owner, new RecipeEditPages(plugin.getRecipeManager().getCustomRecipes().toArray(new IRecipe[plugin.getRecipeManager().getCustomRecipes().size()]), size),name, size));
 	}
 	
-	public boolean hasOpenInventory(HumanEntity owner) {
+	public boolean hasInventoryOpen(HumanEntity owner) {
 		return openGUIs.containsKey(owner.getUniqueId());
 	}
 	
@@ -111,19 +111,19 @@ public class RecipeEditGUI extends IGUI{
 						event.setCancelled(true);
 						if(slot == 3) {
 							RecipeEditGUI edit = openGUIs.get(event.getWhoClicked().getUniqueId());
-							edit.setContent(edit.recipeViewPage.getPreviousPage());
+							edit.setContent(edit.recipeEditPages.getPreviousPage());
 							return;
 						}
 						if(slot == 5) {
 							RecipeEditGUI edit = openGUIs.get(event.getWhoClicked().getUniqueId());
-							edit.setContent(edit.recipeViewPage.getNextPage());
+							edit.setContent(edit.recipeEditPages.getNextPage());
 							return;
 						}
 					}
 					NBTItem nbt = new NBTItem(clicked);
 					if(nbt.hasKey("fancycrafting.id")) {
 						event.setCancelled(true);
-						edit(event.getWhoClicked(), nbt.getString("fancycrafting.id"));
+						edit(event.getWhoClicked(), nbt.getString("fancycrafting.id").replace(" ", "-"));
 						return;
 					}
 				}
@@ -151,13 +151,13 @@ public class RecipeEditGUI extends IGUI{
 					event.getWhoClicked().sendMessage("§cInvalid recipe!");
 					return;
 				}
-				plugin.getRecipeManager().updateRecipe(result, ingredients, isShaped, UUID.fromString(new NBTItem(event.getInventory().getItem(saveSlot)).getString("fancycrafting.editid")));
+				plugin.getRecipeManager().updateRecipe(result, ingredients, isShaped, new NBTItem(event.getInventory().getItem(saveSlot)).getString("fancycrafting.editid"));
 				event.getWhoClicked().sendMessage("§aThe recipe has been saved! Reload the server for changes to take affect.");
 				close(event.getWhoClicked(), false);
 				return;
 			}
 			if(slot == deleteSlot) {
-				plugin.getRecipeManager().delete(UUID.fromString(new NBTItem(event.getInventory().getItem(saveSlot)).getString("fancycrafting.editid")));
+				plugin.getRecipeManager().delete(new NBTItem(event.getInventory().getItem(saveSlot)).getString("fancycrafting.editid"));
 				close(event.getWhoClicked(), false);
 				event.getWhoClicked().sendMessage("§aThe recipe has been deleted! Reload the server for changes to take affect.");
 				return;

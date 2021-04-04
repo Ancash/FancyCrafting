@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import de.ancash.fancycrafting.FancyCrafting;
+import de.ancash.fancycrafting.utils.IRecipe;
 
 public class FancyCraftingCommand implements CommandExecutor{
 	
@@ -34,13 +35,33 @@ public class FancyCraftingCommand implements CommandExecutor{
 		
 		switch (command.toLowerCase()) {
 		case "create":
-			if(!player.hasPermission("fancycrafting.create") && !player.isOp()) return true;
+			if(!player.hasPermission("fancycrafting.create")) {
+				sender.sendMessage("§cYou have permission to do that!");
+				return true;
+			}
 			plugin.getRecipeCreateGUI().open(player);
 			return true;
 		case "edit":
-			if(!player.hasPermission("fancycrafting.edit") && !player.isOp()) return true;
+			if(!player.hasPermission("fancycrafting.edit")) {
+				sender.sendMessage("§cYou have permission to do that!");
+				return true;
+			}
 			plugin.getRecipeEditGUI().open(player);
 			return true;
+		case "view":
+			if(args.length == 2) {
+				if(!sender.hasPermission("fancycrafting.view." + args[1].toLowerCase())) {
+					sender.sendMessage("§cYou have permission to do that!");
+					return true;
+				}
+				IRecipe recipe = plugin.getRecipeManager().getCustomRecipe(args[1]);
+				if(recipe == null) {
+					sender.sendMessage("§cThat's not a recipe: " + args[1]);
+					return true;
+				}
+				plugin.getRecipeViewGUI().open(player, recipe);
+				return true;
+			}
 		default:
 			break;
 		}
