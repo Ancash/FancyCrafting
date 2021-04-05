@@ -19,6 +19,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import de.ancash.fancycrafting.utils.IRecipe;
 import de.ancash.fancycrafting.utils.IShapedRecipe;
@@ -34,7 +35,6 @@ public class RecipeManager {
 	private static final File file = new File("plugins/FancyCrafting/recipes.yml");
 	private static final FileConfiguration fc = YamlConfiguration.loadConfiguration(file);
 	
-	@SuppressWarnings("unused")
 	private final FancyCrafting plugin;
 	private final List<IRecipe> recipes = new ArrayList<IRecipe>();
 	private final CompactMap<Integer, List<IRecipe>> recipesSortedBySize = new CompactMap<Integer, List<IRecipe>>();
@@ -57,6 +57,7 @@ public class RecipeManager {
 	public void updateRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, String id) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
 		optimize(ingredients);
 		saveRecipe(result, ingredients, shaped, id);
+		reloadRecipes();
 	}
 	
 	public void createRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, String id) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
@@ -64,13 +65,13 @@ public class RecipeManager {
 			System.err.println("Duplicated recipe name: " + id);
 			return;
 		}
-		customRecipesName.add(id);
 		optimize(ingredients);
 		saveRecipe(result, ingredients, shaped, id);
+		reloadRecipes();
 	}
 	
 	public boolean exists(String recipeName) {
-		return customRecipesName.contains(recipeName);
+		return customRecipesName.contains(recipeName) || customRecipesName.contains(recipeName.replace(" ", "-")) || customRecipesName.contains(recipeName.replace("-", " "));
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -117,20 +118,31 @@ public class RecipeManager {
 			}
 		}
 		fc.save(file);
-		reloadRecipes();
 	}
 	
 	private void reloadRecipes() throws InvalidConfigurationException, IOException, org.bukkit.configuration.InvalidConfigurationException {
-		long now = System.currentTimeMillis();
-		customRecipesName.clear();
-		customRecipes.clear();
-		customRecipesByName.clear();
-		System.out.println("Reloading Recipes!");
-		for(int i = 1; i<=9; i++) recipesSortedBySize.put(i, new ArrayList<IRecipe>());
-		loadBukkitRecipes();
-		loadFileRecipes();
-		Collections.shuffle(recipes);
-		System.out.println("Reloaded! " + (System.currentTimeMillis() - now) + " ms");
+		new BukkitRunnable() {
+			
+			@Override
+			public void run() {
+				System.out.println("Reloading Recipes!");
+				long now = System.currentTimeMillis();
+				customRecipesName.clear();
+				customRecipes.clear();
+				customRecipesByName.clear();
+				for(int i = 1; i<=9; i++) recipesSortedBySize.put(i, new ArrayList<IRecipe>());
+				loadBukkitRecipes();
+				try {
+					loadFileRecipes();
+				} catch (InvalidConfigurationException | IOException
+						| org.bukkit.configuration.InvalidConfigurationException e) {
+
+				e.printStackTrace();
+				}
+				Collections.shuffle(recipes);
+				System.out.println("Reloaded! " + (System.currentTimeMillis() - now) + " ms");
+			}
+		}.runTaskAsynchronously(plugin);
 	}
 	
 	private void loadFileRecipes() throws InvalidConfigurationException, IOException, org.bukkit.configuration.InvalidConfigurationException {
@@ -143,8 +155,6 @@ public class RecipeManager {
 			}
 			IRecipe recipe = getRecipeFromFile(fc, key);
 			registerRecipe(recipe);
-			customRecipes.add(recipe);
-			customRecipesByName.put(recipe.getName(), recipe);
 		}
 		fc.save(file);
 	}
@@ -187,6 +197,10 @@ public class RecipeManager {
 		if(recipe.getName() != null && customRecipesName.contains(recipe.getName())) {
 			System.err.println("Duplicated recipe name: " + recipe.getName());
 			return false;
+		}
+		if(recipe.getName() != null) {
+			customRecipes.add(recipe);
+			customRecipesByName.put(recipe.getName(), recipe);
 		}
 		recipes.add(recipe);
 		recipesSortedBySize.get(recipe.getIngredientsSize()).add(recipe);

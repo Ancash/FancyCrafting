@@ -152,14 +152,14 @@ public class RecipeEditGUI extends IGUI{
 					return;
 				}
 				plugin.getRecipeManager().updateRecipe(result, ingredients, isShaped, new NBTItem(event.getInventory().getItem(saveSlot)).getString("fancycrafting.editid"));
-				event.getWhoClicked().sendMessage("§aThe recipe has been saved! Reload the server for changes to take affect.");
+				event.getWhoClicked().sendMessage("§aThe recipe has been saved!");
 				close(event.getWhoClicked(), false);
 				return;
 			}
 			if(slot == deleteSlot) {
 				plugin.getRecipeManager().delete(new NBTItem(event.getInventory().getItem(saveSlot)).getString("fancycrafting.editid"));
 				close(event.getWhoClicked(), false);
-				event.getWhoClicked().sendMessage("§aThe recipe has been deleted! Reload the server for changes to take affect.");
+				event.getWhoClicked().sendMessage("§aThe recipe has been deleted!");
 				return;
 			}
 			if(slot == shapedSlot) {

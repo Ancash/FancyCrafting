@@ -1,5 +1,5 @@
 name: FancyCrafting
-version: 1.3
+version: 1.4
 main: de.ancash.fancycrafting.FancyCrafting
 
 commands:
