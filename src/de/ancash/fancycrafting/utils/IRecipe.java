@@ -101,17 +101,13 @@ public abstract class IRecipe {
 			if(ingredientsMap.get(key) == null) ingredientsMap.remove(key);
 		}
 		Duplet<Integer, Integer> moves = Tuple.of(0, 0);
-		boolean canMoveToLeft = canMoveToLeft(ingredientsMap);
-		while(canMoveToLeft) {
+		while(canMoveToLeft(ingredientsMap)) {
 			moveToLeft(ingredientsMap);
 			moves.setFirst(moves.getFirst() + 1);
-			canMoveToLeft = canMoveToLeft(ingredientsMap);
 		}
-		boolean canMoveUp = canMoveUp(ingredientsMap);
-		while(canMoveUp) {
+		while(canMoveUp(ingredientsMap)) {
 			moveUp(ingredientsMap);
 			moves.setSecond(moves.getSecond() + 1);
-			canMoveUp = canMoveUp(ingredientsMap);
 		}
 		return moves;
 	}
@@ -161,20 +157,24 @@ public abstract class IRecipe {
 	
 	@SuppressWarnings("deprecation")
 	public static boolean isSimilar(ItemStack a, ItemStack b, boolean ignoreData) {
-		boolean bNull = b == null;
-		boolean aNull = a == null;
+		//boolean bNull = b == null; //|| b,getType().equals(Material.AIR);
+		boolean aNull = a == null || a.getType() == Material.AIR;
+		boolean bNull = b == null || b.getType() == Material.AIR;
+		
 		if(a == null && b == null) {
 			return true;
 		}
 		if(aNull != bNull) {
 			return false;
 		}
-		if(!a.getType().equals(b.getType())) {
+		if(aNull == true) return false;
+		if(!a.getType().equals(b.getType()) && b.getTypeId() != 0) {
 			return false;
 		}
 		if(!matchesMeta(a, b)) {
 			return false;
 		}
+		
 		if(!matchesNBT(a, b)) {
 			return false;
 		}
@@ -184,7 +184,9 @@ public abstract class IRecipe {
 			String one = a.toString().split("\\{")[1].split(" x")[0];
 			String two = b.toString().split("\\{")[1].split(" x")[0];
 			if(!ignoreData && !one.equals(two)) {
-				return false;
+				if(!(one.split("_").length == two.split("_").length && one.split("_").length > 1 && one.split("_")[0].equals(two.split("_")[0]))) {
+					return false;
+				}
 			}
 			if(one.equals(two)) matches = true;
 		} else {
@@ -206,7 +208,6 @@ public abstract class IRecipe {
 				if(aT != null && !aT.equals(bT)) return false;
 				if(bT != null && !aT.equals(aT)) return false;
 			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			matches = true;
@@ -223,6 +224,7 @@ public abstract class IRecipe {
 	public static boolean matchesNBT(ItemStack a, ItemStack b) {
 		NBTItem aNbt = new NBTItem(a);
 		NBTItem bNbt = new NBTItem(b);
+		
 		if(!aNbt.getKeys().equals(bNbt.getKeys())) {
 			if(!(aNbt.getKeys().size() - 2 == bNbt.getKeys().size() ||
 					aNbt.getKeys().size() - 1 == bNbt.getKeys().size() ||
@@ -232,11 +234,13 @@ public abstract class IRecipe {
 			}
 		}
 		for(String key : aNbt.getKeys()) {
-			if(key.equals("meta-type") || key.equals("Damage")) continue;
-			Object aOb = aNbt.getObject(key, Object.class);
-			Object bOb = bNbt.getObject(key, Object.class);
-			if(aOb == null && bOb == null) continue;
-			if(aOb.equals(bOb)) return false;
+			try {
+				if(key.equals("meta-type") || key.equals("Damage")) continue;
+				Object aOb = aNbt.getObject(key, Object.class);
+				Object bOb = bNbt.getObject(key, Object.class);
+				if(aOb == null && bOb == null) continue;
+				if(aOb.equals(bOb)) return false;
+			} catch(Exception exc) {}
 		}
 		return true;
 	}

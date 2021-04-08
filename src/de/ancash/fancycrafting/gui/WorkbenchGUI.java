@@ -89,6 +89,7 @@ public class WorkbenchGUI{
 	}
 	
 	private void checkRecipe(final Inventory inventory, HumanEntity owner) {
+		System.out.println("checking recipe");
 		new BukkitRunnable() {
 			
 			@Override
@@ -135,6 +136,15 @@ public class WorkbenchGUI{
 			event.setCancelled(true);
 			return;
 		}
+		
+		if(!workbenchInv && event.isShiftClick()) {
+			ItemStack is1 = event.getView().getBottomInventory().getItem(event.getSlot()).clone();
+			ItemStack is2 = event.getInventory().getItem(resultSlot).clone();
+			if(is2 != null && is1 != null) {
+				if(IRecipe.isSimilar(is1, is2, false)) event.setCancelled(true);
+			}
+		}
+		
 		if(workbenchInv && isCraftingSlot(slot)) {
 			event.setCancelled(false);
 		} else if(workbenchInv && slot == closeSlot) {

@@ -47,9 +47,10 @@ public class RecipeManager {
 		for(int i = 1; i<=9; i++) recipesSortedBySize.put(i, new ArrayList<IRecipe>());
 		loadBukkitRecipes();
 		loadFileRecipes();
+		
 		Collections.shuffle(recipes);
 	}	
-	
+
 	public void shuffle() {
 		Collections.shuffle(recipes);
 	}
