@@ -1,16 +1,17 @@
 package de.ancash.fancycrafting.gui;
 
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import de.ancash.fancycrafting.utils.IRecipe;
+import de.ancash.fancycrafting.recipe.IRecipe;
+import de.ancash.minecraft.XMaterial;
+import de.ancash.minecraft.nbt.NBTItem;
 
 public class RecipeEditPages {
 
-	private static final ItemStack next = new ItemStack(Material.ARROW);
-	private static final ItemStack back = new ItemStack(Material.ARROW);
-	private static final ItemStack background = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 7);
+	private static final ItemStack next = XMaterial.ARROW.parseItem().clone();
+	private static final ItemStack back = XMaterial.ARROW.parseItem().clone();
+	private static final ItemStack background = XMaterial.GRAY_STAINED_GLASS_PANE.parseItem().clone();
 	
 	static {
 		ItemMeta im = next.getItemMeta();
@@ -79,11 +80,13 @@ public class RecipeEditPages {
 		items[5] = next;
 		for(int i = 9; i<recipes.length + 9; i++) {
 			if(recipes[i - 9] == null) break;
-			ItemStack wId = recipes[i - 9].getResultWithId().clone();
+			ItemStack wId = recipes[i - 9].getResult().clone();
 			ItemMeta im = wId.getItemMeta();
 			im.setDisplayName(recipes[i - 9].getName().replace("-", " "));
 			wId.setItemMeta(im);
-			items[i] = wId;
+			NBTItem nbt = new NBTItem(wId);
+			nbt.setString("fancycrafting.id", recipes[i - 9].getName().replace("-", " "));
+			items[i] = nbt.getItem();
 		}
 		return items;
 	}

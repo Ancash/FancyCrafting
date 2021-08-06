@@ -3,9 +3,10 @@ package de.ancash.fancycrafting.gui;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
-import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -16,17 +17,18 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import de.ancash.fancycrafting.FancyCrafting;
-import de.ancash.fancycrafting.utils.IRecipe;
-import de.ancash.fancycrafting.utils.IShapedRecipe;
-import de.ancash.fancycrafting.utils.IShapelessRecipe;
-import de.ancash.fancycrafting.utils.MiscUtils;
-import de.ancash.ilibrary.datastructures.maps.CompactMap;
-import de.ancash.ilibrary.minecraft.nbt.NBTItem;
+import de.ancash.fancycrafting.recipe.IRecipe;
+import de.ancash.fancycrafting.recipe.IShapedRecipe;
+import de.ancash.fancycrafting.recipe.IShapelessRecipe;
+import de.ancash.minecraft.ItemStackUtils;
+import de.ancash.minecraft.SerializableItemStack;
+import de.ancash.minecraft.XMaterial;
+import de.ancash.minecraft.nbt.NBTItem;
 
 public class RecipeEditGUI extends IGUI{
 
 	private FancyCrafting plugin;
-	private CompactMap<UUID, RecipeEditGUI> openGUIs = new CompactMap<>();
+	private Map<UUID, RecipeEditGUI> openGUIs = new HashMap<>();
 	
 	private int size = 45;
 	private String name = "Edit Recipe";
@@ -39,10 +41,10 @@ public class RecipeEditGUI extends IGUI{
 	
 	private RecipeEditPages recipeEditPages;
 	
-	private static final ItemStack shapeless = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
-	private static final ItemStack shaped = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 5);
-	private static final ItemStack save = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 5);
-	private static final ItemStack delete = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
+	private static final ItemStack shapeless = new ItemStack(XMaterial.BLUE_STAINED_GLASS_PANE.parseMaterial(), 1, XMaterial.BLUE_STAINED_GLASS_PANE.getData());
+	private static final ItemStack shaped = new ItemStack(XMaterial.LIME_STAINED_GLASS_PANE.parseMaterial(), 1, XMaterial.LIME_STAINED_GLASS_PANE.getData());
+	private static final ItemStack save = new ItemStack(XMaterial.LIME_STAINED_GLASS_PANE.parseMaterial(), 1, XMaterial.LIME_STAINED_GLASS_PANE.getData());
+	private static final ItemStack delete = new ItemStack(XMaterial.RED_STAINED_GLASS_PANE.parseMaterial(), 1, XMaterial.RED_STAINED_GLASS_PANE.getData());
 	
 	static {
 		ItemMeta im = shapeless.getItemMeta();
@@ -70,7 +72,7 @@ public class RecipeEditGUI extends IGUI{
 			craftingSlots[cnt] = Integer.valueOf(slot);
 			cnt++;
 		}
-		ItemStack background = MiscUtils.get(fc, "background");
+		ItemStack background = ItemStackUtils.get(fc, "background");
 		for(int i = 0; i<45; i++) editTemplate[i] = background;
 		for(int i : craftingSlots) editTemplate[i] = null;
 		editTemplate[resultSlot] = null;
@@ -97,7 +99,7 @@ public class RecipeEditGUI extends IGUI{
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void onClick(InventoryClickEvent event) throws FileNotFoundException, IOException, InvalidConfigurationException, de.ancash.ilibrary.yaml.exceptions.InvalidConfigurationException {
+	public void onClick(InventoryClickEvent event) throws FileNotFoundException, IOException, InvalidConfigurationException, org.simpleyaml.exceptions.InvalidConfigurationException, ClassNotFoundException {
 		if(event.getClickedInventory() == null) {
 			event.setCancelled(true);
 			return;
@@ -106,8 +108,8 @@ public class RecipeEditGUI extends IGUI{
 			int slot = event.getSlot();
 			ItemStack clicked = event.getInventory().getItem(slot);
 			if(clicked != null) {
-				if(event.getClickedInventory().getItem(5).getType().equals(Material.ARROW)) {
-					if(slot < 9 && clicked.getType().equals(Material.ARROW)) {
+				if(event.getClickedInventory().getItem(5).getType().equals(XMaterial.ARROW.parseMaterial())) {
+					if(slot < 9 && clicked.getType().equals(XMaterial.ARROW.parseMaterial())) {
 						event.setCancelled(true);
 						if(slot == 3) {
 							RecipeEditGUI edit = openGUIs.get(event.getWhoClicked().getUniqueId());
@@ -128,12 +130,6 @@ public class RecipeEditGUI extends IGUI{
 					}
 				}
 			}
-			if(event.getInventory().getItem(shapedSlot) == null || 
-					(event.getInventory().getItem(shapedSlot).getData().getData() != 5 &&
-							event.getInventory().getItem(shapedSlot).getData().getData() != 14)) {
-				event.setCancelled(true);
-				return;
-			}
 			event.setCancelled(true);
 			for(int i : craftingSlots) {
 				if(i == slot) {
@@ -146,12 +142,12 @@ public class RecipeEditGUI extends IGUI{
 			if(slot == saveSlot || slot == deleteSlot) event.setCancelled(true);
 			if(slot == saveSlot) {
 				ItemStack result = event.getInventory().getItem(resultSlot);
-				CompactMap<Integer, ItemStack> ingredients = plugin.getWorkbenchGUI().getIngredientsFromInventory(event.getInventory(), craftingSlots);
+				Map<Integer, SerializableItemStack> ingredients = plugin.getWorkbenchGUI().getIngredientsFromInventory(event.getInventory(), craftingSlots);
 				if(result == null || ingredients.size() == 0) {
 					event.getWhoClicked().sendMessage("§cInvalid recipe!");
 					return;
 				}
-				plugin.getRecipeManager().updateRecipe(result, ingredients, isShaped, new NBTItem(event.getInventory().getItem(saveSlot)).getString("fancycrafting.editid"));
+				plugin.getRecipeManager().updateRecipe(new SerializableItemStack(result), ingredients, isShaped, new NBTItem(event.getInventory().getItem(saveSlot)).getString("fancycrafting.editid"));
 				event.getWhoClicked().sendMessage("§aThe recipe has been saved!");
 				close(event.getWhoClicked(), false);
 				return;
@@ -173,25 +169,22 @@ public class RecipeEditGUI extends IGUI{
 		}
 	}
 	
-	private void edit(HumanEntity owner, String recipeId) throws FileNotFoundException, IOException, InvalidConfigurationException {
-		File file = new File("plugins/FancyCrafting/recipes.yml");
-		FileConfiguration fc = YamlConfiguration.loadConfiguration(file);
-		fc.load(file);
-		IRecipe recipe = plugin.getRecipeManager().getRecipeFromFile(fc, recipeId);
-		fc.save(file);
+	private void edit(HumanEntity owner, String recipeId) throws FileNotFoundException, IOException, InvalidConfigurationException, ClassNotFoundException {
+		IRecipe recipe = plugin.getRecipeManager().getCustomRecipe(recipeId);
 		if(recipe == null) {
-			System.err.println("A player is trying to edit a non-existing recipe! Id: " + recipeId);
+			plugin.severe("A player is trying to edit a non-existing recipe! Id: " + recipeId);
+			owner.sendMessage("Something went wrong!");
 			return;
 		}
 		ItemStack[] template = editTemplate.clone();
-		template[resultSlot] = recipe.getResultWithId();
+		template[resultSlot] = recipe.getResult();
 		NBTItem temp = new NBTItem(template[saveSlot]);
 		temp.setString("fancycrafting.editid", recipeId);
 		template[saveSlot] = temp.getItem();
 		if(recipe instanceof IShapedRecipe) {
 			IShapedRecipe shapedRecipe = (IShapedRecipe) recipe;
 			for(int slot : shapedRecipe.getIngredientsMap().keySet()) {
-				template[craftingSlots[slot - 1]] = shapedRecipe.getIngredientsMap().get(slot);
+				template[craftingSlots[slot - 1]] = shapedRecipe.getIngredientsMap().get(slot).restore();
 			}
 			template[shapedSlot] = shaped;
 			owner.getOpenInventory().getTopInventory().setContents(template);
@@ -201,9 +194,9 @@ public class RecipeEditGUI extends IGUI{
 			IShapelessRecipe shapelessRecipe = (IShapelessRecipe) recipe;
 			int row = 1;
 			int slot = 1;
-			ItemStack[] ingredients = shapelessRecipe.getIngredientsList().toArray(new ItemStack[shapelessRecipe.getIngredientsSize()]);
+			SerializableItemStack[] ingredients = shapelessRecipe.getIngredients().toArray(new SerializableItemStack[shapelessRecipe.getIngredientsSize()]);
 			for(int i = 0; i<ingredients.length; i++) {
-				template[row * 9 + slot] = ingredients[i];
+				template[row * 9 + slot] = ingredients[i].restore();
 				slot++;
 				if(slot > 3) {
 					slot = 1;

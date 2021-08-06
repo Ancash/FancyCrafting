@@ -3,9 +3,10 @@ package de.ancash.fancycrafting.gui;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
-import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.HumanEntity;
@@ -15,27 +16,28 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.simpleyaml.exceptions.InvalidConfigurationException;
 
 import de.ancash.fancycrafting.FancyCrafting;
-import de.ancash.fancycrafting.utils.MiscUtils;
-import de.ancash.ilibrary.datastructures.maps.CompactMap;
-import de.ancash.ilibrary.minecraft.anvilgui.AnvilGUI;
-import de.ancash.ilibrary.yaml.exceptions.InvalidConfigurationException;
+import de.ancash.minecraft.ItemStackUtils;
+import de.ancash.minecraft.SerializableItemStack;
+import de.ancash.minecraft.XMaterial;
+import de.ancash.minecraft.anvilgui.AnvilGUI;
 
 public class RecipeCreateGUI extends IGUI{
 
 	private final FancyCrafting plugin;
 	private ItemStack[] template = new ItemStack[45];
 	private String title;
-	private CompactMap<UUID, RecipeCreateGUI> openGUIs = new CompactMap<>();
+	private Map<UUID, RecipeCreateGUI> openGUIs = new HashMap<>();
 	private int resultSlot;
 	private Integer[] craftingSlots = new Integer[9];
 	private int shapedSlot;
 	private int saveSlot;
 	private String recipeName;
-	private static final ItemStack shapeless = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
-	private static final ItemStack shaped = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 5);
-	private static final ItemStack save = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 5);
+	private static final ItemStack shapeless = new ItemStack(XMaterial.BLUE_STAINED_GLASS_PANE.parseMaterial(), 1, XMaterial.BLUE_STAINED_GLASS_PANE.getData());
+	private static final ItemStack shaped = new ItemStack(XMaterial.LIME_STAINED_GLASS_PANE.parseMaterial(), 1, XMaterial.LIME_STAINED_GLASS_PANE.getData());
+	private static final ItemStack save = new ItemStack(XMaterial.LIME_STAINED_GLASS_PANE.parseMaterial(), 1, XMaterial.LIME_STAINED_GLASS_PANE.getData());
 	
 	static {
 		ItemMeta im = shaped .getItemMeta();
@@ -59,7 +61,7 @@ public class RecipeCreateGUI extends IGUI{
 		this.title = fc.getString("recipe-create-gui.title");
 		this.shapedSlot = fc.getInt("recipe-create-gui.shaped");
 		this.saveSlot = fc.getInt("recipe-create-gui.save");
-		ItemStack background = MiscUtils.get(fc, "background");
+		ItemStack background = ItemStackUtils.get(fc, "background");
 		for(int i = 0; i<45; i++) template[i] = background.clone();
 		int cnt = 0;
 		for(String slot : fc.getStringList("workbench.crafting-slots")) {
@@ -84,14 +86,14 @@ public class RecipeCreateGUI extends IGUI{
 	public void onClick(InventoryClickEvent event) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
 		if(event.getInventory().equals(event.getClickedInventory())) {
 			int slot = event.getSlot();
-			boolean isShaped = event.getInventory().getItem(shapedSlot).getData().getData() == 5;
+			boolean isShaped = event.getInventory().getItem(shapedSlot).getData().getData() == shaped.getData().getData();
 			if(!isCraftingSlot(slot)) event.setCancelled(true);
 			if(slot == shapedSlot) {
-				if(!isShaped) {
+				if(!isShaped) 
 					event.getInventory().setItem(shapedSlot, shaped );
-				} else {
+				 else 
 					event.getInventory().setItem(shapedSlot, shapeless);
-				}
+				
 			}
 			
 			if(slot == saveSlot) {
@@ -100,12 +102,12 @@ public class RecipeCreateGUI extends IGUI{
 					event.getWhoClicked().sendMessage("§cInvalid recipe!");
 					return;
 				}
-				CompactMap<Integer, ItemStack> ingredients = plugin.getWorkbenchGUI().getIngredientsFromInventory(event.getInventory(), craftingSlots);
+				Map<Integer, SerializableItemStack> ingredients = plugin.getWorkbenchGUI().getIngredientsFromInventory(event.getInventory(), craftingSlots);
 				if(ingredients.size() == 0) {
 					event.getWhoClicked().sendMessage("§cInvalid recipe!");
 					return;
 				}
-				plugin.getRecipeManager().createRecipe(result, ingredients, isShaped, openGUIs.get(event.getWhoClicked().getUniqueId()).recipeName);
+				plugin.getRecipeManager().createRecipe(new SerializableItemStack(result), ingredients, isShaped, openGUIs.get(event.getWhoClicked().getUniqueId()).recipeName);
 				event.getWhoClicked().sendMessage("§aCreated new recipe!");
 				event.getWhoClicked().closeInventory();
 			}	
@@ -131,7 +133,7 @@ public class RecipeCreateGUI extends IGUI{
 	
 	public void open(HumanEntity owner) {
 		new AnvilGUI.Builder()
-			.itemLeft(new ItemStack(Material.DIAMOND_SWORD))
+			.itemLeft(XMaterial.DIAMOND_SWORD.parseItem().clone())
 			.onComplete((player, text) ->{
 				if(text != null && !plugin.getRecipeManager().exists(text)) {
 					openGUIs.put(owner.getUniqueId(), new RecipeCreateGUI(owner, plugin, text));

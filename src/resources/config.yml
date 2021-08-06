@@ -1,3 +1,4 @@
+perms-using-recipe: false
 #the item to click to close the inventory
 close:
   type: BARRIER
@@ -43,3 +44,15 @@ recipe-create-gui:
   result-slot: 23
   shaped: 16
   save: 34
+recipe-view-gui:
+   title: "%r Recipe" #r = recipe name
+   close-slot: 40
+   back-slot: 39 
+   back:
+      commands:
+      - "kill %p"
+      type: ARROW
+      meta:
+         displayname: "§c§lBack"
+         lore:
+         - "§e§lClick §7to got back"

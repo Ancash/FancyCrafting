@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import de.ancash.fancycrafting.FancyCrafting;
-import de.ancash.fancycrafting.utils.IRecipe;
+import de.ancash.fancycrafting.recipe.IRecipe;
 
 public class FancyCraftingCommand implements CommandExecutor{
 	
@@ -34,6 +34,13 @@ public class FancyCraftingCommand implements CommandExecutor{
 		String command = args[0];
 		
 		switch (command.toLowerCase()) {
+		case "open":
+			if(!player.hasPermission("fancycrafting.open")) {
+				sender.sendMessage("§cYou have permission to do that!");
+				return true;
+			}
+			plugin.getWorkbenchGUI().open(player);
+			return true;
 		case "create":
 			if(!player.hasPermission("fancycrafting.create")) {
 				sender.sendMessage("§cYou have permission to do that!");

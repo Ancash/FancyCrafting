@@ -21,7 +21,7 @@ public class InventoryClickListener implements Listener{
 	}
 	
 	@EventHandler
-	public void onInvClick(InventoryClickEvent event) throws FileNotFoundException, IOException, InvalidConfigurationException, de.ancash.ilibrary.yaml.exceptions.InvalidConfigurationException {
+	public void onInvClick(InventoryClickEvent event) throws FileNotFoundException, IOException, InvalidConfigurationException, org.simpleyaml.exceptions.InvalidConfigurationException, ClassNotFoundException {
 		if(plugin.getWorkbenchGUI().hasInventoryOpen(event.getWhoClicked())) {
 			plugin.getWorkbenchGUI().onWorkbenchClick(event);
 			return;

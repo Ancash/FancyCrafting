@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.simpleyaml.exceptions.InvalidConfigurationException;
 
 import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.gui.RecipeCreateGUI;
@@ -14,12 +15,13 @@ import de.ancash.fancycrafting.gui.RecipeViewGUI;
 import de.ancash.fancycrafting.gui.WorkbenchGUI;
 import de.ancash.fancycrafting.listeners.InventoryClickListener;
 import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
-import de.ancash.fancycrafting.utils.IRecipe;
-import de.ancash.ilibrary.misc.FileUtils;
-import de.ancash.ilibrary.yaml.exceptions.InvalidConfigurationException;
+import de.ancash.fancycrafting.recipe.IRecipe;
+import de.ancash.misc.FileUtils;
 
 public class FancyCrafting extends JavaPlugin{
 
+	public static final String PREFIX = "[FancyCrafting] ";
+	
 	private static FancyCrafting singleton;
 	private RecipeManager recipeManager;
 	private WorkbenchGUI workbenchGUI;
@@ -28,7 +30,6 @@ public class FancyCrafting extends JavaPlugin{
 	private RecipeViewGUI recipeViewGUI;
 	
 	public void onEnable() {
-		
 		singleton = this;
 		try {
 			if(!new File("plugins/FancyCrafting/config.yml").exists()) 
@@ -42,6 +43,7 @@ public class FancyCrafting extends JavaPlugin{
 			recipeViewGUI = new RecipeViewGUI(this);
 		} catch (InvalidConfigurationException | IOException | org.bukkit.configuration.InvalidConfigurationException e) {
 			e.printStackTrace();
+			return;
 		}
 		
 		PluginManager pm = Bukkit.getServer().getPluginManager();
@@ -77,5 +79,17 @@ public class FancyCrafting extends JavaPlugin{
 
 	public RecipeViewGUI getRecipeViewGUI() {
 		return recipeViewGUI;
+	}
+	
+	public void info(String str) {
+		Bukkit.getLogger().info(PREFIX + str);
+	}
+	
+	public void warn(String str) {
+		Bukkit.getLogger().warning(PREFIX + str);
+	}
+	
+	public void severe(String str) {
+		Bukkit.getLogger().severe(PREFIX + str);
 	}
 }

@@ -1,274 +1,226 @@
 package de.ancash.fancycrafting;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.simpleyaml.configuration.file.YamlFile;
+import org.simpleyaml.exceptions.InvalidConfigurationException;
 
-import de.ancash.fancycrafting.utils.IRecipe;
-import de.ancash.fancycrafting.utils.IShapedRecipe;
-import de.ancash.fancycrafting.utils.IShapelessRecipe;
-import de.ancash.ilibrary.datastructures.maps.CompactMap;
-import de.ancash.ilibrary.minecraft.nbt.NBTItem;
-import de.ancash.ilibrary.yaml.exceptions.InvalidConfigurationException;
-
-import static de.ancash.fancycrafting.utils.IShapedRecipe.*;
+import de.ancash.fancycrafting.recipe.IRecipe;
+import de.ancash.fancycrafting.recipe.IShapedRecipe;
+import de.ancash.fancycrafting.recipe.IShapelessRecipe;
+import de.ancash.minecraft.ItemBuilder;
+import de.ancash.minecraft.SerializableItemStack;
+import de.ancash.minecraft.XMaterial;
 
 public class RecipeManager {
 	
-	private static final File file = new File("plugins/FancyCrafting/recipes.yml");
-	private static final FileConfiguration fc = YamlConfiguration.loadConfiguration(file);
+	private final YamlFile recipeFile = new YamlFile("plugins/FancyCrafting/recipes.yml");
 	
 	private final FancyCrafting plugin;
 	private final List<IRecipe> recipes = new ArrayList<IRecipe>();
-	private final CompactMap<Integer, List<IRecipe>> recipesSortedBySize = new CompactMap<Integer, List<IRecipe>>();
-	private final Set<String> customRecipesName = new HashSet<>();
+	private final Map<Integer, List<IRecipe>> recipesSortedBySize = new HashMap<Integer, List<IRecipe>>();
+	private final Map<SerializableItemStack, IRecipe> recipeSortedByResult = new HashMap<>();
 	private List<IRecipe> customRecipes = new ArrayList<>();
-	private final CompactMap<String, IRecipe> customRecipesByName = new CompactMap<>();
+	private final Map<String, IRecipe> customRecipesByName = new HashMap<>();
 	
-	public RecipeManager(FancyCrafting plugin) throws InvalidConfigurationException, IOException, org.bukkit.configuration.InvalidConfigurationException {
+	public RecipeManager(FancyCrafting plugin) throws IOException, InvalidConfigurationException {
 		this.plugin = plugin;
 		for(int i = 1; i<=9; i++) recipesSortedBySize.put(i, new ArrayList<IRecipe>());
 		loadBukkitRecipes();
-		loadFileRecipes();
+		loadCustomRecipes();
+		
+		addMissingRecipes();
 		
 		Collections.shuffle(recipes);
 	}	
 
+	private final BiConsumer<Collection<ItemStack>, ItemStack> REGISTER_SHAPELESS_RECIPE = (ings, result) -> registerRecipe(new IShapelessRecipe(result, ings.stream().map(SerializableItemStack::new).collect(Collectors.toList()), null));
+	
+	private void addMissingRecipes() {
+		if(XMaterial.STRIPPED_ACACIA_LOG.isSupported()) {
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_ACACIA_LOG, 1, XMaterial.STRIPPED_ACACIA_LOG.getData()).build()), new ItemBuilder(XMaterial.ACACIA_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_BIRCH_LOG, 1, XMaterial.STRIPPED_BIRCH_LOG.getData()).build()), new ItemBuilder(XMaterial.BIRCH_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_DARK_OAK_LOG, 1, XMaterial.STRIPPED_DARK_OAK_LOG.getData()).build()), new ItemBuilder(XMaterial.DARK_OAK_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_JUNGLE_LOG, 1, XMaterial.STRIPPED_JUNGLE_LOG.getData()).build()), new ItemBuilder(XMaterial.JUNGLE_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_OAK_LOG, 1, XMaterial.STRIPPED_OAK_LOG.getData()).build()), new ItemBuilder(XMaterial.OAK_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_SPRUCE_LOG, 1, XMaterial.STRIPPED_SPRUCE_LOG.getData()).build()), new ItemBuilder(XMaterial.SPRUCE_PLANKS, 4).build());
+		}
+		
+		if(XMaterial.ACACIA_WOOD.isSupported()) {
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.ACACIA_WOOD, 1, XMaterial.ACACIA_WOOD.getData()).build()), new ItemBuilder(XMaterial.ACACIA_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.BIRCH_WOOD, 1, XMaterial.BIRCH_WOOD.getData()).build()), new ItemBuilder(XMaterial.BIRCH_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.DARK_OAK_WOOD, 1, XMaterial.DARK_OAK_WOOD.getData()).build()), new ItemBuilder(XMaterial.DARK_OAK_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.JUNGLE_WOOD, 1, XMaterial.JUNGLE_WOOD.getData()).build()), new ItemBuilder(XMaterial.JUNGLE_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.OAK_WOOD, 1, XMaterial.OAK_WOOD.getData()).build()), new ItemBuilder(XMaterial.OAK_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.SPRUCE_WOOD, 1, XMaterial.SPRUCE_WOOD.getData()).build()), new ItemBuilder(XMaterial.SPRUCE_PLANKS, 4).build());
+		}
+		
+		if(XMaterial.STRIPPED_ACACIA_WOOD.isSupported()) {
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_ACACIA_WOOD, 1, XMaterial.STRIPPED_ACACIA_WOOD.getData()).build()), new ItemBuilder(XMaterial.ACACIA_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_BIRCH_WOOD, 1, XMaterial.STRIPPED_BIRCH_WOOD.getData()).build()), new ItemBuilder(XMaterial.BIRCH_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_DARK_OAK_WOOD, 1, XMaterial.STRIPPED_DARK_OAK_WOOD.getData()).build()), new ItemBuilder(XMaterial.DARK_OAK_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_JUNGLE_WOOD, 1, XMaterial.STRIPPED_JUNGLE_WOOD.getData()).build()), new ItemBuilder(XMaterial.JUNGLE_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_OAK_WOOD, 1, XMaterial.STRIPPED_OAK_WOOD.getData()).build()), new ItemBuilder(XMaterial.OAK_PLANKS, 4).build());
+			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_SPRUCE_WOOD, 1, XMaterial.STRIPPED_SPRUCE_WOOD.getData()).build()), new ItemBuilder(XMaterial.SPRUCE_PLANKS, 4).build());
+		}
+	}
+	
 	public void shuffle() {
 		Collections.shuffle(recipes);
 	}
 	
-	public void updateRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, String id) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
-		optimize(ingredients);
+	public void updateRecipe(SerializableItemStack result, Map<Integer, SerializableItemStack> ingredients, boolean shaped, String id) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		IRecipe.optimize(ingredients);
 		saveRecipe(result, ingredients, shaped, id);
 		reloadRecipes();
 	}
 	
-	public void createRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, String id) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
-		if(customRecipesName.contains(id)) {
-			System.err.println("Duplicated recipe name: " + id);
+	public void createRecipe(SerializableItemStack result, Map<Integer, SerializableItemStack> ingredients, boolean shaped, String id) throws FileNotFoundException, IOException, InvalidConfigurationException{
+		if(customRecipesByName.containsKey(id)) {
+			plugin.warn("Duplicated recipe name: " + id);
 			return;
 		}
-		optimize(ingredients);
+		IRecipe.optimize(ingredients);
 		saveRecipe(result, ingredients, shaped, id);
 		reloadRecipes();
 	}
 	
 	public boolean exists(String recipeName) {
-		return customRecipesName.contains(recipeName) || customRecipesName.contains(recipeName.replace(" ", "-")) || customRecipesName.contains(recipeName.replace("-", " "));
+		return customRecipesByName.containsKey(recipeName) || customRecipesByName.containsKey(recipeName.replace(" ", "-")) || customRecipesByName.containsKey(recipeName.replace("-", " "));
 	}
 	
-	@SuppressWarnings("deprecation")
-	public void saveRecipe(ItemStack result, CompactMap<Integer, ItemStack> ingredients, boolean shaped, String id) 
-			throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
-		fc.load(file);
+	public void saveRecipe(SerializableItemStack result, Map<Integer, SerializableItemStack> ingredients, boolean shaped, String id) throws IOException, InvalidConfigurationException  {
+		recipeFile.createOrLoad();
 		id = id.replace(" ", "-");
-		fc.set(id + "", null);
-		result = result.clone();
-		if(result.getType().equals(Material.SKULL_ITEM) && result.getData().getData() == 3) {
-			String texture = null;
-			try {
-				texture = IRecipe.getTexure(result);
-			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException
-					| IllegalAccessException e) {
-				e.printStackTrace();
-			}
-			SkullMeta sm = (SkullMeta) result.getItemMeta();
-			if(sm.getOwner() == null) sm.setOwner("Ancash");
-			result.setItemMeta(sm);
-			fc.set(id + ".result", result);
-			if(texture != null) fc.set(id + ".result-texture", texture);
-		} else {
-			fc.set(id + ".result", result);
-		}
-		fc.set(id + ".shaped", shaped);
-		for(Entry<Integer, ItemStack> entry : ingredients.entrySet()) {
-			ItemStack is = entry.getValue().clone();
-			if(is.getType().equals(Material.SKULL_ITEM) && is.getData().getData() == 3) {
-				String texture = null;
-				try {
-					texture = IRecipe.getTexure(is);
-				} catch (NoSuchFieldException | SecurityException | IllegalArgumentException
-						| IllegalAccessException e) {
-					e.printStackTrace();
-				}
-				SkullMeta sm = (SkullMeta) is.getItemMeta();
-				if(sm.getOwner() == null) sm.setOwner("Ancash");
-				is.setItemMeta(sm);
-				fc.set(id + ".ingredients." + entry.getKey(), is);
-				if(texture != null) fc.set(id + ".ingredients." + entry.getKey() + "-texture", texture);
-			} else {
-				fc.set(id + ".ingredients." + entry.getKey(), is);
-			}
-		}
-		fc.save(file);
+		recipeFile.set(id + "", null);
+		recipeFile.set(id + ".result", result.asBase64());
+		recipeFile.set(id + ".shaped", shaped);
+		for(Entry<Integer, SerializableItemStack> entry : ingredients.entrySet()) 
+			recipeFile.set(id + ".ingredients." + entry.getKey(), entry.getValue().asBase64());
+		
+		recipeFile.save();
 	}
 	
-	private void reloadRecipes() throws InvalidConfigurationException, IOException, org.bukkit.configuration.InvalidConfigurationException {
+	private void reloadRecipes() {
 		new BukkitRunnable() {
 			
 			@Override
 			public void run() {
-				System.out.println("Reloading Recipes!");
+				plugin.info("Reloading Recipes!");
 				long now = System.currentTimeMillis();
-				customRecipesName.clear();
 				customRecipes.clear();
 				customRecipesByName.clear();
 				for(int i = 1; i<=9; i++) recipesSortedBySize.put(i, new ArrayList<IRecipe>());
 				loadBukkitRecipes();
 				try {
-					loadFileRecipes();
-				} catch (InvalidConfigurationException | IOException
-						| org.bukkit.configuration.InvalidConfigurationException e) {
-
-				e.printStackTrace();
+					loadCustomRecipes();
+				} catch (IOException | InvalidConfigurationException e) {
+					plugin.severe("Could not load custom recipes from file:");
+					e.printStackTrace();
 				}
 				Collections.shuffle(recipes);
-				System.out.println("Reloaded! " + (System.currentTimeMillis() - now) + " ms");
+				plugin.info("Reloaded! " + (System.currentTimeMillis() - now) + " ms");
 			}
 		}.runTaskAsynchronously(plugin);
 	}
 	
-	private void loadFileRecipes() throws InvalidConfigurationException, IOException, org.bukkit.configuration.InvalidConfigurationException {
-		fc.load(file);
-		for(String key : fc.getKeys(false)) {
-			ItemStack result = fc.getItemStack(key + ".result").clone();
-			if(result == null) {
-				System.err.println("Recipe result cannot be null! " + key);
-				continue;
+	private void loadCustomRecipes() throws IOException, InvalidConfigurationException {
+		plugin.info("Loading custom recipes...");
+		recipeFile.createOrLoad();
+		for(String key : recipeFile.getKeys(false)) {
+			try {
+				registerRecipe(getRecipeFromFile( key));
+				plugin.info("Loaded custom recipe: " + key);
+			} catch (ClassNotFoundException | IOException e) {
+				System.err.println("Could not load recipe:");
+				e.printStackTrace();
 			}
-			IRecipe recipe = getRecipeFromFile(fc, key);
-			registerRecipe(recipe);
 		}
-		fc.save(file);
+		recipeFile.save();
+		plugin.info("Loaded custom recipes!");
 	}
 	
-	public IRecipe getRecipeFromFile(FileConfiguration fc, String key) {
-		ItemStack result = fc.getItemStack(key + ".result").clone();
-		if(result == null) {
-			System.err.println("Recipe result cannot be null! " + key);
-			return null;
-		}
-		if(fc.getString(key + ".result-texture") != null) result = IRecipe.setTexture(result, fc.getString(key + ".result-texture"));
-		CompactMap<Integer, ItemStack> ingredientsMap = new CompactMap<>();
+	public IRecipe getRecipeFromFile(String key) throws ClassNotFoundException, IOException {
+		SerializableItemStack result = SerializableItemStack.fromBase64(recipeFile.getString(key + ".result"));
+
+		Map<Integer, SerializableItemStack> ingredientsMap = new HashMap<>();
 		for(int i = 1; i<=9; i++) {
-			ItemStack temp = fc.getItemStack(key + ".ingredients." + i);
-			if(temp == null) continue;
-			ItemStack ingredient = temp.clone();
-			if(fc.getString(key + ".ingredients." + i + "-texture") != null) ingredient = IRecipe.setTexture(ingredient, fc.getString(key + ".ingredients." + i + "-texture"));
-			ingredientsMap.put(i, ingredient);
+			if(recipeFile.getString(key + ".ingredients." + i) == null) continue;
+			ingredientsMap.put(i, SerializableItemStack.fromBase64(recipeFile.getString(key + ".ingredients." + i)));
 		}
-		if(fc.getBoolean(key + ".shaped")) {	
-			return new IShapedRecipe(ingredientsMap, result, key);
+		if(recipeFile.getBoolean(key + ".shaped")) {	
+			return new IShapedRecipe(result, ingredientsMap, key);
 		} else {
-			return new IShapelessRecipe(result, ingredientsMap.values(), key);
+			return new IShapelessRecipe(result.restore(), ingredientsMap.values(), key);
 		}
 	}
 	
 	private void loadBukkitRecipes() {
-		Iterator<Recipe> recipeIterator = Bukkit.recipeIterator();
-		Recipe recipe = null;
-		while (recipeIterator.hasNext()){
-			recipe = recipeIterator.next();
-			IRecipe irecipe = IRecipe.toIRecipe(recipe);
-			if(irecipe != null)
-				registerRecipe(irecipe);
-		}
+		Bukkit.recipeIterator().forEachRemaining(r -> registerRecipe(IRecipe.toIRecipe(r)));
 	}
 	
 	public boolean registerRecipe(IRecipe recipe) {
-		if(!(recipe instanceof IShapelessRecipe) && !(recipe instanceof IShapedRecipe)) return false;
-		if(recipe.getName() != null && customRecipesName.contains(recipe.getName())) {
+		if(recipe == null) return false;
+		if(recipe.getName() != null && customRecipesByName.containsKey(recipe.getName())) {
 			System.err.println("Duplicated recipe name: " + recipe.getName());
 			return false;
 		}
 		if(recipe.getName() != null) {
 			customRecipes.add(recipe);
 			customRecipesByName.put(recipe.getName(), recipe);
+			recipeSortedByResult.put(recipe.getSerializedResult(), recipe);
 		}
 		recipes.add(recipe);
 		recipesSortedBySize.get(recipe.getIngredientsSize()).add(recipe);
 		return true;
 	}
 	
-	@SuppressWarnings("deprecation")
-	public String itemToString(ItemStack is) {
-		if(is.getType().equals(Material.SKULL_ITEM) && is.getData().getData() == 3) {
-			ItemStack temp = is.clone();
-			SkullMeta sm = (SkullMeta) temp.getItemMeta();
-			sm.setOwner("Ancash");
-			temp.setItemMeta(sm);
-			return temp.toString().replace(", skull-owner=Ancash","");
-		}
-		return is.toString();
+	public IRecipe getRecipeByResult(SerializableItemStack s) {
+		if(s == null) return null;
+		for(Entry<SerializableItemStack, IRecipe> entry : recipeSortedByResult.entrySet()) 
+			if(s.equals(entry.getKey())) return entry.getValue();
+		
+		return null;
+	}
+
+	
+	public IRecipe match(Map<Integer, SerializableItemStack> ingredientsMap) {
+		if(ingredientsMap.isEmpty()) return null;
+		return getRecipe(ingredientsMap);
 	}
 	
-	public IRecipe match(CompactMap<Integer, ItemStack> ingredientsMap, List<IRecipe> possibleRecipes) {
-		optimize(ingredientsMap);
-		if(ingredientsMap.isEmpty()) return null;
-
-		if(possibleRecipes == null) return null;
-
-		if(possibleRecipes.size() == 0) return null;
-		for(IRecipe recipe : possibleRecipes) {
-			if(recipe instanceof IShapedRecipe){
-				if(IRecipe.matchesShaped(ingredientsMap, ((IShapedRecipe) recipe).getIngredientsMap(),
-						possibleRecipes.size() == 1 && !new NBTItem(recipe.getResultWithId()).hasKey("fancycrafting.id"))) {
+	public IRecipe getRecipe(Map<Integer, SerializableItemStack> ingredienstMap) {
+		Collection<SerializableItemStack> ingredientsList = ingredienstMap.values();
+		for(IRecipe recipe : recipesSortedBySize.get(ingredienstMap.size())) {
+			if(recipe instanceof IShapedRecipe) {
+				IShapedRecipe shaped = (IShapedRecipe) recipe;
+				if(shaped.getIngredientsMap().size() != ingredienstMap.size()) continue;
+				if(IRecipe.matchesShaped(shaped.getIngredientsMap(), ingredienstMap)) {
 					return recipe;
 				}
-			}
-			if(recipe instanceof IShapelessRecipe) {
-				if(IRecipe.matchesShapeless(((IShapelessRecipe) recipe).getIngredientsList(), ingredientsMap.values(),
-						possibleRecipes.size() == 1 && !new NBTItem(recipe.getResultWithId()).hasKey("fancycrafting.id"))) {
+			} else if(recipe instanceof IShapelessRecipe) {
+				IShapelessRecipe shapeless = (IShapelessRecipe) recipe;
+				if(shapeless.getIngredients().size() != ingredienstMap.size()) continue;
+				if(IRecipe.matchesShapeless(shapeless.getIngredients(), ingredientsList)) {
 					return recipe;
 				}
 			}
 		}
 		return null;
-	}
-	
-	public IRecipe match(CompactMap<Integer, ItemStack> ingredientsMap) {
-		optimize(ingredientsMap);
-		if(ingredientsMap.isEmpty()) return null;
-		return match(ingredientsMap, getRecipes(ingredientsMap));
-	}
-	
-	public List<IRecipe> getRecipes(CompactMap<Integer, ItemStack> ingredienstMap) {
-		List<IRecipe> recipes = new ArrayList<>();
-		Collection<ItemStack> ingredientsList = ingredienstMap.values();
-		for(IRecipe recipe : recipesSortedBySize.get(ingredienstMap.size())) {
-			if(recipe instanceof IShapedRecipe) {
-				IShapedRecipe shaped = (IShapedRecipe) recipe;
-				if(shaped.getIngredientsMap().size() != ingredienstMap.size()) continue;
-				if(IRecipe.matchesShaped(ingredienstMap, shaped.getIngredientsMap(), true)) {
-					recipes.add(recipe);
-				}
-			} else if(recipe instanceof IShapelessRecipe) {
-				IShapelessRecipe shapeless = (IShapelessRecipe) recipe;
-				if(shapeless.getIngredientsList().size() != ingredienstMap.size()) continue;
-				if(IRecipe.matchesShapeless(shapeless.getIngredientsList(), ingredientsList, true)) {
-					recipes.add(recipe);
-				}
-			}
-		}
-		return recipes;
 	}
 	
 	public IRecipe getCustomRecipe(String name) {
@@ -279,10 +231,10 @@ public class RecipeManager {
 		return customRecipes;
 	}
 
-	public void delete(String fromString) throws FileNotFoundException, IOException, org.bukkit.configuration.InvalidConfigurationException, InvalidConfigurationException {
-		fc.load(file);
-		fc.set(fromString + "", null);
-		fc.save(file);
+	public void delete(String fromString) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		recipeFile.createOrLoad();
+		recipeFile.set(fromString + "", null);
+		recipeFile.save();
 		reloadRecipes();
 	}
 }
