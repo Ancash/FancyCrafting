@@ -1,40 +1,52 @@
 package de.ancash.fancycrafting.recipe;
 
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
 
-import de.ancash.minecraft.SerializableItemStack;
+public class IShapedRecipe extends IRecipe{
 
-public class IShapedRecipe extends IRecipe {
+	private final ItemStack[] cutIngs;
+	private final int size;
+	private final int matrix;
+	
+	public IShapedRecipe(ItemStack[] ings, ItemStack result, String name, UUID uuid) {
+		super(result, name, uuid);
+		IMatrix.optimize(ings);
+		this.cutIngs = IMatrix.cutMatrix(ings, 1);
+		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
+		this.matrix = (int) Math.sqrt(cutIngs.length);
+	}
 
+	public IShapedRecipe(ItemStack[] ings, ItemStack result, String name, boolean vanilla) {
+		super(result, name, vanilla);
+		IMatrix.optimize(ings);
+		this.cutIngs = IMatrix.cutMatrix(ings, 1);
+		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
+		this.matrix = (int) Math.sqrt(cutIngs.length);
+	}
+
+	public List<ItemStack> getIngredients() {
+		return Collections.unmodifiableList(Arrays.asList(cutIngs));
+	}
+	
+	public ItemStack[] getIngredientsArray() {
+		return cutIngs;
+	}
+
+	public ItemStack[] getInMatrix(int m) {
+		return IMatrix.cutMatrix(cutIngs, m);
+	}
+	
 	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) return true;
-		if(!(obj instanceof IShapedRecipe)) return false;
-		return serializableResult.equals(((IShapedRecipe)obj).serializableResult) &&
-				IRecipe.matchesShaped(ingredientsMap, ((IShapedRecipe) obj).getIngredientsMap());
-	}
-	
-	private final Map<Integer, SerializableItemStack> ingredientsMap;
-	
-	public IShapedRecipe(SerializableItemStack result, Map<Integer, SerializableItemStack> ingredientsMap, String id) {
-		super(result.restore(), ingredientsMap.values(), id);
-		this.ingredientsMap = ingredientsMap;
-	}
-	
-	public IShapedRecipe(ItemStack result, Map<Character, ItemStack> ingredientsMap, String[] shapes) {
-		super(result, ingredientsMap.values().stream().filter(entry -> entry != null).map(SerializableItemStack::new).collect(Collectors.toList()), null);
-		this.ingredientsMap = toMap(ingredientsMap, shapes);
+	public int getIngredientsSize() {
+		return size;
 	}
 
-	public Map<Integer, SerializableItemStack> getIngredientsMap() {
-		return ingredientsMap;
-	}
-	
-	@Override
-	public ItemStack getResult() {
-		return result.clone();
+	public int getMatrix() {
+		return matrix;
 	}
 }

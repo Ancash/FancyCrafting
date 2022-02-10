@@ -1,4 +1,6 @@
-perms-using-recipe: false
+perms-for-custom-recipes: false
+perms-for-vanilla-recipes: false
+default-template: 3
 #the item to click to close the inventory
 close:
   type: BARRIER
@@ -14,29 +16,29 @@ workbench:
   # Title of the GUI
   title: 'Crafting Table'
   # Size of the GUI, make sure you don't define slots above the size-1
-  size: 54
+  size: 45
   # Slots in which can be crafted
   crafting-slots:
-  - 10
-  - 11
-  - 12
-  - 19
-  - 20
-  - 21
-  - 28
-  - 29
-  - 30
-  close-slot: 49
+    - 10
+    - 11
+    - 12
+    - 19
+    - 20
+    - 21
+    - 28
+    - 29
+    - 30
+  close-slot: 40
   # Slots in which the state of the craft will be shown (invalid recipe/valid recipe)
   craft-state-slots:
-    - 45
-    - 46
-    - 47
-    - 48
-    - 50
-    - 51
-    - 52
-    - 53
+    - 36
+    - 37
+    - 38
+    - 39
+    - 41
+    - 42
+    - 43
+    - 44
   # Slot in which the crafting result will end up
   result-slot: 24    
 recipe-create-gui:
@@ -48,6 +50,18 @@ recipe-view-gui:
    title: "%r Recipe" #r = recipe name
    close-slot: 40
    back-slot: 39 
+   next:
+      type: ARROW
+      meta:
+         displayname: "§aNext Recipe"
+         lore:
+         - "§7Click to view the next recipe"
+   previous:
+      type: ARROW
+      meta:
+         displayname: "§aPrevious Recipe"
+         lore:
+         - "§7Click to view the previous recipe"
    back:
       commands:
       - "kill %p"
@@ -55,4 +69,4 @@ recipe-view-gui:
       meta:
          displayname: "§c§lBack"
          lore:
-         - "§e§lClick §7to got back"
+         - "§7Click to go back"

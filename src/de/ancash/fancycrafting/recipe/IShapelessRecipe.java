@@ -1,27 +1,47 @@
 package de.ancash.fancycrafting.recipe;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.inventory.ItemStack;
 
-import de.ancash.minecraft.SerializableItemStack;
-
 public class IShapelessRecipe extends IRecipe{
+
+	private final List<ItemStack> ings;
+	private final int matrix;
 	
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) return true;
-		if(!(obj instanceof IShapelessRecipe)) return false;
-		return serializableResult.equals(((IShapelessRecipe)obj).serializableResult) &&
-				IRecipe.matchesShapeless(super.ingredients, ((IShapelessRecipe) obj).getIngredients());
+	public IShapelessRecipe(Collection<ItemStack> ings , ItemStack result, String name, UUID uuid) {
+		super(result, name, uuid);
+		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null).collect(Collectors.toList()));
+		int tmp = 1;
+		while(tmp * tmp < ings.size())
+			tmp++;
+		matrix = tmp;
 	}
 	
-	public IShapelessRecipe(ItemStack result, Collection<SerializableItemStack> ingredients, String id) {
-		super(result, ingredients, id);
+	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, boolean vanilla) {
+		super(result, name, vanilla);
+		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null).collect(Collectors.toList()));
+		int tmp = 1;
+		while(tmp * tmp < ings.size())
+			tmp++;
+		matrix = tmp;
+	}
+	
+	public List<ItemStack> getIngredients() {
+		return ings;
 	}
 
 	@Override
-	public ItemStack getResult() {
-		return result.clone();
+	public int getIngredientsSize() {
+		return ings.size();
+	}
+
+	@Override
+	public int getMatrix() {
+		return matrix;
 	}
 }		

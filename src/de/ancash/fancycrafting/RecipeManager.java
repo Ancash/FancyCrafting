@@ -1,130 +1,97 @@
 package de.ancash.fancycrafting;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.BiConsumer;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.simpleyaml.configuration.file.YamlFile;
-import org.simpleyaml.exceptions.InvalidConfigurationException;
 
+import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
-import de.ancash.minecraft.ItemBuilder;
-import de.ancash.minecraft.SerializableItemStack;
-import de.ancash.minecraft.XMaterial;
+import de.ancash.minecraft.IItemStack;
+import de.ancash.minecraft.ItemStackUtils;
 
 public class RecipeManager {
 	
-	private final YamlFile recipeFile = new YamlFile("plugins/FancyCrafting/recipes.yml");
+	private final File recipeFile = new File("plugins/FancyCrafting/recipes.yml");
+	private final FileConfiguration recipeCfg = YamlConfiguration.loadConfiguration(recipeFile);
 	
 	private final FancyCrafting plugin;
-	private final List<IRecipe> recipes = new ArrayList<IRecipe>();
-	private final Map<Integer, List<IRecipe>> recipesSortedBySize = new HashMap<Integer, List<IRecipe>>();
-	private final Map<SerializableItemStack, IRecipe> recipeSortedByResult = new HashMap<>();
-	private List<IRecipe> customRecipes = new ArrayList<>();
-	private final Map<String, IRecipe> customRecipesByName = new HashMap<>();
+	private final Map<Integer, Set<IRecipe>> customRecipesBySize = new HashMap<Integer, Set<IRecipe>>();
+	private final Map<String, Set<IRecipe>> recipesByName = new HashMap<>();
+	private final Map<Integer, Set<IRecipe>> recipesByResult = new HashMap<>();
 	
 	public RecipeManager(FancyCrafting plugin) throws IOException, InvalidConfigurationException {
 		this.plugin = plugin;
-		for(int i = 1; i<=9; i++) recipesSortedBySize.put(i, new ArrayList<IRecipe>());
+		if(!recipeFile.exists())
+			recipeFile.createNewFile();
 		loadBukkitRecipes();
 		loadCustomRecipes();
-		
-		addMissingRecipes();
-		
-		Collections.shuffle(recipes);
 	}	
-
-	private final BiConsumer<Collection<ItemStack>, ItemStack> REGISTER_SHAPELESS_RECIPE = (ings, result) -> registerRecipe(new IShapelessRecipe(result, ings.stream().map(SerializableItemStack::new).collect(Collectors.toList()), null));
 	
-	private void addMissingRecipes() {
-		if(XMaterial.STRIPPED_ACACIA_LOG.isSupported()) {
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_ACACIA_LOG, 1, XMaterial.STRIPPED_ACACIA_LOG.getData()).build()), new ItemBuilder(XMaterial.ACACIA_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_BIRCH_LOG, 1, XMaterial.STRIPPED_BIRCH_LOG.getData()).build()), new ItemBuilder(XMaterial.BIRCH_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_DARK_OAK_LOG, 1, XMaterial.STRIPPED_DARK_OAK_LOG.getData()).build()), new ItemBuilder(XMaterial.DARK_OAK_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_JUNGLE_LOG, 1, XMaterial.STRIPPED_JUNGLE_LOG.getData()).build()), new ItemBuilder(XMaterial.JUNGLE_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_OAK_LOG, 1, XMaterial.STRIPPED_OAK_LOG.getData()).build()), new ItemBuilder(XMaterial.OAK_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_SPRUCE_LOG, 1, XMaterial.STRIPPED_SPRUCE_LOG.getData()).build()), new ItemBuilder(XMaterial.SPRUCE_PLANKS, 4).build());
-		}
-		
-		if(XMaterial.ACACIA_WOOD.isSupported()) {
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.ACACIA_WOOD, 1, XMaterial.ACACIA_WOOD.getData()).build()), new ItemBuilder(XMaterial.ACACIA_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.BIRCH_WOOD, 1, XMaterial.BIRCH_WOOD.getData()).build()), new ItemBuilder(XMaterial.BIRCH_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.DARK_OAK_WOOD, 1, XMaterial.DARK_OAK_WOOD.getData()).build()), new ItemBuilder(XMaterial.DARK_OAK_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.JUNGLE_WOOD, 1, XMaterial.JUNGLE_WOOD.getData()).build()), new ItemBuilder(XMaterial.JUNGLE_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.OAK_WOOD, 1, XMaterial.OAK_WOOD.getData()).build()), new ItemBuilder(XMaterial.OAK_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.SPRUCE_WOOD, 1, XMaterial.SPRUCE_WOOD.getData()).build()), new ItemBuilder(XMaterial.SPRUCE_PLANKS, 4).build());
-		}
-		
-		if(XMaterial.STRIPPED_ACACIA_WOOD.isSupported()) {
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_ACACIA_WOOD, 1, XMaterial.STRIPPED_ACACIA_WOOD.getData()).build()), new ItemBuilder(XMaterial.ACACIA_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_BIRCH_WOOD, 1, XMaterial.STRIPPED_BIRCH_WOOD.getData()).build()), new ItemBuilder(XMaterial.BIRCH_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_DARK_OAK_WOOD, 1, XMaterial.STRIPPED_DARK_OAK_WOOD.getData()).build()), new ItemBuilder(XMaterial.DARK_OAK_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_JUNGLE_WOOD, 1, XMaterial.STRIPPED_JUNGLE_WOOD.getData()).build()), new ItemBuilder(XMaterial.JUNGLE_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_OAK_WOOD, 1, XMaterial.STRIPPED_OAK_WOOD.getData()).build()), new ItemBuilder(XMaterial.OAK_PLANKS, 4).build());
-			REGISTER_SHAPELESS_RECIPE.accept(Arrays.asList(new ItemBuilder(XMaterial.STRIPPED_SPRUCE_WOOD, 1, XMaterial.STRIPPED_SPRUCE_WOOD.getData()).build()), new ItemBuilder(XMaterial.SPRUCE_PLANKS, 4).build());
-		}
-	}
-	
-	public void shuffle() {
-		Collections.shuffle(recipes);
-	}
-	
-	public void updateRecipe(SerializableItemStack result, Map<Integer, SerializableItemStack> ingredients, boolean shaped, String id) throws FileNotFoundException, IOException, InvalidConfigurationException {
-		IRecipe.optimize(ingredients);
-		saveRecipe(result, ingredients, shaped, id);
+	public void updateRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id) throws IOException, InvalidConfigurationException {
+		IMatrix.optimize(ingredients);
+		ingredients = IMatrix.cutMatrix(ingredients, 1);
+		saveRecipe(result, ingredients, shaped, id, (int) Math.sqrt(ingredients.length));
 		reloadRecipes();
 	}
 	
-	public void createRecipe(SerializableItemStack result, Map<Integer, SerializableItemStack> ingredients, boolean shaped, String id) throws FileNotFoundException, IOException, InvalidConfigurationException{
-		if(customRecipesByName.containsKey(id)) {
-			plugin.warn("Duplicated recipe name: " + id);
-			return;
-		}
-		IRecipe.optimize(ingredients);
-		saveRecipe(result, ingredients, shaped, id);
+	public void createRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id, UUID uuid) throws IOException, InvalidConfigurationException {
+		IMatrix.optimize(ingredients);
+		ingredients = IMatrix.cutMatrix(ingredients, 1);
+		saveRecipe(result, ingredients, shaped, id, (int) Math.sqrt(ingredients.length), uuid);
 		reloadRecipes();
 	}
 	
 	public boolean exists(String recipeName) {
-		return customRecipesByName.containsKey(recipeName) || customRecipesByName.containsKey(recipeName.replace(" ", "-")) || customRecipesByName.containsKey(recipeName.replace("-", " "));
+		return recipesByName.containsKey(recipeName) || recipesByName.containsKey(recipeName.replace(" ", "-")) || recipesByName.containsKey(recipeName.replace("-", " "));
 	}
 	
-	public void saveRecipe(SerializableItemStack result, Map<Integer, SerializableItemStack> ingredients, boolean shaped, String id) throws IOException, InvalidConfigurationException  {
-		recipeFile.createOrLoad();
-		id = id.replace(" ", "-");
-		recipeFile.set(id + "", null);
-		recipeFile.set(id + ".result", result.asBase64());
-		recipeFile.set(id + ".shaped", shaped);
-		for(Entry<Integer, SerializableItemStack> entry : ingredients.entrySet()) 
-			recipeFile.set(id + ".ingredients." + entry.getKey(), entry.getValue().asBase64());
-		
-		recipeFile.save();
+	public void saveRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name, int matrix) throws IOException, InvalidConfigurationException {
+		saveRecipe(result, ingredients, shaped, name, matrix, UUID.randomUUID());
 	}
 	
-	private void reloadRecipes() {
+	public void saveRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name, int matrix, UUID uuid) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		recipeCfg.load(recipeFile);
+		recipeCfg.set(uuid + "", null);
+		recipeCfg.set(uuid + ".name", name);
+		ItemStackUtils.setItemStack(recipeCfg, uuid + ".result", result);
+		recipeCfg.set(uuid + ".shaped", shaped);
+		recipeCfg.set(uuid + ".matrix", matrix);
+		for(int i = 0; i<ingredients.length; i++) 
+			if(ingredients[i] != null)
+				ItemStackUtils.setItemStack(recipeCfg, uuid + ".ingredients." + i, ingredients[i]);
+		recipeCfg.save(recipeFile);
+	}
+	
+	public void reloadRecipes() {
 		new BukkitRunnable() {
 			
 			@Override
 			public void run() {
 				plugin.info("Reloading Recipes!");
 				long now = System.currentTimeMillis();
-				customRecipes.clear();
-				customRecipesByName.clear();
-				for(int i = 1; i<=9; i++) recipesSortedBySize.put(i, new ArrayList<IRecipe>());
+				recipesByName.clear();
+				customRecipesBySize.clear();
+				recipesByResult.clear();
 				loadBukkitRecipes();
 				try {
 					loadCustomRecipes();
@@ -132,7 +99,6 @@ public class RecipeManager {
 					plugin.severe("Could not load custom recipes from file:");
 					e.printStackTrace();
 				}
-				Collections.shuffle(recipes);
 				plugin.info("Reloaded! " + (System.currentTimeMillis() - now) + " ms");
 			}
 		}.runTaskAsynchronously(plugin);
@@ -140,101 +106,105 @@ public class RecipeManager {
 	
 	private void loadCustomRecipes() throws IOException, InvalidConfigurationException {
 		plugin.info("Loading custom recipes...");
-		recipeFile.createOrLoad();
-		for(String key : recipeFile.getKeys(false)) {
+		for(String key : recipeCfg.getKeys(false)) {
 			try {
-				registerRecipe(getRecipeFromFile( key));
-				plugin.info("Loaded custom recipe: " + key);
+				registerRecipe(getRecipeFromFile(key));
+				plugin.info("Loaded custom recipe: " + recipeCfg.getString(key + ".name") + " (" + key + ")");
 			} catch (ClassNotFoundException | IOException e) {
-				System.err.println("Could not load recipe:");
+				System.err.println("Could not load recipe w/ key " + key + ":");
 				e.printStackTrace();
 			}
 		}
-		recipeFile.save();
 		plugin.info("Loaded custom recipes!");
 	}
 	
 	public IRecipe getRecipeFromFile(String key) throws ClassNotFoundException, IOException {
-		SerializableItemStack result = SerializableItemStack.fromBase64(recipeFile.getString(key + ".result"));
-
-		Map<Integer, SerializableItemStack> ingredientsMap = new HashMap<>();
-		for(int i = 1; i<=9; i++) {
-			if(recipeFile.getString(key + ".ingredients." + i) == null) continue;
-			ingredientsMap.put(i, SerializableItemStack.fromBase64(recipeFile.getString(key + ".ingredients." + i)));
-		}
-		if(recipeFile.getBoolean(key + ".shaped")) {	
-			return new IShapedRecipe(result, ingredientsMap, key);
+		ItemStack result = ItemStackUtils.getItemStack(recipeCfg, key + ".result");
+		String name = recipeCfg.getString(key + ".name");
+		int matrix = recipeCfg.getInt(key + ".matrix");
+		ItemStack[] ingredients = new ItemStack[matrix * matrix];
+		for(int i = 0; i<ingredients.length; i++) 
+			if(recipeCfg.getItemStack(key + ".ingredients." + i) != null) 
+				ingredients[i] = ItemStackUtils.getItemStack(recipeCfg, key + ".ingredients." + i);
+				
+		if(recipeCfg.getBoolean(key + ".shaped")) {	
+			return new IShapedRecipe(ingredients, result, name, UUID.fromString(key));
 		} else {
-			return new IShapelessRecipe(result.restore(), ingredientsMap.values(), key);
+			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, UUID.fromString(key));
 		}
 	}
 	
 	private void loadBukkitRecipes() {
-		Bukkit.recipeIterator().forEachRemaining(r -> registerRecipe(IRecipe.toIRecipe(r)));
+		Bukkit.recipeIterator().forEachRemaining(r -> registerRecipe(IRecipe.fromVanillaRecipe(r)));
 	}
 	
 	public boolean registerRecipe(IRecipe recipe) {
-		if(recipe == null) return false;
-		if(recipe.getName() != null && customRecipesByName.containsKey(recipe.getName())) {
-			System.err.println("Duplicated recipe name: " + recipe.getName());
+		if(recipe == null)
+			return false;
+		if(recipe.getResult() == null || recipe.getResult().getType().equals(Material.AIR)) {
+			plugin.warn("Invalid recipe '" + recipe);
 			return false;
 		}
-		if(recipe.getName() != null) {
-			customRecipes.add(recipe);
-			customRecipesByName.put(recipe.getName(), recipe);
-			recipeSortedByResult.put(recipe.getSerializedResult(), recipe);
+		int hash = new IItemStack(recipe.getResult()).hashCode();
+		String name = recipe.getName().replace(" ", "-");
+		
+		recipesByName.computeIfAbsent(name, k -> new HashSet<>());
+		recipesByName.get(name).add(recipe);
+		recipesByResult.computeIfAbsent(hash, k -> new HashSet<>());
+		recipesByResult.get(hash).add(recipe);
+		
+		if(!recipe.isVanilla()) {
+			customRecipesBySize.computeIfAbsent(recipe.getIngredientsSize(), k -> new HashSet<>());
+			customRecipesBySize.get(recipe.getIngredientsSize()).add(recipe);
 		}
-		recipes.add(recipe);
-		recipesSortedBySize.get(recipe.getIngredientsSize()).add(recipe);
 		return true;
 	}
-	
-	public IRecipe getRecipeByResult(SerializableItemStack s) {
-		if(s == null) return null;
-		for(Entry<SerializableItemStack, IRecipe> entry : recipeSortedByResult.entrySet()) 
-			if(s.equals(entry.getKey())) return entry.getValue();
-		
-		return null;
-	}
 
-	
-	public IRecipe match(Map<Integer, SerializableItemStack> ingredientsMap) {
-		if(ingredientsMap.isEmpty()) return null;
-		return getRecipe(ingredientsMap);
-	}
-	
-	public IRecipe getRecipe(Map<Integer, SerializableItemStack> ingredienstMap) {
-		Collection<SerializableItemStack> ingredientsList = ingredienstMap.values();
-		for(IRecipe recipe : recipesSortedBySize.get(ingredienstMap.size())) {
+	public IRecipe matchRecipe(ItemStack[] ingredients, Player player) {
+		IRecipe vanilla = matchVanillaRecipe(ingredients, player);
+		if(vanilla != null)
+			return vanilla;
+		
+		Collection<ItemStack> ingredientsList = Arrays.asList(ingredients).stream().filter(i -> i != null).collect(Collectors.toList());
+		if(!customRecipesBySize.containsKey(ingredientsList.size())) return null;
+		for(IRecipe recipe : customRecipesBySize.get(ingredientsList.size())) {
 			if(recipe instanceof IShapedRecipe) {
 				IShapedRecipe shaped = (IShapedRecipe) recipe;
-				if(shaped.getIngredientsMap().size() != ingredienstMap.size()) continue;
-				if(IRecipe.matchesShaped(shaped.getIngredientsMap(), ingredienstMap)) {
-					return recipe;
+				try {
+					if(IRecipe.matchesShaped(shaped.getIngredientsArray(), ingredients))
+						return recipe;
+				} catch(NullPointerException npe) {
+					
 				}
 			} else if(recipe instanceof IShapelessRecipe) {
 				IShapelessRecipe shapeless = (IShapelessRecipe) recipe;
-				if(shapeless.getIngredients().size() != ingredienstMap.size()) continue;
-				if(IRecipe.matchesShapeless(shapeless.getIngredients(), ingredientsList)) {
+				if(IRecipe.matchesShapeless(shapeless.getIngredients().toArray(new ItemStack[shapeless.getIngredientsSize()]), ingredients))
 					return recipe;
-				}
 			}
 		}
 		return null;
 	}
 	
-	public IRecipe getCustomRecipe(String name) {
-		return customRecipesByName.get(name);
+	public Stream<IRecipe> getCustomRecipes() {
+		return customRecipesBySize.values().stream().flatMap(Collection::stream);
 	}
 	
-	public List<IRecipe> getCustomRecipes() {
-		return customRecipes;
+	public IRecipe matchVanillaRecipe(ItemStack[] ingredients, Player player) {
+		return FancyCrafting.getVanillaRecipeMatcher(player).matchVanillaRecipe(ingredients);
+	}
+	
+	public Set<IRecipe> getRecipeByName(String name) {
+		return recipesByName.get(name);
 	}
 
-	public void delete(String fromString) throws FileNotFoundException, IOException, InvalidConfigurationException {
-		recipeFile.createOrLoad();
-		recipeFile.set(fromString + "", null);
-		recipeFile.save();
+	public void delete(String recipeName) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		recipeCfg.load(recipeFile);
+		recipeCfg.set(recipeName + "", null);
+		recipeCfg.save(recipeFile);
 		reloadRecipes();
+	}
+
+	public Set<IRecipe> getRecipeByResult(IItemStack iItemStack) {
+		return recipesByResult.get(iItemStack.hashCode());
 	}
 }
