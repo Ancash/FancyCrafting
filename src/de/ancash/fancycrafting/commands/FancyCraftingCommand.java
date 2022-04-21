@@ -44,30 +44,32 @@ public class FancyCraftingCommand implements CommandExecutor{
 		
 		switch (command.toLowerCase()) {
 		case "open":
-			if(args.length == 2) {
-				int type = -1;
+			if(args.length == 3) {
+				int width = -1;
+				int height = -1;
 				try {
-					type = Integer.valueOf(args[1]);
+					width = Integer.valueOf(args[1]);
+					height = Integer.valueOf(args[2]);
 				} catch(NumberFormatException nfe) {
-					player.sendMessage("§cInvalid number: " + args[1]);
+					player.sendMessage("§cInvalid number: " + args[1] + " & " + args[2]);
 					return true;
 				}
-				if(type < 1 || type > 6) {
-					player.sendMessage("§cInvalid number: " + args[1]);
+				if(width < 1 || width > 8 || height < 1 || height > 6) {
+					player.sendMessage("§cInvalid number: " + args[1] + " & " + args[2]);
 					return true;
 				}
-				if(!player.hasPermission("fancycrafting.open." + type)) {
+				if(!player.hasPermission("fancycrafting.open." + width + "x" + height)) {
 					sender.sendMessage("§cYou do not have permission to do that!");
 					return true;
 				}
-				new ICraftingGUI(plugin, player, CraftingTemplate.get(type));
+				new ICraftingGUI(plugin, player, CraftingTemplate.get(width, height));
 				return true;
 			}
 			if(!player.hasPermission("fancycrafting.open.default")) {
 				sender.sendMessage("§cYou do not have permission to do that!");
 				return true;
 			}
-			new ICraftingGUI(plugin, player, CraftingTemplate.get(plugin.getDefaultTemplate()));
+			new ICraftingGUI(plugin, player, CraftingTemplate.get(plugin.getDefaultTemplateWidth(), plugin.getDefaultTemplateHeight()));
 			return true;
 		case "create":
 			if(!player.hasPermission("fancycrafting.create")) {

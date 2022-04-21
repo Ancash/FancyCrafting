@@ -20,6 +20,7 @@ import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
+import de.ancash.fancycrafting.recipe.VanillaRecipeMatcher;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.InventoryUtils;
 import de.ancash.minecraft.XMaterial;
@@ -35,6 +36,7 @@ public abstract class AbstractCraftingGUI extends IGUI{
 	protected final AbstractCraftingGUI instance = this;
 	protected IRecipe currentRecipe;
 	protected final CraftingTemplate template;
+	protected IMatrix<ItemStack> matrix;
 	
 	public AbstractCraftingGUI(FancyCrafting pl, Player player, CraftingTemplate template) {
 		super(player.getUniqueId(), template.getSize(), template.getTitle());
@@ -64,28 +66,16 @@ public abstract class AbstractCraftingGUI extends IGUI{
 			}
 		}.runTask(pl);
 	}
-
-	public ItemStack[] getOptimizedCraftingItems() {
-		ItemStack[] ings = getCraftingItems();
-		IMatrix.optimize(ings);
-		return IMatrix.cutMatrix(ings, 1);
-	}
 	
-	public ItemStack[] getCraftingItems() {
+	public IMatrix<ItemStack> getCraftingItems() {
 		ItemStack[] ings = new ItemStack[template.getCraftingSlots().length];
 		for(int i = 0; i<ings.length; i++)
 			ings[i] = getItem(template.getCraftingSlots()[i]);
-		return ings;
+		matrix = new IMatrix<>(ings, template.getWidth(), template.getHeight());
+		matrix.optimize();
+		return matrix;
 	}
-	
-	public IRecipe matchVanillaRecipe() {
-		return matchVanillaRecipe(getCraftingItems());
-	}
-	
-	public IRecipe matchVanillaRecipe(ItemStack[] ings) {
-		return FancyCrafting.matchVanillaRecipe(IMatrix.cutMatrix(ings, 3), player);
-	}
-	
+
 	@Override
 	public void onInventoryClick(InventoryClickEvent event) {
 		if(event.getClickedInventory() == null) {
@@ -121,10 +111,7 @@ public abstract class AbstractCraftingGUI extends IGUI{
 		} else if(workbenchInv && event.getSlot() == template.getResultSlot()) {
 			event.setCancelled(true);
 			if(getCurrentRecipe() != null) {
-				ItemStack[] craftingItems = getCraftingItems();
-				int[] moves = IMatrix.optimize(craftingItems);
-				craftingItems = IMatrix.cutMatrix(craftingItems, 1);
-				craftItem(event, currentRecipe, craftingItems, moves);
+				craftItem(event, currentRecipe, new int[] {matrix.getLeftMoves(), matrix.getUpMoves()});
 			}
 		}
 		checkRecipe();
@@ -163,8 +150,8 @@ public abstract class AbstractCraftingGUI extends IGUI{
 			
 			@Override
 			public void run() {
-				ItemStack[] ings = getOptimizedCraftingItems();
-				IRecipe recipe = pl.getRecipeManager().matchRecipe(ings, player);
+				ItemStack[] ings = getCraftingItems().getArray();
+				IRecipe recipe = pl.getRecipeManager().matchRecipe(ings, matrix.getWidth(), matrix.getHeight(), instance);
 				if(recipe == null) {
 					currentRecipe = null;
 					onNoRecipeMatch();
@@ -204,7 +191,11 @@ public abstract class AbstractCraftingGUI extends IGUI{
 		return template.getResultSlot();
 	}
 	
-	private void craftItem(InventoryClickEvent event, IRecipe recipe, ItemStack[] ingredients, int[] moves) {
+	public VanillaRecipeMatcher getVanillaRecipeMatcher() {
+		return FancyCrafting.getVanillaRecipeMatcher(player);
+	}
+	
+	private void craftItem(InventoryClickEvent event, IRecipe recipe, int[] moves) {
 		
 		if(recipe == null) {
 			checkRecipe();
@@ -214,10 +205,10 @@ public abstract class AbstractCraftingGUI extends IGUI{
 		if(event.getAction().equals(InventoryAction.PICKUP_ALL)) {
 			if(cursor != null && cursor.getType().equals(XMaterial.AIR.parseMaterial())) {
 				event.setCancelled(false);
-				collectIngredients(event.getInventory(), recipe, ingredients, moves);
+				collectIngredients(event.getInventory(), recipe);
 			}
 		} else if(event.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
-			int toAdd = shiftCollectIngredients(event.getInventory(), recipe, ingredients, moves);
+			int toAdd = shiftCollectIngredients(event.getInventory(), recipe);
 			ItemStack results = recipe.getResult().clone();
 			for(int i = 0; i<toAdd; i++)
 				event.getWhoClicked().getInventory().addItem(results);
@@ -225,7 +216,7 @@ public abstract class AbstractCraftingGUI extends IGUI{
 			if(new IItemStack(cursor).isSimilar(recipe.getResult())) {
 				if(cursor.getAmount() + recipe.getResult().getAmount() <= cursor.getMaxStackSize()) {
 					cursor.setAmount(cursor.getAmount() + recipe.getResult().getAmount());
-					collectIngredients(event.getInventory(), recipe, ingredients, moves);
+					collectIngredients(event.getInventory(), recipe);
 				}
 			}
 		}
@@ -233,20 +224,20 @@ public abstract class AbstractCraftingGUI extends IGUI{
 		player.updateInventory();
 	}
 	
-	private int shiftCollectIngredients(Inventory inventory, IRecipe recipe, ItemStack[] ingredients, int[] moves) {
+	private int shiftCollectIngredients(Inventory inventory, IRecipe recipe) {
 		int space = InventoryUtils.getFreeSpaceExact(getInventoryContents(player.getInventory()), recipe.getResult());
 		if(space <= 0) {
 			return 0;
 		}
 		int shiftSize = space / recipe.getResult().getAmount();
 		if(recipe instanceof IShapedRecipe) {
-			for (int i = 0; i < ingredients.length; ++i) {
-				if(ingredients[i] == null) continue;
+			for (int i = 0; i < matrix.getArray().length; ++i) {
+				if(matrix.getArray()[i] == null) continue;
 				if(recipe.isVanilla()) {
-					shiftSize = Math.min(shiftSize, ingredients[i].getAmount());
+					shiftSize = Math.min(shiftSize, matrix.getArray()[i].getAmount());
 				} else {
 					IItemStack serializedIngredient = new IItemStack(((IShapedRecipe)recipe).getIngredientsArray()[i]);
-					IItemStack serializedCompareTo = new IItemStack(ingredients[i]);
+					IItemStack serializedCompareTo = new IItemStack(matrix.getArray()[i]);
 					if (!serializedIngredient.isSimilar(serializedCompareTo)) continue;
 		            shiftSize = Math.min(shiftSize, (int)(serializedCompareTo.getOriginal().getAmount() / serializedIngredient.getOriginal().getAmount()));
 				}
@@ -255,7 +246,7 @@ public abstract class AbstractCraftingGUI extends IGUI{
 		if(recipe instanceof IShapelessRecipe) {
 			for(ItemStack ingredient : ((IShapelessRecipe) recipe).getIngredients()) {
 				if(ingredient == null) continue;
-				for(ItemStack currentItem : ingredients) {
+				for(ItemStack currentItem : matrix.getArray()) {
 					if(currentItem == null) continue;
 					if(recipe.isVanilla())
 						shiftSize = Math.min(shiftSize, currentItem.getAmount());
@@ -266,7 +257,7 @@ public abstract class AbstractCraftingGUI extends IGUI{
 			}
 		}
 		if(recipe instanceof IShapedRecipe) {
-			collectShaped(inventory, (IShapedRecipe) recipe, ingredients, moves, shiftSize);
+			collectShaped(inventory, (IShapedRecipe) recipe, shiftSize);
 		} else if(recipe instanceof IShapelessRecipe) {
 			collectShapeless(inventory, (IShapelessRecipe) recipe, shiftSize);
 		}
@@ -295,27 +286,25 @@ public abstract class AbstractCraftingGUI extends IGUI{
 		}
 	}
 	
-	private void collectShaped(Inventory inventory, IShapedRecipe shaped, ItemStack[] ingredients, int[] moves, int multiplicator) {
+	private void collectShaped(Inventory inventory, IShapedRecipe shaped, int multiplicator) {
+		int base = template.getWidth() * matrix.getUpMoves() + matrix.getLeftMoves();
 		for(int i = 0; i<shaped.getIngredientsArray().length; i++) {
 			if(shaped.getIngredientsArray()[i] == null) continue;
-			ItemStack ing = ingredients[i];
+			ItemStack ing = matrix.getArray()[i];
 			ItemStack orig = shaped.getIngredientsArray()[i];
-			int s = ing.getAmount() - orig.getAmount() * multiplicator;
-			int base = (int) (moves[0] + moves[1] * Math.sqrt(template.getCraftingSlots().length));
-			int left = i % shaped.getMatrix();
-			int up = i / shaped.getMatrix();
-			int slot = template.getCraftingSlots()[(int) (base + left + up * Math.sqrt(template.getCraftingSlots().length))];
-			if(s > 0)
-				ing.setAmount(s);
+			int amount = ing.getAmount() - orig.getAmount() * multiplicator;
+			int slot = template.getCraftingSlots()[base + i / shaped.getWidth() * template.getWidth() + i % shaped.getWidth()];
+			if(amount > 0)
+				ing.setAmount(amount);
 			else {
 				setItem(null, slot);
 			}
 		}
 	}
 	
-	private void collectIngredients(Inventory inventory, IRecipe recipe, ItemStack[] ingredients, int[] moves) {
+	private void collectIngredients(Inventory inventory, IRecipe recipe) {
 		if(recipe instanceof IShapedRecipe) 
-			collectShaped(inventory, (IShapedRecipe) recipe, ingredients, moves, 1);
+			collectShaped(inventory, (IShapedRecipe) recipe, 1);
 		if(recipe instanceof IShapelessRecipe) 
 			collectShapeless(inventory, (IShapelessRecipe) recipe, 1);
 	}

@@ -18,10 +18,10 @@ import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import de.ancash.fancycrafting.gui.AbstractCraftingGUI;
 import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
@@ -47,17 +47,13 @@ public class RecipeManager {
 		loadCustomRecipes();
 	}	
 	
-	public void updateRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id) throws IOException, InvalidConfigurationException {
-		IMatrix.optimize(ingredients);
-		ingredients = IMatrix.cutMatrix(ingredients, 1);
-		saveRecipe(result, ingredients, shaped, id, (int) Math.sqrt(ingredients.length));
+	public void updateRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id, int width, int height) throws IOException, InvalidConfigurationException {
+		saveRecipe(result, ingredients, shaped, id, width, height);
 		reloadRecipes();
 	}
 	
-	public void createRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id, UUID uuid) throws IOException, InvalidConfigurationException {
-		IMatrix.optimize(ingredients);
-		ingredients = IMatrix.cutMatrix(ingredients, 1);
-		saveRecipe(result, ingredients, shaped, id, (int) Math.sqrt(ingredients.length), uuid);
+	public void createRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id, UUID uuid, int width, int height) throws IOException, InvalidConfigurationException {
+		saveRecipe(result, ingredients, shaped, id, uuid, width, height);
 		reloadRecipes();
 	}
 	
@@ -65,17 +61,21 @@ public class RecipeManager {
 		return recipesByName.containsKey(recipeName) || recipesByName.containsKey(recipeName.replace(" ", "-")) || recipesByName.containsKey(recipeName.replace("-", " "));
 	}
 	
-	public void saveRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name, int matrix) throws IOException, InvalidConfigurationException {
-		saveRecipe(result, ingredients, shaped, name, matrix, UUID.randomUUID());
+	public void saveRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name, int width, int height) throws IOException, InvalidConfigurationException {
+		saveRecipe(result, ingredients, shaped, name, UUID.randomUUID(), height, width);
 	}
 	
-	public void saveRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name, int matrix, UUID uuid) throws FileNotFoundException, IOException, InvalidConfigurationException {
+	public void saveRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name, UUID uuid, int width, int height) throws FileNotFoundException, IOException, InvalidConfigurationException {
+		IMatrix<ItemStack> matrix = new IMatrix<>(ingredients, width, height);
+		matrix.optimize();
+		ingredients = matrix.getArray();
 		recipeCfg.load(recipeFile);
 		recipeCfg.set(uuid + "", null);
 		recipeCfg.set(uuid + ".name", name);
 		ItemStackUtils.setItemStack(recipeCfg, uuid + ".result", result);
 		recipeCfg.set(uuid + ".shaped", shaped);
-		recipeCfg.set(uuid + ".matrix", matrix);
+		recipeCfg.set(uuid + ".width", matrix.getWidth());
+		recipeCfg.set(uuid + ".height", matrix.getHeight());
 		for(int i = 0; i<ingredients.length; i++) 
 			if(ingredients[i] != null)
 				ItemStackUtils.setItemStack(recipeCfg, uuid + ".ingredients." + i, ingredients[i]);
@@ -121,17 +121,28 @@ public class RecipeManager {
 	public IRecipe getRecipeFromFile(String key) throws ClassNotFoundException, IOException {
 		ItemStack result = ItemStackUtils.getItemStack(recipeCfg, key + ".result");
 		String name = recipeCfg.getString(key + ".name");
-		int matrix = recipeCfg.getInt(key + ".matrix");
-		ItemStack[] ingredients = new ItemStack[matrix * matrix];
+		ItemStack[] ingredients = new ItemStack[getWidth(key) * getHeight(key)];
 		for(int i = 0; i<ingredients.length; i++) 
 			if(recipeCfg.getItemStack(key + ".ingredients." + i) != null) 
 				ingredients[i] = ItemStackUtils.getItemStack(recipeCfg, key + ".ingredients." + i);
 				
 		if(recipeCfg.getBoolean(key + ".shaped")) {	
-			return new IShapedRecipe(ingredients, result, name, UUID.fromString(key));
+			return new IShapedRecipe(ingredients, getWidth(key), getHeight(key), result, name, UUID.fromString(key));
 		} else {
 			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, UUID.fromString(key));
 		}
+	}
+	
+	private int getWidth(String path) {
+		if(!recipeCfg.contains(path + ".width"))
+			return recipeCfg.getInt(path + ".matrix");
+		return recipeCfg.getInt(path + ".width");
+	}
+	
+	private int getHeight(String path) {
+		if(!recipeCfg.contains(path + ".height"))
+			return recipeCfg.getInt(path + ".matrix");
+		return recipeCfg.getInt(path + ".height");
 	}
 	
 	private void loadBukkitRecipes() {
@@ -160,21 +171,23 @@ public class RecipeManager {
 		return true;
 	}
 
-	public IRecipe matchRecipe(ItemStack[] ingredients, Player player) {
-		IRecipe vanilla = matchVanillaRecipe(ingredients, player);
+	public IRecipe matchRecipe(ItemStack[] ingredients, int width, int height, AbstractCraftingGUI gui) {
+		IRecipe vanilla = matchVanillaRecipe(ingredients, width, height, gui);
 		if(vanilla != null)
 			return vanilla;
 		
 		Collection<ItemStack> ingredientsList = Arrays.asList(ingredients).stream().filter(i -> i != null).collect(Collectors.toList());
-		if(!customRecipesBySize.containsKey(ingredientsList.size())) return null;
+		if(!customRecipesBySize.containsKey(ingredientsList.size()))
+			return null;
+
 		for(IRecipe recipe : customRecipesBySize.get(ingredientsList.size())) {
 			if(recipe instanceof IShapedRecipe) {
 				IShapedRecipe shaped = (IShapedRecipe) recipe;
 				try {
-					if(IRecipe.matchesShaped(shaped.getIngredientsArray(), ingredients))
+					if(IRecipe.matchesShaped(shaped, ingredients, width, height))
 						return recipe;
 				} catch(NullPointerException npe) {
-					
+					npe.printStackTrace();
 				}
 			} else if(recipe instanceof IShapelessRecipe) {
 				IShapelessRecipe shapeless = (IShapelessRecipe) recipe;
@@ -189,8 +202,8 @@ public class RecipeManager {
 		return customRecipesBySize.values().stream().flatMap(Collection::stream);
 	}
 	
-	public IRecipe matchVanillaRecipe(ItemStack[] ingredients, Player player) {
-		return FancyCrafting.getVanillaRecipeMatcher(player).matchVanillaRecipe(ingredients);
+	public IRecipe matchVanillaRecipe(ItemStack[] ingredients, int width, int height, AbstractCraftingGUI gui) {
+		return gui.getVanillaRecipeMatcher().matchVanillaRecipe(new IMatrix<>(ingredients, width, height));
 	}
 	
 	public Set<IRecipe> getRecipeByName(String name) {

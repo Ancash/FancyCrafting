@@ -36,8 +36,10 @@ public abstract class IRecipe {
 		else 
 			this.name = name;
 	}
+		
+	public abstract int getHeight();
 	
-	public abstract int getMatrix();
+	public abstract int getWidth();
 	
 	public abstract int getIngredientsSize();
 	
@@ -53,18 +55,15 @@ public abstract class IRecipe {
 		return name;
 	}
 
-	public static boolean matchesShaped(ItemStack[] origs, ItemStack[] ings) {
-		IMatrix.optimize(origs);
-		IMatrix.optimize(ings);
-		origs = IMatrix.cutMatrix(origs, 1);
-		ings = IMatrix.cutMatrix(ings, 1);
-		if(origs.length != ings.length) 
+	public static boolean matchesShaped(IShapedRecipe recipe, ItemStack[] ings, int width, int height) {
+		if(recipe.getWidth() != width || recipe.getHeight() != height) 
 			return false;
-		for(int i = 0; i<origs.length; i++) {
-			if((origs[i] == null) != (ings[i] == null))
+		for(int i = 0; i<ings.length; i++) {
+			if((recipe.getIngredientsArray()[i] == null) != (ings[i] == null))
 				return false;
-			if(origs[i] == null) continue;
-			if(!new IItemStack(origs[i]).isSimilar(ings[i]) || ings[i].getAmount() < origs[i].getAmount()) return false;
+			if(ings[i] == null) continue;
+			if(!new IItemStack(recipe.getIngredientsArray()[i]).isSimilar(ings[i]) || ings[i].getAmount() < recipe.getIngredientsArray()[i].getAmount())
+				return false;
 		}
 		return true;
 	}
@@ -102,7 +101,7 @@ public abstract class IRecipe {
 					for(int b = 0; b<str.length(); b++)
 						ings[a * 3 + b] = s.getIngredientMap().get(str.charAt(b));
 				}
-				r = new IShapedRecipe(ings, v.getResult(), null, true);
+				r = new IShapedRecipe(ings, 3, 3, v.getResult(), null, true);
 			} else if(v instanceof ShapelessRecipe) {
 				ShapelessRecipe s = (ShapelessRecipe) v;
 				r = new IShapelessRecipe(s.getIngredientList(), v.getResult(), null, true);

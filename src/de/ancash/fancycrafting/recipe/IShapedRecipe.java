@@ -9,36 +9,36 @@ import org.bukkit.inventory.ItemStack;
 
 public class IShapedRecipe extends IRecipe{
 
-	private final ItemStack[] cutIngs;
+	private final IMatrix<ItemStack> matrix;
 	private final int size;
-	private final int matrix;
 	
-	public IShapedRecipe(ItemStack[] ings, ItemStack result, String name, UUID uuid) {
+	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, UUID uuid) {
 		super(result, name, uuid);
-		IMatrix.optimize(ings);
-		this.cutIngs = IMatrix.cutMatrix(ings, 1);
+		this.matrix = new IMatrix<>(ings, width, height);
+		matrix.optimize();
 		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
-		this.matrix = (int) Math.sqrt(cutIngs.length);
 	}
 
-	public IShapedRecipe(ItemStack[] ings, ItemStack result, String name, boolean vanilla) {
+	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, boolean vanilla) {
 		super(result, name, vanilla);
-		IMatrix.optimize(ings);
-		this.cutIngs = IMatrix.cutMatrix(ings, 1);
-		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
-		this.matrix = (int) Math.sqrt(cutIngs.length);
+		this.matrix = new IMatrix<>(ings, width, height);
+		matrix.optimize();
+		this.size = (int) Arrays.asList(matrix.getArray()).stream().filter(i -> i != null).count();
 	}
 
 	public List<ItemStack> getIngredients() {
-		return Collections.unmodifiableList(Arrays.asList(cutIngs));
+		return Collections.unmodifiableList(Arrays.asList(matrix.getArray()));
 	}
 	
 	public ItemStack[] getIngredientsArray() {
-		return cutIngs;
+		return matrix.getArray();
 	}
 
-	public ItemStack[] getInMatrix(int m) {
-		return IMatrix.cutMatrix(cutIngs, m);
+	public ItemStack[] getInMatrix(int width, int height) {
+		matrix.cut(width, height);
+		ItemStack[] temp = matrix.getArray();
+		matrix.optimize();
+		return temp;
 	}
 	
 	@Override
@@ -46,7 +46,11 @@ public class IShapedRecipe extends IRecipe{
 		return size;
 	}
 
-	public int getMatrix() {
-		return matrix;
+	public int getWidth() {
+		return matrix.getWidth();
+	}
+	
+	public int getHeight() {
+		return matrix.getHeight();
 	}
 }

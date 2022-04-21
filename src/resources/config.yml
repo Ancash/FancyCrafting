@@ -1,6 +1,7 @@
 perms-for-custom-recipes: false
 perms-for-vanilla-recipes: false
-default-template: 3
+default-template-width: 3
+default-template-height: 3
 #the item to click to close the inventory
 close:
   type: BARRIER

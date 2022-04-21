@@ -1,5 +1,5 @@
 name: FancyCrafting
-version: 4.2.0
+version: 4.2.1
 main: de.ancash.fancycrafting.FancyCrafting
 depend: [ILibrary]
 
@@ -10,6 +10,7 @@ commands:
       usage:
       - "§aFancyCrafting Commands:"
       - "§7/fc open (open the crafting gui)"
+      - "§7/fc open <1-8> <1-6>"
       - "§7/fc create (create a new recipe)"
       - "§7/fc edit (edit custom recipes)"
       - "§7/fc view (view all custom recipes)"

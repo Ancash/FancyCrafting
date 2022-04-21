@@ -46,21 +46,21 @@ public class RecipeViewGUI extends IGUI{
 	private final Player player;
 	
 	public RecipeViewGUI(FancyCrafting pl, Player player, IRecipe recipe) {
-		super(player.getUniqueId(), CraftingTemplate.get(recipe.getMatrix()).getSize(), recipe.getName());
+		super(player.getUniqueId(), CraftingTemplate.get(recipe.getWidth(), recipe.getHeight()).getSize(), recipe.getName());
 		this.plugin = pl;
 		this.player = player;
 		for(int i = 0; i<getSize(); i++)
 			setItem(pl.getBackgroundItem(), i);
-		for(int i : CraftingTemplate.get(recipe.getMatrix()).getCraftingSlots())
+		for(int i : CraftingTemplate.get(recipe.getWidth(), recipe.getHeight()).getCraftingSlots())
 			setItem(null, i);
-		setItem(null, CraftingTemplate.get(recipe.getMatrix()).getResultSlot());
+		setItem(null, CraftingTemplate.get(recipe.getWidth(), recipe.getHeight()).getResultSlot());
 		IGUIManager.register(this, getId());
 		openRecipe(recipe);
 		player.openInventory(getInventory());
 	}
 	
 	public void openRecipe(IRecipe recipe) {
-		CraftingTemplate template = CraftingTemplate.get(recipe.getMatrix());
+		CraftingTemplate template = CraftingTemplate.get(recipe.getWidth(), recipe.getHeight());
 		if(getSize() != template.getSize()) {
 			newInventory(recipe.getName(), template.getSize());
 			for(int i = 0; i<getSize(); i++)
@@ -73,7 +73,7 @@ public class RecipeViewGUI extends IGUI{
 		setItem(recipe.getResult(), template.getResultSlot());
 		if(recipe instanceof IShapedRecipe) {
 			IShapedRecipe shaped = (IShapedRecipe) recipe;
-			ItemStack[] ings = shaped.getInMatrix((int) Math.sqrt(template.getCraftingSlots().length));
+			ItemStack[] ings = shaped.getInMatrix(template.getWidth(), template.getHeight());
 			for(int i = 0; i<ings.length; i++)
 				setItem(ings[i], template.getCraftingSlots()[i]);
 		}

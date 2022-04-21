@@ -15,25 +15,19 @@ public class VanillaRecipeMatcher {
 		icw = ICraftingManager.getSingleton().newInstance(player);
 	}
 	
-	public IRecipe matchVanillaRecipe(ItemStack[] items) {
-		if(items.length > 9) {
-			IMatrix.optimize(items);
-			items = IMatrix.cutMatrix(items, 3);
-			if(items.length != 9) return null;
-		}
-		
-		while(items.length < 9) {
-			int om = (int) Math.sqrt(items.length);
-			int nm = om + 1;
-			ItemStack[] temp = new ItemStack[nm * nm];
-			for(int c = 0; c<om; c++) 
-				for(int r = 0; r<om; r++)
-					temp[c * nm + r]  = items[c * om + r];
-			items = temp;
+	public IContainerWorkbench getContainerWorkbench() {
+		return icw;
+	}
+	
+	public IRecipe matchVanillaRecipe(IMatrix<ItemStack> matrix) {
+		if(matrix.getArray().length != 9) {
+			matrix.cut(3, 3);
+			if(matrix.getArray().length != 9) 
+				return null;
 		}
 		
 		for(int i = 0; i<9; i++)
-			icw.setItem(i, items[i]);
+			icw.setItem(i, matrix.getArray()[i]);
 		Recipe r = icw.getCurrentRecipe();
 		for(int i = 0; i<9; i++)
 			icw.setItem(i, null);

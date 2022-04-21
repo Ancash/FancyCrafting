@@ -14,7 +14,6 @@ import org.bukkit.inventory.ItemStack;
 
 import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
-import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
@@ -28,10 +27,10 @@ public class RecipeEditGUI extends IGUI implements IRecipeProducer{
 	
 	private final IRecipe edit;
 	private final FancyCrafting plugin;
-	private final CraftingTemplate template = CraftingTemplate.get(6);
+	private final CraftingTemplate template = CraftingTemplate.get(8, 6);
 	
 	public RecipeEditGUI(FancyCrafting pl, Player player, IRecipe recipe) {
-		super(player.getUniqueId(), CraftingTemplate.get(6).getSize(), "Edit recipe: " + recipe.getName());
+		super(player.getUniqueId(), CraftingTemplate.get(8, 6).getSize(), "Edit recipe: " + recipe.getName());
 		if(recipe.isVanilla())
 			throw new IllegalArgumentException("Cannot edit vanilla recipe!");
 		this.edit = recipe;
@@ -48,7 +47,7 @@ public class RecipeEditGUI extends IGUI implements IRecipeProducer{
 		setItem(SAVE, template.getSaveSlot());
 		if(recipe instanceof IShapedRecipe) {
 			IShapedRecipe shaped = (IShapedRecipe) recipe;
-			ItemStack[] ings = shaped.getInMatrix(6);
+			ItemStack[] ings = shaped.getInMatrix(8, 6);
 			for(int i = 0; i<ings.length; i++) 
 				if(ings[i] != null)
 					setItem(ings[i], template.getCraftingSlots()[i]);
@@ -120,9 +119,7 @@ public class RecipeEditGUI extends IGUI implements IRecipeProducer{
 					return;
 				}
 				try {
-					IMatrix.optimize(ings);
-					ings = IMatrix.cutMatrix(ings, 1);
-					plugin.getRecipeManager().saveRecipe(result, ings, isShaped, edit.getName(), (int) Math.sqrt(ings.length), edit.getUUID());
+					plugin.getRecipeManager().saveRecipe(result, ings, isShaped, edit.getName(), edit.getUUID(), 8, 6);
 					event.getWhoClicked().sendMessage("§aEdited §r" + edit.getName());
 					plugin.getRecipeManager().reloadRecipes();
 				} catch (IOException | InvalidConfigurationException e) {

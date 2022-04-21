@@ -42,7 +42,8 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 	private RecipeManager recipeManager;
 	private boolean permsForCustomRecipes;
 	private boolean permsForVanillaRecipes;
-	private int defaultTemplate;
+	private int defaultTemplateWidth;
+	private int defaultTemplateHeight;
 	
 	private ItemStack backItem;
 	private ItemStack closeItem;
@@ -89,24 +90,38 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 		if(!new File("plugins/FancyCrafting/recipes.yml").exists()) 
 			new File("plugins/FancyCrafting/recipes.yml").createNewFile();
 		info("Loading crafting templates:");
-		for(int i = 1; i<= 6; i++) {
-			File craftingTemplateFile = new File("plugins/FancyCrafting/crafting-" + i + "x" + i + ".yml");
-			if(!craftingTemplateFile.exists())
-				FileUtils.copyInputStreamToFile(getResource("resources/crafting-" + i +"x" + i + ".yml"), craftingTemplateFile);
-			FileConfiguration craftingTemplateConfig = YamlConfiguration.loadConfiguration(craftingTemplateFile);
-			CraftingTemplate.add(this, new CraftingTemplate(craftingTemplateConfig.getString("title")
-					, craftingTemplateConfig.getInt("size")
-					, craftingTemplateConfig.getInt("result-slot")
-					, craftingTemplateConfig.getInt("close-slot")
-					, craftingTemplateConfig.getInt("back-slot")
-					, craftingTemplateConfig.getInt("prev-slot")
-					, craftingTemplateConfig.getInt("next-slot")
-					, craftingTemplateConfig.getInt("edit-slot")
-					, craftingTemplateConfig.getInt("save-slot")
-					, craftingTemplateConfig.getInt("delete-slot")
-					, craftingTemplateConfig.getInt("recipe-type-slot")
-					, craftingTemplateConfig.getIntegerList("crafting-slots").stream().mapToInt(Integer::intValue).toArray()
-					, craftingTemplateConfig.getIntegerList("craft-state-slots").stream().mapToInt(Integer::intValue).toArray()), i);
+		for(int width = 1; width<=8; width++) {
+			for(int height = 1; height<=6; height++) {
+				try {
+					File craftingTemplateFile = new File("plugins/FancyCrafting/crafting-" + width + "x" + height + ".yml");
+					if(!craftingTemplateFile.exists()) {
+						if(getResource("resources/crafting-" + width +"x" + height + ".yml") == null)
+							throw new NullPointerException();
+						FileUtils.copyInputStreamToFile(getResource("resources/crafting-" + width +"x" + height + ".yml"), craftingTemplateFile);
+					}
+					FileConfiguration craftingTemplateConfig = YamlConfiguration.loadConfiguration(craftingTemplateFile);
+					CraftingTemplate.add(this, new CraftingTemplate(craftingTemplateConfig.getString("title")
+							, width
+							, height
+							, craftingTemplateConfig.getInt("size")
+							, craftingTemplateConfig.getInt("result-slot")
+							, craftingTemplateConfig.getInt("close-slot")
+							, craftingTemplateConfig.getInt("back-slot")
+							, craftingTemplateConfig.getInt("prev-slot")
+							, craftingTemplateConfig.getInt("next-slot")
+							, craftingTemplateConfig.getInt("edit-slot")
+							, craftingTemplateConfig.getInt("save-slot")
+							, craftingTemplateConfig.getInt("delete-slot")
+							, craftingTemplateConfig.getInt("recipe-type-slot")
+							, craftingTemplateConfig.getIntegerList("crafting-slots").stream().mapToInt(Integer::intValue).toArray()
+							, craftingTemplateConfig.getIntegerList("craft-state-slots").stream().mapToInt(Integer::intValue).toArray())
+							, width
+							, height);
+					info(String.format("Loaded %dx%d crafting template", width, height));
+				} catch(Exception ex) {
+					warn(String.format("Could not load %dx%d crafting template!", width, height));
+				}
+			}
 		}
 		info("Crafting templates loaded!");
 	}
@@ -130,11 +145,12 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 		closeItem = ItemStackUtils.get(config, "close");
 		prevItem = ItemStackUtils.get(config, "recipe-view-gui.previous");
 		nextItem = ItemStackUtils.get(config, "recipe-view-gui.next");
-		defaultTemplate = config.getInt("default-template");
+		defaultTemplateWidth = config.getInt("default-template-width");
+		defaultTemplateHeight = config.getInt("default-template-height");
 		createRecipeTitle = config.getString("recipe-create-gui.title");
 		viewRecipeTitle = config.getString("recipe-view-gui.title");
 		backCommands = Collections.unmodifiableList(config.getStringList("recipe-view-gui.back.commands"));
-		info("Default crafting template is " + defaultTemplate + "x" + defaultTemplate);
+		info("Default crafting template is " + defaultTemplateWidth + "x" + defaultTemplateWidth);
 	}
 	
 	@EventHandler
@@ -165,10 +181,6 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 	
 	public static VanillaRecipeMatcher getVanillaRecipeMatcher(Player p) {
 		return singleton.recipeMatcher.get(p.getUniqueId());
-	}
-	
-	public static IRecipe matchVanillaRecipe(ItemStack[] ings, Player p) {
-		return singleton.recipeManager.matchVanillaRecipe(ings, p);
 	}
 	
 	public static boolean registerRecipe(IRecipe recipe) {
@@ -227,7 +239,11 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 		return prevItem;
 	}
 
-	public int getDefaultTemplate() {
-		return defaultTemplate;
+	public int getDefaultTemplateWidth() {
+		return defaultTemplateWidth;
+	}
+	
+	public int getDefaultTemplateHeight() {
+		return defaultTemplateHeight;
 	}
 }

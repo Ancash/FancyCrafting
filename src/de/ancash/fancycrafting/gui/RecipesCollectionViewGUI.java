@@ -31,7 +31,7 @@ public class RecipesCollectionViewGUI {
 
 	public void openRecipe(int i) {
 		IRecipe recipe = recipes.get(i);
-		CraftingTemplate template = CraftingTemplate.get(recipe.getMatrix());
+		CraftingTemplate template = CraftingTemplate.get(recipe.getWidth(), recipe.getHeight());
 		gui.openRecipe(recipe);
 		gui.addInventoryItem(new InventoryItem(gui, pl.getNextItem(), template.getNextSlot(), new Clickable() {
 			

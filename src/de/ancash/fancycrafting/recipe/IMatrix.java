@@ -1,106 +1,162 @@
 package de.ancash.fancycrafting.recipe;
 
+
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
-import org.bukkit.inventory.ItemStack;
+public class IMatrix<E> {
+	
+	private final Class<E> clazz;
+	private E[] array;
+	private int width;
+	private int height;
+	private int leftMoves = 0;
+	private int upMoves = 0;
+	
+	@SuppressWarnings("unchecked")
+	public IMatrix(E[] array, int width, int height) {
+		this.clazz = (Class<E>) array.getClass().getComponentType();
+		this.array = array;
+		this.width = width;
+		this.height = height;
+	}
+	
+	public boolean cut(int newWidth, int newHeight) {
+		optimize();
+		if(height > newHeight || width > newWidth) return false;
+		E[] newArray = newArray(newHeight * newWidth);
+		for(int a = 0; a<height; a++)
+			for(int b = 0; b<width; b++)
+				newArray[a * newWidth + b] = array[a * width + b];
+		this.array = newArray;
+		this.leftMoves = newWidth - width;
+		this.upMoves = newHeight - height;
+		this.height = newHeight;
+		this.width = newWidth;
+		return true;
+	}
+	
+	public void print() {
+		for(int a = 0; a<height; a++) {
+			for(int b = 0; b<width; b++)
+				System.out.print(array[a * width + b] == null ? "0 " : "1 ");
+			System.out.println();
+		}
+	}
+	
+	public void optimize() {
+		while(moveLeft()) {}	
+		while(moveUp()) {} 
+		while(cutRight()) {}
+		while(cutDown()) {}
+	}
+	
+	public boolean cutRight() {
+		if(!canMoveRight() || width == 1) 
+			return false;
+		E[] temp = newArray(height * (width - 1));
+		for(int a = 0; a<height; a++)
+			for(int b = 0; b<width - 1; b++)
+				temp[a * (width - 1) + b] = array[a * width + b];
+		array = temp;
+		width--;
+		return true;
+	}
+	
+	public boolean cutDown() {
+		if(!canMoveDown() || height == 1)
+			return false;
+		E[] temp = newArray(width * (height - 1));
+		for(int a = 0; a<height - 1; a++)
+			for(int b = 0; b<width; b++)
+				temp[a * width + b] = array[a * width + b];
+		array = temp;
+		height--;
+		return true;
+	}
+	
+	public boolean canMoveDown() {
+		for(int i = 0; i<width; i++)
+			if(array[width * height - 1 - i] != null)
+				return false;
+		return true;
+	}
+	
+	public boolean moveUp() {
+		if(!canMoveUp() || height == 1) 
+			return false; 
+		array = Arrays.copyOfRange(array, width, array.length);
+		height--;
+		upMoves++;
+		return true;
+	}
+	
+	public boolean moveLeft() {
+		if(!canMoveLeft() || width == 1) 
+			return false;
+		E[] temp = newArray(array.length - height);
+		for(int a = 0; a<height; a++)
+			for(int b = 1; b<width; b++)
+				temp[a * (width - 1) + b - 1] = array[a * width + b];
+		this.array = temp;
+		width--;
+		leftMoves++;
+		return true;
+	}
+	
+	public boolean canMoveRight() {
+		for(int i = 1; i<=height; i++)
+			if(array[i * width - 1] != null)
+				return false;
+		return true;
+	}
+	
+	public boolean canMoveUp() {
+		return canMoveUpNTimes(1);
+	}
+	
+	public boolean canMoveUpNTimes(int n) {
+		for(int a = 0; a<n; a++)
+			for(int i = 0; i<width; i++)
+				if(array[i + a * width] != null) 
+					return false;
+		return true;
+	}
+	
+	public boolean canMoveLeft() {
+		return canMoveLeftNTimes(1);
+	}
+	
+	public boolean canMoveLeftNTimes(int n) {
+		for(int a = 0; a<n; a++)
+			for(int i = 0; i<height; i++)
+				if(array[i * width + a] != null)
+					return false;
+		return true;
+	}
+	
+	public E[] getArray() {
+		return array;
+	}
+	
+	public int getHeight() {
+		return height;
+	}
+	
+	public int getWidth() {
+		return width;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private E[] newArray(int cap) {
+		return (E[]) Array.newInstance(clazz, cap);
+	}
 
-public final class IMatrix {
-	
-	public static ItemStack[] cutMatrix(ItemStack[] ings, int max) {
-		if(!checkPerfectSquare(ings.length))
-			return ings;
-		if(ings.length == max * max)
-			return ings;
-		if(ings.length > max * max)
-			return cutDown(ings, max);
-		return cutUp(ings, max);
+	public int getLeftMoves() {
+		return leftMoves;
 	}
-	
-	private static ItemStack[] cutUp(ItemStack[] ings, int max) {
-		int omx = (int) Math.sqrt(ings.length);
-		int nmx = omx + 1;
-		ItemStack[] i = ings;
-		while(i.length != max * max) {
-			ItemStack[] temp = new ItemStack[nmx * nmx];
-			for(int col = 0; col<omx; col++) 
-				for(int row = 0; row<omx; row++)
-					temp[col * nmx + row]  = i[col * omx + row];
-			i = temp;
-			omx = (int) Math.sqrt(i.length);
-			nmx = omx + 1;
-		}
-		return i;
+
+	public int getUpMoves() {
+		return upMoves;
 	}
-	
-	private static ItemStack[] cutDown(ItemStack[] ings, int max) {
-		int size;
-		while(true) {
-			size = (int) Math.sqrt(ings.length);
-			if(size <= 1 || size - 1 < max) return ings;
-			int fr = 0;
-			int fd = 0;
-			for(int i = 0; i<ings.length; i++) {
-				if(ings[i] != null &&  i % size == size - 1)
-					return ings;
-				if(ings[i] != null &&  i >= size * size - size)
-					return ings;
-			}
-			if(fr == size -1 || fd == size - 1) 
-				return ings;
-			ItemStack[] temp = new ItemStack[(size - 1) * (size - 1)];
-			for(int h = 0; h<size - 1; h++)
-				for(int w = 0; w<size - 1; w++)
-					temp[h * size + w - h] = ings[h * size + w];
-			ings = temp;
-		}
-	}
-	
-	public static int[] optimize(ItemStack[] ings) {
-		int[] moves = new int[] {0, 0};
-		if(!checkPerfectSquare(ings.length))
-			return moves;
-		if(!Arrays.asList(ings).stream().filter(i -> i != null).findAny().isPresent()) return moves;
-		int size = (int) Math.sqrt(ings.length);
-		while(canMoveToLeft(ings, size)) {
-			moveToLeft(ings, size);
-			moves[0]++;
-		}
-		while(canMoveUp(ings, size)) {
-			moveUp(ings, size);
-			moves[1]++;
-		}
-		return moves;
-	}
-	
-	private static void moveUp(ItemStack[] ings, int size) {
-		for(int i = size; i < size * size; i++) {
-			ings[i - size] = ings[i];
-			ings[i] = null;
-		}
-	}
-	
-	private static void moveToLeft(ItemStack[] ings, int size) {
-		for(int h = 0; h<size; h++)
-			for(int w = 1; w<size; w++) {
-				ings[h * size + w - 1] = ings[h * size + w];
-				ings[h * size + w] = null;
-			}
-	}
-	
-	private static boolean canMoveUp(ItemStack[] ings, int size) {
-		for(int i = 0; i<size; i++)
-			if(ings[i] != null) return false;
-		return true;
-	}
-	
-	private static boolean canMoveToLeft(ItemStack[] ings, int size) {
-		for(int i = 0; i<size; i++)
-			if(ings[i * size] != null) return false;
-		return true;
-	}
-	
-	public static boolean checkPerfectSquare(double x) { 
-		double sq = Math.sqrt(x); 
-		return ((sq - Math.floor(sq)) == 0); 
-    } 
 }

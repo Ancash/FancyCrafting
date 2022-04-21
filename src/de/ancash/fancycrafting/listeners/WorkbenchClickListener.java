@@ -24,6 +24,6 @@ public class WorkbenchClickListener implements Listener{
 		if(event.getClickedBlock() == null) return;
 		if(!event.getClickedBlock().getType().equals(XMaterial.CRAFTING_TABLE.parseMaterial())) return;
 		event.setCancelled(true);
-		new ICraftingGUI(plugin, event.getPlayer(), CraftingTemplate.get(plugin.getDefaultTemplate()));
+		new ICraftingGUI(plugin, event.getPlayer(), CraftingTemplate.get(plugin.getDefaultTemplateWidth(), plugin.getDefaultTemplateHeight()));
 	}
 }

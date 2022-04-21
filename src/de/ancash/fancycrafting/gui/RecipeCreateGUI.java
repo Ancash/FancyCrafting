@@ -28,8 +28,8 @@ public class RecipeCreateGUI extends IGUI implements IRecipeProducer{
 	private final String recipeName;
 	
 	public RecipeCreateGUI(FancyCrafting pl, Player player, String name) {
-		super(player.getUniqueId(), CraftingTemplate.get(6).getSize(), pl.getCreateRecipeTitle());
-		this.template = CraftingTemplate.get(6);
+		super(player.getUniqueId(), CraftingTemplate.get(8, 6).getSize(), pl.getCreateRecipeTitle());
+		this.template = CraftingTemplate.get(8, 6);
 		for(int i = 0; i<getSize(); i++)
 			setItem(pl.getBackgroundItem(), i);
 		for(int i : template.getCraftingSlots())
@@ -105,7 +105,7 @@ public class RecipeCreateGUI extends IGUI implements IRecipeProducer{
 					return;
 				}
 				try {
-					plugin.getRecipeManager().createRecipe(result, ings, isShaped, recipeName, UUID.randomUUID());
+					plugin.getRecipeManager().createRecipe(result, ings, isShaped, recipeName, UUID.randomUUID(), 8, 6);
 					event.getWhoClicked().sendMessage("§aCreated new recipe!");
 				} catch (IOException | InvalidConfigurationException e) {
 					event.getWhoClicked().sendMessage("§cSomething went wrong while saving: " + e);
