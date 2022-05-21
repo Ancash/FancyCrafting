@@ -4,14 +4,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -21,7 +21,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import de.ancash.fancycrafting.gui.AbstractCraftingGUI;
 import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
@@ -35,6 +34,7 @@ public class RecipeManager {
 	private final FileConfiguration recipeCfg = YamlConfiguration.loadConfiguration(recipeFile);
 	
 	private final FancyCrafting plugin;
+	private final Set<IRecipe> customRecipes = new HashSet<>();
 	private final Map<Integer, Set<IRecipe>> customRecipesBySize = new HashMap<Integer, Set<IRecipe>>();
 	private final Map<String, Set<IRecipe>> recipesByName = new HashMap<>();
 	private final Map<Integer, Set<IRecipe>> recipesByResult = new HashMap<>();
@@ -87,8 +87,9 @@ public class RecipeManager {
 			
 			@Override
 			public void run() {
-				plugin.info("Reloading Recipes!");
+				plugin.getLogger().info("Reloading Recipes!");
 				long now = System.currentTimeMillis();
+				customRecipes.clear();
 				recipesByName.clear();
 				customRecipesBySize.clear();
 				recipesByResult.clear();
@@ -96,26 +97,25 @@ public class RecipeManager {
 				try {
 					loadCustomRecipes();
 				} catch (IOException | InvalidConfigurationException e) {
-					plugin.severe("Could not load custom recipes from file:");
-					e.printStackTrace();
+					plugin.getLogger().log(Level.SEVERE, "Could not load custom recipes from file", e);
 				}
-				plugin.info("Reloaded! " + (System.currentTimeMillis() - now) + " ms");
+				plugin.getLogger().info("Reloaded! " + (System.currentTimeMillis() - now) + " ms");
 			}
 		}.runTaskAsynchronously(plugin);
 	}
 	
 	private void loadCustomRecipes() throws IOException, InvalidConfigurationException {
-		plugin.info("Loading custom recipes...");
+		plugin.getLogger().info("Loading custom recipes...");
 		for(String key : recipeCfg.getKeys(false)) {
 			try {
 				registerRecipe(getRecipeFromFile(key));
-				plugin.info("Loaded custom recipe: " + recipeCfg.getString(key + ".name") + " (" + key + ")");
+				plugin.getLogger().info("Loaded custom recipe: " + recipeCfg.getString(key + ".name") + " (" + key + ")");
 			} catch (ClassNotFoundException | IOException e) {
 				System.err.println("Could not load recipe w/ key " + key + ":");
 				e.printStackTrace();
 			}
 		}
-		plugin.info("Loaded custom recipes!");
+		plugin.getLogger().info("Loaded custom recipes!");
 	}
 	
 	public IRecipe getRecipeFromFile(String key) throws ClassNotFoundException, IOException {
@@ -153,7 +153,7 @@ public class RecipeManager {
 		if(recipe == null)
 			return false;
 		if(recipe.getResult() == null || recipe.getResult().getType().equals(Material.AIR)) {
-			plugin.warn("Invalid recipe '" + recipe);
+			plugin.getLogger().warning("Invalid recipe '" + recipe);
 			return false;
 		}
 		int hash = new IItemStack(recipe.getResult()).hashCode();
@@ -167,47 +167,35 @@ public class RecipeManager {
 		if(!recipe.isVanilla()) {
 			customRecipesBySize.computeIfAbsent(recipe.getIngredientsSize(), k -> new HashSet<>());
 			customRecipesBySize.get(recipe.getIngredientsSize()).add(recipe);
+			customRecipes.add(recipe);
 		}
 		return true;
 	}
-
-	public IRecipe matchRecipe(ItemStack[] ingredients, int width, int height, AbstractCraftingGUI gui) {
-		IRecipe vanilla = matchVanillaRecipe(ingredients, width, height, gui);
-		if(vanilla != null)
-			return vanilla;
-		
-		Collection<ItemStack> ingredientsList = Arrays.asList(ingredients).stream().filter(i -> i != null).collect(Collectors.toList());
-		if(!customRecipesBySize.containsKey(ingredientsList.size()))
-			return null;
-
-		for(IRecipe recipe : customRecipesBySize.get(ingredientsList.size())) {
-			if(recipe instanceof IShapedRecipe) {
-				IShapedRecipe shaped = (IShapedRecipe) recipe;
-				try {
-					if(IRecipe.matchesShaped(shaped, ingredients, width, height))
-						return recipe;
-				} catch(NullPointerException npe) {
-					npe.printStackTrace();
-				}
-			} else if(recipe instanceof IShapelessRecipe) {
-				IShapelessRecipe shapeless = (IShapelessRecipe) recipe;
-				if(IRecipe.matchesShapeless(shapeless.getIngredients().toArray(new ItemStack[shapeless.getIngredientsSize()]), ingredients))
-					return recipe;
-			}
-		}
+	
+	public IRecipe matchRecipe(IMatrix<ItemStack> matrix, Set<IRecipe> recipes) {
+		int size = (int) Arrays.asList(matrix.getArray()).stream().filter(item -> item != null).count();
+		for(IRecipe recipe : recipes.stream().filter(recipe -> recipe.getIngredientsSize() == size).collect(Collectors.toSet())) 	
+			if(recipe instanceof IShapedRecipe && IRecipe.matchesShaped((IShapedRecipe) recipe, matrix.getArray(), matrix.getWidth(), matrix.getHeight()))
+				return recipe;
+			else if(recipe instanceof IShapelessRecipe && IRecipe.matchesShapeless(recipe.getIngredients().stream().filter(item -> item != null).toArray(ItemStack[]::new), matrix.getArray()))
+				return recipe;
 		return null;
 	}
 	
-	public Stream<IRecipe> getCustomRecipes() {
-		return customRecipesBySize.values().stream().flatMap(Collection::stream);
-	}
-	
-	public IRecipe matchVanillaRecipe(ItemStack[] ingredients, int width, int height, AbstractCraftingGUI gui) {
-		return gui.getVanillaRecipeMatcher().matchVanillaRecipe(new IMatrix<>(ingredients, width, height));
+	public Set<IRecipe> getCustomRecipes() {
+		return Collections.unmodifiableSet(customRecipes);
 	}
 	
 	public Set<IRecipe> getRecipeByName(String name) {
-		return recipesByName.get(name);
+		if(recipesByName.get(name) == null)
+			return null;
+		return Collections.unmodifiableSet(recipesByName.get(name));
+	}
+	
+	public Set<IRecipe> getCustomRecipesBySize(int i) {
+		if(customRecipesBySize.get(i) == null)
+			return null;
+		return Collections.unmodifiableSet(customRecipesBySize.get(i));
 	}
 
 	public void delete(String recipeName) throws FileNotFoundException, IOException, InvalidConfigurationException {
@@ -218,6 +206,8 @@ public class RecipeManager {
 	}
 
 	public Set<IRecipe> getRecipeByResult(IItemStack iItemStack) {
-		return recipesByResult.get(iItemStack.hashCode());
+		if(recipesByResult.get(iItemStack.hashCode()) == null)
+			return null;
+		return Collections.unmodifiableSet(recipesByResult.get(iItemStack.hashCode()));
 	}
 }

@@ -4,7 +4,7 @@ package de.ancash.fancycrafting.recipe;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 
-public class IMatrix<E> {
+public class IMatrix<E> implements Cloneable{
 	
 	private final Class<E> clazz;
 	private E[] array;
@@ -19,6 +19,14 @@ public class IMatrix<E> {
 		this.array = array;
 		this.width = width;
 		this.height = height;
+	}
+	
+	@Override
+	protected IMatrix<E> clone() {
+		IMatrix<E> clone = new IMatrix<>(array, width, height);
+		clone.leftMoves = leftMoves;
+		clone.upMoves = upMoves;
+		return clone;
 	}
 	
 	public boolean cut(int newWidth, int newHeight) {
@@ -52,7 +60,7 @@ public class IMatrix<E> {
 	}
 	
 	public boolean cutRight() {
-		if(!canMoveRight() || width == 1) 
+		if(width == 0 || !canMoveRight()) 
 			return false;
 		E[] temp = newArray(height * (width - 1));
 		for(int a = 0; a<height; a++)
@@ -64,7 +72,7 @@ public class IMatrix<E> {
 	}
 	
 	public boolean cutDown() {
-		if(!canMoveDown() || height == 1)
+		if(height == 0 || !canMoveDown())
 			return false;
 		E[] temp = newArray(width * (height - 1));
 		for(int a = 0; a<height - 1; a++)

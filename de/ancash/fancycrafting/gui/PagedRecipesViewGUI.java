@@ -24,7 +24,7 @@ public class PagedRecipesViewGUI extends IGUI{
 	private final FancyCrafting pl;
 	
 	public PagedRecipesViewGUI(FancyCrafting pl, Player player, List<IRecipe> recipes) {
-		super(player.getUniqueId(), 45, "Custom Recipes");
+		super(player.getUniqueId(), 45, pl.getCustomRecipesTitle());
 		this.recipes = recipes;
 		int mp = 0;
 		while(mp * 36 < recipes.size()) mp++;

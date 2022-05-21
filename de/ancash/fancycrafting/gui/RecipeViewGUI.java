@@ -122,6 +122,7 @@ public class RecipeViewGUI extends IGUI{
 			if(getInventory().getItem(event.getSlot()) == null || getInventory().getItem(event.getSlot()).getType().equals(XMaterial.AIR.parseMaterial())) return;
 			Set<IRecipe> recipes = plugin.getRecipeManager().getRecipeByResult(new IItemStack(event.getView().getBottomInventory().getItem(event.getSlot())));
 			if(recipes != null && !recipes.isEmpty()) {
+				closeAll();
 				RecipeViewGUI.viewRecipe(plugin, recipes, player);
 				return;
 			}

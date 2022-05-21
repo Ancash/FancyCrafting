@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 
 import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
-import de.ancash.fancycrafting.gui.ICraftingGUI;
+import de.ancash.fancycrafting.gui.CraftingWorkspaceGUI;
 import de.ancash.fancycrafting.gui.PagedRecipesViewGUI;
 import de.ancash.fancycrafting.gui.RecipeCreateGUI;
 import de.ancash.fancycrafting.gui.RecipeEditGUI;
@@ -62,14 +62,14 @@ public class FancyCraftingCommand implements CommandExecutor{
 					sender.sendMessage("§cYou do not have permission to do that!");
 					return true;
 				}
-				new ICraftingGUI(plugin, player, CraftingTemplate.get(width, height));
+				new CraftingWorkspaceGUI(plugin, player, CraftingTemplate.get(width, height));
 				return true;
 			}
 			if(!player.hasPermission("fancycrafting.open.default")) {
 				sender.sendMessage("§cYou do not have permission to do that!");
 				return true;
 			}
-			new ICraftingGUI(plugin, player, CraftingTemplate.get(plugin.getDefaultTemplateWidth(), plugin.getDefaultTemplateHeight()));
+			new CraftingWorkspaceGUI(plugin, player, CraftingTemplate.get(plugin.getDefaultTemplateWidth(), plugin.getDefaultTemplateHeight()));
 			return true;
 		case "create":
 			if(!player.hasPermission("fancycrafting.create")) {
@@ -102,7 +102,7 @@ public class FancyCraftingCommand implements CommandExecutor{
 			break;
 		case "view":
 			if(args.length == 1 && sender.hasPermission("fancycrafting.admin.view")) {
-				new PagedRecipesViewGUI(plugin, player, plugin.getRecipeManager().getCustomRecipes().collect(Collectors.toList()));
+				new PagedRecipesViewGUI(plugin, player, new ArrayList<>(plugin.getRecipeManager().getCustomRecipes()));
 				return true;
 			}
 			if(args.length == 2) {

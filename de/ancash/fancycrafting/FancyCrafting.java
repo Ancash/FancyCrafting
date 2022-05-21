@@ -2,11 +2,17 @@ package de.ancash.fancycrafting;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -20,26 +26,26 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.ancash.libs.org.apache.commons.io.FileUtils;
+import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
+
 import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.VanillaRecipeMatcher;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.Metrics;
-import de.ancash.minecraft.XMaterial;
 import de.ancash.minecraft.updatechecker.UpdateCheckSource;
 import de.ancash.minecraft.updatechecker.UpdateChecker;
-import de.ancash.misc.FileUtils;
 
 public class FancyCrafting extends JavaPlugin implements Listener{
 	
-	private final ItemStack invalid = XMaterial.RED_STAINED_GLASS_PANE.parseItem().clone();
-	private final ItemStack valid = XMaterial.GREEN_STAINED_GLASS_PANE.parseItem().clone();
-	private ItemStack background;
+	private final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	private static FancyCrafting singleton;
 	private final Map<UUID, VanillaRecipeMatcher> recipeMatcher = new HashMap<>();
 	
 	private RecipeManager recipeManager;
+	private boolean checkRecipesAsync;
 	private boolean permsForCustomRecipes;
 	private boolean permsForVanillaRecipes;
 	private int defaultTemplateWidth;
@@ -49,9 +55,18 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 	private ItemStack closeItem;
 	private ItemStack prevItem;
 	private ItemStack nextItem;
-	
+	private ItemStack invalid;
+	private ItemStack valid;
+	private ItemStack background;
+	private ItemStack shapeless;
+	private ItemStack shaped;
+	private ItemStack save;
+	private ItemStack edit;
+	private ItemStack delete ;
 	private String createRecipeTitle;
+	private String customRecipesTitle;
 	private String viewRecipeTitle;
+	private String editRecipeTitle;
 	private List<String> backCommands;
 	
 	private FileConfiguration config;
@@ -59,16 +74,10 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 	public void onEnable() {
 		singleton = this;
 		try {
-			try {
-				new Metrics(this, 14152, true);
-				checkForUpdates();
-			} catch(Throwable th) {
-				warn("Please update ILibrary to v3.2.1 or higher!");
-			}
+			new Metrics(this, 14152, true);
+			checkForUpdates();
 			loadFiles();
 			config = YamlConfiguration.loadConfiguration(new File("plugins/FancyCrafting/config.yml"));
-			permsForCustomRecipes = config.getBoolean("perms-for-custom-recipes");
-			permsForVanillaRecipes = config.getBoolean("perms-for-vanilla-recipes");
 			recipeManager = new RecipeManager(this);
 			loadConfig();
 			Bukkit.getPluginManager().registerEvents(this, singleton);
@@ -87,9 +96,12 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 	private void loadFiles() throws IOException {
 		if(!new File("plugins/FancyCrafting/config.yml").exists()) 
 			FileUtils.copyInputStreamToFile(getResource("resources/config.yml"), new File("plugins/FancyCrafting/config.yml"));
+		
+		checkFile(new File("plugins/FancyCrafting/config.yml"), "resources/config.yml");
+		
 		if(!new File("plugins/FancyCrafting/recipes.yml").exists()) 
 			new File("plugins/FancyCrafting/recipes.yml").createNewFile();
-		info("Loading crafting templates:");
+		getLogger().info("Loading crafting templates:");
 		for(int width = 1; width<=8; width++) {
 			for(int height = 1; height<=6; height++) {
 				try {
@@ -99,6 +111,8 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 							throw new NullPointerException();
 						FileUtils.copyInputStreamToFile(getResource("resources/crafting-" + width +"x" + height + ".yml"), craftingTemplateFile);
 					}
+					checkFile(craftingTemplateFile, "resources/crafting-" + width +"x" + height + ".yml");
+					
 					FileConfiguration craftingTemplateConfig = YamlConfiguration.loadConfiguration(craftingTemplateFile);
 					CraftingTemplate.add(this, new CraftingTemplate(craftingTemplateConfig.getString("title")
 							, width
@@ -117,13 +131,18 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 							, craftingTemplateConfig.getIntegerList("craft-state-slots").stream().mapToInt(Integer::intValue).toArray())
 							, width
 							, height);
-					info(String.format("Loaded %dx%d crafting template", width, height));
+					getLogger().info(String.format("Loaded %dx%d crafting template", width, height));
 				} catch(Exception ex) {
-					warn(String.format("Could not load %dx%d crafting template!", width, height));
+					getLogger().warning(String.format("Could not load %dx%d crafting template!", width, height));
 				}
 			}
 		}
-		info("Crafting templates loaded!");
+		getLogger().info("Crafting templates loaded!");
+	}
+	
+	public void checkFile(File file, String src) throws de.ancash.libs.org.simpleyaml.exceptions.InvalidConfigurationException, IllegalArgumentException, IOException {
+		getLogger().info("Checking " + file.getPath() + " for completeness (comparing to " + src + ")");
+		de.ancash.misc.FileUtils.setMissingConfigurationSections(new YamlFile(file), getResource(src), new HashSet<>(Arrays.asList("type")));
 	}
 	
 	private final int SPIGOT_RESOURCE_ID = 87300;
@@ -145,12 +164,24 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 		closeItem = ItemStackUtils.get(config, "close");
 		prevItem = ItemStackUtils.get(config, "recipe-view-gui.previous");
 		nextItem = ItemStackUtils.get(config, "recipe-view-gui.next");
+		valid = ItemStackUtils.get(config, "workbench.valid_recipe");
+		invalid = ItemStackUtils.get(config, "workbench.invalid_recipe");
+		shapeless = ItemStackUtils.get(config, "recipe-create-gui.shapeless");
+		shaped = ItemStackUtils.get(config, "recipe-create-gui.shaped");
+		save = ItemStackUtils.get(config, "recipe-create-gui.save");
+		edit = ItemStackUtils.get(config, "recipe-create-gui.edit");
+		delete = ItemStackUtils.get(config, "recipe-create-gui.delete");
 		defaultTemplateWidth = config.getInt("default-template-width");
 		defaultTemplateHeight = config.getInt("default-template-height");
 		createRecipeTitle = config.getString("recipe-create-gui.title");
-		viewRecipeTitle = config.getString("recipe-view-gui.title");
+		customRecipesTitle = config.getString("recipe-view-gui.page-title");
+		viewRecipeTitle = config.getString("recipe-view-gui.single-title");
+		editRecipeTitle = config.getString("recipe-view-gui.edit-title");
 		backCommands = Collections.unmodifiableList(config.getStringList("recipe-view-gui.back.commands"));
-		info("Default crafting template is " + defaultTemplateWidth + "x" + defaultTemplateWidth);
+		permsForCustomRecipes = config.getBoolean("perms-for-custom-recipes");
+		permsForVanillaRecipes = config.getBoolean("perms-for-vanilla-recipes");
+		checkRecipesAsync = config.getBoolean("check-recipes-async");
+		getLogger().info("Default crafting template is " + defaultTemplateWidth + "x" + defaultTemplateWidth);
 	}
 	
 	@EventHandler
@@ -163,8 +194,18 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 		recipeMatcher.remove(q.getPlayer().getUniqueId());
 	}
 	
+	@Override
 	public void onDisable() {
 		recipeManager = null;
+		threadPool.shutdownNow();
+	}
+	
+	public void submit(Runnable r) {
+		threadPool.submit(r);
+	}
+	
+	public <T> Future<T> submit(Callable<T> call) {
+		return threadPool.submit(call);
 	}
 
 	public RecipeManager getRecipeManager() {
@@ -187,23 +228,11 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 		return singleton.getRecipeManager().registerRecipe(recipe);
 	}
 
-	public void info(String str) {
-		getLogger().info(str);
-	}
-	
-	public void warn(String str) {
-		getLogger().warning(str);
-	}
-	
-	public void severe(String str) {
-		getLogger().severe(str);
-	}
-
 	public ItemStack getValidItem() {
 		return valid;
 	}
 	
-	public ItemStack getInvalid() {
+	public ItemStack getInvalidItem() {
 		return invalid;
 	}
 	
@@ -245,5 +274,37 @@ public class FancyCrafting extends JavaPlugin implements Listener{
 	
 	public int getDefaultTemplateHeight() {
 		return defaultTemplateHeight;
+	}
+
+	public ItemStack getShapelessItem() {
+		return shapeless;
+	}
+
+	public ItemStack getShapedItem() {
+		return shaped;
+	}
+
+	public ItemStack getSaveItem() {
+		return save;
+	}
+
+	public ItemStack getEditItem() {
+		return edit;
+	}
+
+	public ItemStack getDeleteItem() {
+		return delete;
+	}
+
+	public boolean checkRecipesAsync() {
+		return checkRecipesAsync;
+	}
+
+	public String getCustomRecipesTitle() {
+		return customRecipesTitle;
+	}
+
+	public String getEditRecipeTitle() {
+		return editRecipeTitle;
 	}
 }

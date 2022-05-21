@@ -1,7 +1,6 @@
 package de.ancash.fancycrafting.recipe;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +26,7 @@ public class IShapedRecipe extends IRecipe{
 	}
 
 	public List<ItemStack> getIngredients() {
-		return Collections.unmodifiableList(Arrays.asList(matrix.getArray()));
+		return Arrays.asList(matrix.getArray());
 	}
 	
 	public ItemStack[] getIngredientsArray() {

@@ -20,6 +20,7 @@ public class VanillaRecipeMatcher {
 	}
 	
 	public IRecipe matchVanillaRecipe(IMatrix<ItemStack> matrix) {
+		matrix = matrix.clone();
 		if(matrix.getArray().length != 9) {
 			matrix.cut(3, 3);
 			if(matrix.getArray().length != 9) 

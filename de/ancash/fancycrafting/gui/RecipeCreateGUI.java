@@ -2,6 +2,7 @@ package de.ancash.fancycrafting.gui;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.UUID;
 
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
@@ -11,78 +12,63 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
-import de.ancash.fancycrafting.recipe.IRecipe;
-import de.ancash.fancycrafting.recipe.IShapedRecipe;
-import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.minecraft.XMaterial;
-import de.ancash.minecraft.inventory.Clickable;
+import de.ancash.minecraft.anvilgui.AnvilGUI;
 import de.ancash.minecraft.inventory.IGUI;
 import de.ancash.minecraft.inventory.IGUIManager;
-import de.ancash.minecraft.inventory.InventoryItem;
 
-public class RecipeEditGUI extends IGUI implements IRecipeProducer{
+public class RecipeCreateGUI extends IGUI {
 	
-	private final IRecipe edit;
+	private final CraftingTemplate template;
 	private final FancyCrafting plugin;
-	private final CraftingTemplate template = CraftingTemplate.get(8, 6);
+	private final String recipeName;
 	
-	public RecipeEditGUI(FancyCrafting pl, Player player, IRecipe recipe) {
-		super(player.getUniqueId(), CraftingTemplate.get(8, 6).getSize(), "Edit recipe: " + recipe.getName());
-		if(recipe.isVanilla())
-			throw new IllegalArgumentException("Cannot edit vanilla recipe!");
-		this.edit = recipe;
-		this.plugin = pl;
+	public RecipeCreateGUI(FancyCrafting pl, Player player, String name) {
+		super(player.getUniqueId(), CraftingTemplate.get(8, 6).getSize(), pl.getCreateRecipeTitle());
+		this.template = CraftingTemplate.get(8, 6);
 		for(int i = 0; i<getSize(); i++)
 			setItem(pl.getBackgroundItem(), i);
 		for(int i : template.getCraftingSlots())
 			setItem(null, i);
-		if(recipe instanceof IShapedRecipe)
-			setItem(SHAPED, template.getRecipeTypeSlot());
-		else
-			setItem(SHAPELESS, template.getRecipeTypeSlot());
-		setItem(recipe.getResult(), template.getResultSlot());
-		setItem(SAVE, template.getSaveSlot());
-		if(recipe instanceof IShapedRecipe) {
-			IShapedRecipe shaped = (IShapedRecipe) recipe;
-			ItemStack[] ings = shaped.getInMatrix(8, 6);
-			for(int i = 0; i<ings.length; i++) 
-				if(ings[i] != null)
-					setItem(ings[i], template.getCraftingSlots()[i]);
-		} else {
-			IShapelessRecipe shapeless = (IShapelessRecipe) recipe;
-			int i = 0;
-			for(ItemStack ingredient : shapeless.getIngredients()) {
-				setItem(ingredient, template.getCraftingSlots()[i]);
-				i++;
-			}
-		}
-		addInventoryItem(new InventoryItem(this, DELETE, template.getDeleteSlot(), new Clickable() {
-			
-			@Override
-			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if(topInventory) {
-					player.closeInventory();
-					try {
-						plugin.getRecipeManager().delete(recipe.getUUID().toString());
-						player.sendMessage("§aRecipe deleted");
-					} catch (IOException | InvalidConfigurationException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}));
+		setItem(null, template.getResultSlot());
+		setItem(pl.getSaveItem(), template.getSaveSlot());
+		setItem(pl.getShapedItem(), template.getRecipeTypeSlot());
+		this.recipeName = name;
+		this.plugin = pl;
 		IGUIManager.register(this, getId());
 		player.openInventory(getInventory());
 	}
-
+	
 	private boolean isCraftingSlot(int a) {
 		for(int i : template.getCraftingSlots()) if(i == a) return true;
 		return a == template.getResultSlot();
 	}
 	
+	public static void open(FancyCrafting plugin, Player owner) {
+		new AnvilGUI.Builder()
+			.itemLeft(XMaterial.DIAMOND_SWORD.parseItem().clone())
+			.onComplete((player, text) ->{
+				if(text != null) {
+					new BukkitRunnable() {
+						
+						@Override
+						public void run() {
+							new RecipeCreateGUI(plugin, owner, text);
+						}
+					}.runTask(plugin);
+				} else {
+					player.sendMessage("§cInvalid recipe name!");
+				}
+				return AnvilGUI.Response.close();
+			})
+			.plugin(plugin)
+			.open((Player) owner);
+	}
+
 	@Override
 	public void onInventoryClick(InventoryClickEvent event) {
 		InventoryAction a = event.getAction();
@@ -100,9 +86,9 @@ public class RecipeEditGUI extends IGUI implements IRecipeProducer{
 			boolean isShaped = event.getInventory().getItem(template.getRecipeTypeSlot()).getItemMeta().getDisplayName().contains("Shaped");
 			if(slot == template.getRecipeTypeSlot()) {
 				if(!isShaped) 
-					event.getInventory().setItem(template.getRecipeTypeSlot(), SHAPED );
+					event.getInventory().setItem(template.getRecipeTypeSlot(), plugin.getShapedItem() );
 				 else 
-					event.getInventory().setItem(template.getRecipeTypeSlot(), SHAPELESS);	
+					event.getInventory().setItem(template.getRecipeTypeSlot(), plugin.getShapelessItem());	
 			}
 			
 			if(slot == template.getSaveSlot()) {
@@ -119,9 +105,8 @@ public class RecipeEditGUI extends IGUI implements IRecipeProducer{
 					return;
 				}
 				try {
-					plugin.getRecipeManager().saveRecipe(result, ings, isShaped, edit.getName(), edit.getUUID(), 8, 6);
-					event.getWhoClicked().sendMessage("§aEdited §r" + edit.getName());
-					plugin.getRecipeManager().reloadRecipes();
+					plugin.getRecipeManager().createRecipe(result, ings, isShaped, recipeName, UUID.randomUUID(), 8, 6);
+					event.getWhoClicked().sendMessage("§aCreated new recipe!");
 				} catch (IOException | InvalidConfigurationException e) {
 					event.getWhoClicked().sendMessage("§cSomething went wrong while saving: " + e);
 				} finally {
@@ -133,7 +118,14 @@ public class RecipeEditGUI extends IGUI implements IRecipeProducer{
 
 	@Override
 	public void onInventoryClose(InventoryCloseEvent event) {
-		IGUIManager.remove(getId());
+		for(int i : template.getCraftingSlots()) {
+    		ItemStack is = event.getInventory().getItem(i);
+    		if(is == null) continue;
+    		event.getPlayer().getInventory().addItem(is);
+    	}
+    	ItemStack result = event.getInventory().getItem(template.getResultSlot());
+    	if(result != null) event.getPlayer().getInventory().addItem(result);
+    	IGUIManager.remove(getId());
 	}
 
 	@Override
@@ -143,5 +135,5 @@ public class RecipeEditGUI extends IGUI implements IRecipeProducer{
 				event.setCancelled(true);
 				return;
 			}
-	}
+	}	
 }
