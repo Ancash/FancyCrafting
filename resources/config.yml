@@ -1,0 +1,70 @@
+check-recipes-async: true
+perms-for-custom-recipes: false
+perms-for-vanilla-recipes: false
+default-template-width: 3
+default-template-height: 3
+#the item to click to close the inventory
+close:
+  type: BARRIER
+  meta:
+     displayname: "§cClose"
+  #the item around the crafting slots
+background:
+   type: GRAY_STAINED_GLASS_PANE
+   meta:
+      displayname: " "
+workbench:
+   invalid_recipe:
+      type: RED_STAINED_GLASS_PANE
+      meta:
+         displayname: " "
+   valid_recipe:
+      type: GREEN_STAINED_GLASS_PANE
+      meta:
+         displayname: " "
+recipe-create-gui:
+   title: "Create Recipe"
+   shapeless:
+      type: BLUE_STAINED_GLASS_PANE
+      meta:
+         displayname: "§bShapeless Recipe"
+   shaped:
+      type: GREEN_STAINED_GLASS_PANE
+      meta:
+         displayname: "§aShaped Recipe"
+   save:
+      type: GREEN_STAINED_GLASS_PANE
+      meta:
+         displayname: "§aSave Recipe"
+   edit:
+      type: WRITABLE_BOOK
+      meta:
+         displayname: "aEdit Recipe"
+   delete:
+      type: RED_STAINED_GLASS_PANE
+      meta:
+         displayname: "§cDelete Recipe"
+recipe-view-gui:
+   edit-title: "Edit %r"
+   page-title: "Custom Recipes"
+   single-title: "%r Recipe"
+   next:
+      type: ARROW
+      meta:
+         displayname: "§aNext Recipe"
+         lore:
+         - "§7Click to view the next recipe"
+   previous:
+      type: ARROW
+      meta:
+         displayname: "§aPrevious Recipe"
+         lore:
+         - "§7Click to view the previous recipe"
+   back:
+      commands:
+      - "kill %p"
+      type: ARROW
+      meta:
+         displayname: "§c§lBack"
+         lore:
+         - "§7Click to go back"
