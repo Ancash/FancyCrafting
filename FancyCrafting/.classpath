@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-8-openjdk-amd64"/>
+	<classpathentry kind="lib" path="/home/denzo/eclipse-workspace/spigot/spigot-api-1.18-R0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/home/denzo/eclipse-workspace/spigot/spigot-1.8.8-R0.1-SNAPSHOT-latest.jar"/>
+	<classpathentry kind="lib" path="/ApacheCommons/bin"/>
+	<classpathentry kind="lib" path="/Datastructures/bin"/>
+	<classpathentry kind="lib" path="/Events/bin"/>
+	<classpathentry kind="lib" path="/Misc/bin"/>
+	<classpathentry kind="lib" path="/Sockets/bin"/>
+	<classpathentry kind="lib" path="/Yaml/bin"/>
+	<classpathentry kind="lib" path="/ILibrary/bin"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
