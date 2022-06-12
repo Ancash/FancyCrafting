@@ -340,7 +340,6 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		}.runTaskLater(pl, 1);
 	}
 
-	@SuppressWarnings("deprecation")
 	private void craftItem(InventoryClickEvent event, IRecipe recipe, int[] moves) {
 
 		if (recipe == null) {
@@ -351,7 +350,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		if (event.getAction().equals(InventoryAction.PICKUP_ALL)) {
 			if (cursor != null && cursor.getType().equals(XMaterial.AIR.parseMaterial())) {
 				collectIngredients(event.getInventory(), recipe);
-				event.setCursor(recipe.getResult());
+				event.getWhoClicked().setItemOnCursor(recipe.getResult());
 				checkRecipe();
 				return;
 			}
