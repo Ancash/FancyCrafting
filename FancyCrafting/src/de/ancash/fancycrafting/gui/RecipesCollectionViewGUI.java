@@ -20,7 +20,7 @@ public class RecipesCollectionViewGUI {
 	protected final RecipeViewGUI gui;
 	protected final FancyCrafting pl;
 	protected final Player player;
-	
+
 	public RecipesCollectionViewGUI(FancyCrafting pl, Player player, List<IRecipe> recipes) {
 		this.recipes = recipes;
 		this.player = player;
@@ -34,49 +34,51 @@ public class RecipesCollectionViewGUI {
 		CraftingTemplate template = CraftingTemplate.get(recipe.getWidth(), recipe.getHeight());
 		gui.openRecipe(recipe);
 		gui.addInventoryItem(new InventoryItem(gui, pl.getNextItem(), template.getNextSlot(), new Clickable() {
-			
+
 			@Override
 			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if(topInventory) {
+				if (topInventory) {
 					openRecipe(increment());
 				}
 			}
 		}));
 		gui.addInventoryItem(new InventoryItem(gui, pl.getPrevItem(), template.getPrevSlot(), new Clickable() {
-			
+
 			@Override
 			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if(topInventory) {
+				if (topInventory) {
 					openRecipe(decrement());
 				}
 			}
 		}));
-		
-		if(player.hasPermission("fancycrafting.admin.edit") && !recipes.get(i).isVanilla()) 
-			gui.addInventoryItem(new InventoryItem(gui, new ItemBuilder(XMaterial.WRITABLE_BOOK).setDisplayname("§aClick to edit recipe").build(), template.getEditSlot(), new Clickable() {
-				
-				@Override
-				public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-					if(topInventory) {
-						player.closeInventory();
-						new RecipeEditGUI(pl, player, recipes.get(i));
-					}
-				}
-			}));
+
+		if (player.hasPermission("fancycrafting.admin.edit") && !recipes.get(i).isVanilla())
+			gui.addInventoryItem(new InventoryItem(gui,
+					new ItemBuilder(XMaterial.WRITABLE_BOOK).setDisplayname("§aClick to edit recipe").build(),
+					template.getEditSlot(), new Clickable() {
+
+						@Override
+						public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
+							if (topInventory) {
+								player.closeInventory();
+								new RecipeEditGUI(pl, player, recipes.get(i));
+							}
+						}
+					}));
 	}
-	
+
 	protected int decrement() {
 		return pos = prev();
 	}
-	
+
 	protected int increment() {
 		return pos = next();
 	}
-	
+
 	private int next() {
 		return pos + 1 >= recipes.size() ? 0 : pos + 1;
 	}
-	
+
 	private int prev() {
 		return pos - 1 < 0 ? recipes.size() - 1 : pos - 1;
 	}

@@ -8,46 +8,46 @@ import java.util.stream.Collectors;
 
 import org.bukkit.inventory.ItemStack;
 
-public class IShapelessRecipe extends IRecipe{
+public class IShapelessRecipe extends IRecipe {
 
 	private final List<ItemStack> ings;
 	private final int width;
 	private final int height;
-	
-	public IShapelessRecipe(Collection<ItemStack> ings , ItemStack result, String name, UUID uuid) {
+
+	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, UUID uuid) {
 		super(result, name, uuid);
 		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null).collect(Collectors.toList()));
 		int w = 1;
 		int h = 1;
-		while(w * h < ings.size()) {
+		while (w * h < ings.size()) {
 			w++;
 			h++;
-			if(h == 6)
+			if (h == 6)
 				h = 6;
-			if(w == 8)
+			if (w == 8)
 				break;
 		}
 		width = w;
 		height = h;
 	}
-	
+
 	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, boolean vanilla) {
 		super(result, name, vanilla);
 		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null).collect(Collectors.toList()));
 		int w = 1;
 		int h = 1;
-		while(w * h < ings.size()) {
+		while (w * h < ings.size()) {
 			w++;
 			h++;
-			if(h == 6)
+			if (h == 6)
 				h = 6;
-			if(w == 8)
+			if (w == 8)
 				break;
 		}
 		width = w;
 		height = h;
 	}
-	
+
 	public List<ItemStack> getIngredients() {
 		return ings;
 	}
@@ -66,4 +66,4 @@ public class IShapelessRecipe extends IRecipe{
 	public int getWidth() {
 		return width;
 	}
-}		
+}

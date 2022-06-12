@@ -24,16 +24,18 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	protected boolean includeVanillaRecipes;
 	protected final Player player;
 	protected final Object lock = new Object();
-	
+
 	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template) {
 		this(pl, player, template, true, () -> pl.getRecipeManager().getCustomRecipes());
 	}
-	
-	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template, boolean includeVanillaRecipes) {
+
+	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template,
+			boolean includeVanillaRecipes) {
 		this(pl, player, template, includeVanillaRecipes, () -> pl.getRecipeManager().getCustomRecipes());
 	}
-	
-	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template, boolean includeVanillaRecipes, Supplier<Set<IRecipe>> recipes) {
+
+	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template,
+			boolean includeVanillaRecipes, Supplier<Set<IRecipe>> recipes) {
 		super(player.getUniqueId(), template.getSize(), template.getTitle());
 		this.pl = pl;
 		this.template = template;
@@ -41,83 +43,83 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		this.includeVanillaRecipes = includeVanillaRecipes;
 		this.player = player;
 	}
-	
+
 	public void setIncludeVanillaRecipes(boolean b) {
 		this.includeVanillaRecipes = b;
 	}
-	
+
 	public void setRecipes(Supplier<Set<IRecipe>> recipes) {
 		this.recipes = recipes;
 	}
-	
+
 	public void updateMatrix() {
 		synchronized (lock) {
 			matrix = new IMatrix<>(getIngredients(), template.getWidth(), template.getHeight());
 			matrix.optimize();
 		}
 	}
-		
+
 	public IRecipe getCurrentRecipe() {
 		return currentRecipe;
 	}
-	
+
 	public IRecipe matchRecipe() {
 		return new RecipeMatcherCallable().call();
 	}
-	
+
 	public Future<IRecipe> matchRecipeAsync() {
 		return pl.submit(new RecipeMatcherCallable());
 	}
-	
+
 	public boolean hasMatchingRecipe() {
 		return currentRecipe != null;
 	}
-	
+
 	public abstract boolean canCraftRecipe(IRecipe recipe, Player p);
-	
+
 	public abstract ItemStack[] getIngredients();
-	
+
 	public abstract void onRecipeMatch();
-	
+
 	public abstract void onNoRecipeMatch();
 
 	public abstract void onNoPermission(IRecipe recipe, Player p);
-	
+
 	class RecipeMatcherCallable implements Callable<IRecipe> {
-		
+
 		@Override
 		public IRecipe call() {
 			synchronized (lock) {
 				currentRecipe = match();
-				if(currentRecipe == null)
+				if (currentRecipe == null)
 					onNoRecipeMatch();
 				else
 					onRecipeMatch();
 			}
 			return currentRecipe;
 		}
-		
+
 		private IRecipe match() {
 			IRecipe match = null;
-			if(matrix.getArray().length == 0)
+			if (matrix.getArray().length == 0)
 				return match;
-			
+
 			Set<IRecipe> customRecipes;
-			
-			if(recipes != null && !(customRecipes = recipes.get()).isEmpty()) 
-				if((match = pl.getRecipeManager().matchRecipe(matrix, customRecipes)) != null)
-					if(canCraftRecipe(match, player))
+
+			if (recipes != null && !(customRecipes = recipes.get()).isEmpty())
+				if ((match = pl.getRecipeManager().matchRecipe(matrix, customRecipes)) != null)
+					if (canCraftRecipe(match, player))
 						return currentRecipe = match;
 					else
 						onNoPermission(match, player);
-			
-			if(includeVanillaRecipes)
-				if((match = FancyCrafting.getVanillaRecipeMatcher(player).matchVanillaRecipe(matrix)) != null) 
-					if(canCraftRecipe(match, player))
+
+			if (includeVanillaRecipes)
+				if ((match = FancyCrafting.getVanillaRecipeMatcher(player).matchVanillaRecipe(matrix)) != null)
+					if (canCraftRecipe(match, player))
 						return currentRecipe = match;
 					else
 						onNoPermission(match, player);
-			
+
 			onNoRecipeMatch();
 			return currentRecipe = null;
 		}

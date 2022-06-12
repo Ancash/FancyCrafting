@@ -6,11 +6,11 @@ import java.util.UUID;
 
 import org.bukkit.inventory.ItemStack;
 
-public class IShapedRecipe extends IRecipe{
+public class IShapedRecipe extends IRecipe {
 
 	private final IMatrix<ItemStack> matrix;
 	private final int size;
-	
+
 	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, UUID uuid) {
 		super(result, name, uuid);
 		this.matrix = new IMatrix<>(ings, width, height);
@@ -28,7 +28,7 @@ public class IShapedRecipe extends IRecipe{
 	public List<ItemStack> getIngredients() {
 		return Arrays.asList(matrix.getArray());
 	}
-	
+
 	public ItemStack[] getIngredientsArray() {
 		return matrix.getArray();
 	}
@@ -39,7 +39,7 @@ public class IShapedRecipe extends IRecipe{
 		matrix.optimize();
 		return temp;
 	}
-	
+
 	@Override
 	public int getIngredientsSize() {
 		return size;
@@ -48,7 +48,7 @@ public class IShapedRecipe extends IRecipe{
 	public int getWidth() {
 		return matrix.getWidth();
 	}
-	
+
 	public int getHeight() {
 		return matrix.getHeight();
 	}

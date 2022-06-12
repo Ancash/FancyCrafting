@@ -10,20 +10,24 @@ import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.gui.CraftingWorkspaceGUI;
 import de.ancash.minecraft.XMaterial;
 
-public class WorkbenchClickListener implements Listener{
+public class WorkbenchClickListener implements Listener {
 
 	private final FancyCrafting plugin;
-	
+
 	public WorkbenchClickListener(FancyCrafting plugin) {
 		this.plugin = plugin;
 	}
-	
+
 	@EventHandler
 	public void onClick(PlayerInteractEvent event) {
-		if(!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
-		if(event.getClickedBlock() == null) return;
-		if(!event.getClickedBlock().getType().equals(XMaterial.CRAFTING_TABLE.parseMaterial())) return;
+		if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
+			return;
+		if (event.getClickedBlock() == null)
+			return;
+		if (!event.getClickedBlock().getType().equals(XMaterial.CRAFTING_TABLE.parseMaterial()))
+			return;
 		event.setCancelled(true);
-		new CraftingWorkspaceGUI(plugin, event.getPlayer(), CraftingTemplate.get(plugin.getDefaultTemplateWidth(), plugin.getDefaultTemplateHeight()));
+		new CraftingWorkspaceGUI(plugin, event.getPlayer(),
+				CraftingTemplate.get(plugin.getDefaultTemplateWidth(), plugin.getDefaultTemplateHeight()));
 	}
 }

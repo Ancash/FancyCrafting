@@ -19,80 +19,82 @@ import de.ancash.fancycrafting.gui.RecipeEditGUI;
 import de.ancash.fancycrafting.gui.RecipeViewGUI;
 import de.ancash.fancycrafting.recipe.IRecipe;
 
-public class FancyCraftingCommand implements CommandExecutor{
-	
+public class FancyCraftingCommand implements CommandExecutor {
+
 	private final FancyCrafting plugin;
 	private final List<String> toSend;
-	
+
 	@SuppressWarnings("unchecked")
 	public FancyCraftingCommand(FancyCrafting plugin) {
 		this.plugin = plugin;
 		toSend = (List<String>) plugin.getDescription().getCommands().get("fc").get("usage");
 	}
-	
+
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
-		if(!(sender instanceof Player)) return true;
+		if (!(sender instanceof Player))
+			return true;
 		Player player = (Player) sender;
-		
-		if(args.length == 0) {
+
+		if (args.length == 0) {
 			toSend.forEach(str -> player.sendMessage(str));
 			return true;
 		}
-		
+
 		String command = args[0];
-		
+
 		switch (command.toLowerCase()) {
 		case "open":
-			if(args.length == 3) {
+			if (args.length == 3) {
 				int width = -1;
 				int height = -1;
 				try {
 					width = Integer.valueOf(args[1]);
 					height = Integer.valueOf(args[2]);
-				} catch(NumberFormatException nfe) {
-					player.sendMessage("§cInvalid number: " + args[1] + " & " + args[2]);
+				} catch (NumberFormatException nfe) {
+					player.sendMessage(plugin.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1]).replace("%h", args[2]));
 					return true;
 				}
-				if(width < 1 || width > 8 || height < 1 || height > 6) {
-					player.sendMessage("§cInvalid number: " + args[1] + " & " + args[2]);
+				if (width < 1 || width > 8 || height < 1 || height > 6) {
+					player.sendMessage(plugin.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1]).replace("%h", args[2]));
 					return true;
 				}
-				if(!player.hasPermission("fancycrafting.open." + width + "x" + height)) {
-					sender.sendMessage("§cYou do not have permission to do that!");
+				if (!player.hasPermission("fancycrafting.open." + width + "x" + height)) {
+					sender.sendMessage(plugin.getResponse().NO_PERMISSION);
 					return true;
 				}
 				new CraftingWorkspaceGUI(plugin, player, CraftingTemplate.get(width, height));
 				return true;
 			}
-			if(!player.hasPermission("fancycrafting.open.default")) {
-				sender.sendMessage("§cYou do not have permission to do that!");
+			if (!player.hasPermission("fancycrafting.open.default")) {
+				sender.sendMessage(plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
-			new CraftingWorkspaceGUI(plugin, player, CraftingTemplate.get(plugin.getDefaultTemplateWidth(), plugin.getDefaultTemplateHeight()));
+			new CraftingWorkspaceGUI(plugin, player,
+					CraftingTemplate.get(plugin.getDefaultTemplateWidth(), plugin.getDefaultTemplateHeight()));
 			return true;
 		case "create":
-			if(!player.hasPermission("fancycrafting.create")) {
-				sender.sendMessage("§cYou do not have permission to do that!");
+			if (!player.hasPermission("fancycrafting.create")) {
+				sender.sendMessage(plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
 			RecipeCreateGUI.open(plugin, player);
 			return true;
 		case "edit":
-			if(!sender.hasPermission("fancycrafting.edit")) {
-				sender.sendMessage("§cYou do not have permission to do that!");
+			if (!sender.hasPermission("fancycrafting.edit")) {
+				sender.sendMessage(plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
-			if(args.length == 2) {
-				
+			if (args.length == 2) {
+
 				Set<IRecipe> recipes = plugin.getRecipeManager().getRecipeByName(args[1]);
-				if(recipes != null)
+				if (recipes != null)
 					recipes = recipes.stream().filter(r -> !r.isVanilla()).collect(Collectors.toSet());
-				if(recipes == null || recipes.isEmpty()) {
-					sender.sendMessage("§cThat's not a valid recipe: " + args[1]);
+				if (recipes == null || recipes.isEmpty()) {
+					sender.sendMessage(plugin.getResponse().INVALID_RECIPE.replace("%r", args[1]));
 					return true;
 				}
-				if(recipes.size() > 1) {
+				if (recipes.size() > 1) {
 					new PagedRecipesViewGUI(plugin, player, new ArrayList<>(recipes));
 				} else {
 					new RecipeEditGUI(plugin, player, recipes.stream().findAny().get());
@@ -101,19 +103,19 @@ public class FancyCraftingCommand implements CommandExecutor{
 			}
 			break;
 		case "view":
-			if(args.length == 1 && sender.hasPermission("fancycrafting.admin.view")) {
+			if (args.length == 1 && sender.hasPermission("fancycrafting.admin.view")) {
 				new PagedRecipesViewGUI(plugin, player, new ArrayList<>(plugin.getRecipeManager().getCustomRecipes()));
 				return true;
 			}
-			if(args.length == 2) {
-				if(!sender.hasPermission("fancycrafting.view." + args[1].toLowerCase())) {
-					sender.sendMessage("§cYou do not have permission to do that!");
+			if (args.length == 2) {
+				if (!sender.hasPermission("fancycrafting.view." + args[1].toLowerCase())) {
+					sender.sendMessage(plugin.getResponse().NO_PERMISSION);
 					return true;
 				}
-				
+
 				Set<IRecipe> recipes = plugin.getRecipeManager().getRecipeByName(args[1]);
-				if(recipes == null || recipes.isEmpty()) {
-					sender.sendMessage("§cThat recipe does not exist: " + args[1]);
+				if (recipes == null || recipes.isEmpty()) {
+					sender.sendMessage(plugin.getResponse().INVALID_RECIPE.replace("%r", args[1]));
 					return true;
 				}
 				RecipeViewGUI.viewRecipe(plugin, recipes, player);
@@ -123,9 +125,9 @@ public class FancyCraftingCommand implements CommandExecutor{
 		default:
 			break;
 		}
-		
+
 		toSend.forEach(str -> player.sendMessage(str));
-		
+
 		return true;
-	}	
+	}
 }

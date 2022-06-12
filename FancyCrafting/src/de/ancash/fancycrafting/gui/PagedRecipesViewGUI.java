@@ -17,37 +17,38 @@ import de.ancash.minecraft.inventory.IGUI;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
 
-public class PagedRecipesViewGUI extends IGUI{
+public class PagedRecipesViewGUI extends IGUI {
 
 	private final List<IRecipe> recipes;
 	private int currentPage = 1;
 	private final int maxPages;
 	private final Player player;
 	private final FancyCrafting pl;
-	
+
 	public PagedRecipesViewGUI(FancyCrafting pl, Player player, List<IRecipe> recipes) {
 		super(player.getUniqueId(), 45, pl.getCustomRecipesTitle());
 		Collections.sort(recipes, (a, b) -> a.getName().toLowerCase().compareTo(b.getName().toLowerCase()));
 		this.recipes = recipes;
 		int mp = 0;
-		while(mp * 36 < recipes.size()) mp++;
+		while (mp * 36 < recipes.size())
+			mp++;
 		this.maxPages = mp;
 		this.player = player;
 		this.pl = pl;
 		addInventoryItem(new InventoryItem(this, pl.getNextItem(), 44, new Clickable() {
-			
+
 			@Override
 			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if(topInventory)
+				if (topInventory)
 					openNextPage();
 			}
 		}));
-		
+
 		addInventoryItem(new InventoryItem(this, pl.getBackItem(), 36, new Clickable() {
-			
+
 			@Override
 			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if(topInventory)
+				if (topInventory)
 					openPrevPage();
 			}
 		}));
@@ -55,38 +56,41 @@ public class PagedRecipesViewGUI extends IGUI{
 		open(currentPage);
 		player.openInventory(getInventory());
 	}
-	
+
 	public void openNextPage() {
 		currentPage++;
-		if(currentPage > maxPages) currentPage = 1;
+		if (currentPage > maxPages)
+			currentPage = 1;
 		open(currentPage);
 	}
-	
+
 	public void openPrevPage() {
 		currentPage--;
-		if(currentPage < 1) currentPage = maxPages;
+		if (currentPage < 1)
+			currentPage = maxPages;
 		open(currentPage);
 	}
-	
+
 	public void open(int page) {
-		for(int i = 0; i<36; i++) {
+		for (int i = 0; i < 36; i++) {
 			setItem(null, i);
 			removeInventoryItem(i);
 		}
-		
+
 		List<IRecipe> viewing = recipes.subList((page - 1) * 36, Math.min(page * 36, recipes.size()));
 		int i = 0;
-		for(IRecipe recipe : viewing) {
-			addInventoryItem(new InventoryItem(this, ItemStackUtils.setDisplayname(recipe.getResult().clone(), recipe.getName()), i, new Clickable() {
-				
-				@Override
-				public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-					if(topInventory) {
-						player.closeInventory();
-						RecipeViewGUI.viewRecipe(pl, recipes.get((page - 1) * 36 + slot), player);
-					}
-				}
-			}));
+		for (IRecipe recipe : viewing) {
+			addInventoryItem(new InventoryItem(this,
+					ItemStackUtils.setDisplayname(recipe.getResult().clone(), recipe.getName()), i, new Clickable() {
+
+						@Override
+						public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
+							if (topInventory) {
+								player.closeInventory();
+								RecipeViewGUI.viewRecipe(pl, recipes.get((page - 1) * 36 + slot), player);
+							}
+						}
+					}));
 			i++;
 		}
 	}

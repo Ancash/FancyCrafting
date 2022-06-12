@@ -22,17 +22,17 @@ import de.ancash.minecraft.inventory.IGUI;
 import de.ancash.minecraft.inventory.IGUIManager;
 
 public class RecipeCreateGUI extends IGUI {
-	
+
 	private final CraftingTemplate template;
 	private final FancyCrafting plugin;
 	private final String recipeName;
-	
+
 	public RecipeCreateGUI(FancyCrafting pl, Player player, String name) {
 		super(player.getUniqueId(), CraftingTemplate.get(8, 6).getSize(), pl.getCreateRecipeTitle());
 		this.template = CraftingTemplate.get(8, 6);
-		for(int i = 0; i<getSize(); i++)
+		for (int i = 0; i < getSize(); i++)
 			setItem(pl.getBackgroundItem(), i);
-		for(int i : template.getCraftingSlots())
+		for (int i : template.getCraftingSlots())
 			setItem(null, i);
 		setItem(null, template.getResultSlot());
 		setItem(pl.getSaveItem(), template.getSaveSlot());
@@ -42,65 +42,67 @@ public class RecipeCreateGUI extends IGUI {
 		IGUIManager.register(this, getId());
 		player.openInventory(getInventory());
 	}
-	
+
 	private boolean isCraftingSlot(int a) {
-		for(int i : template.getCraftingSlots()) if(i == a) return true;
+		for (int i : template.getCraftingSlots())
+			if (i == a)
+				return true;
 		return a == template.getResultSlot();
 	}
-	
+
 	public static void open(FancyCrafting plugin, Player owner) {
-		new AnvilGUI.Builder()
-			.itemLeft(XMaterial.DIAMOND_SWORD.parseItem().clone())
-			.onComplete((player, text) ->{
-				if(text != null) {
-					new BukkitRunnable() {
-						
-						@Override
-						public void run() {
-							new RecipeCreateGUI(plugin, owner, text);
-						}
-					}.runTask(plugin);
-				} else {
-					player.sendMessage("§cInvalid recipe name!");
-				}
-				return AnvilGUI.Response.close();
-			})
-			.plugin(plugin)
-			.open((Player) owner);
+		new AnvilGUI.Builder().itemLeft(XMaterial.DIAMOND_SWORD.parseItem().clone()).onComplete((player, text) -> {
+			if (text != null) {
+				new BukkitRunnable() {
+
+					@Override
+					public void run() {
+						new RecipeCreateGUI(plugin, owner, text);
+					}
+				}.runTask(plugin);
+			} else {
+				player.sendMessage("§cInvalid recipe name!");
+			}
+			return AnvilGUI.Response.close();
+		}).plugin(plugin).open((Player) owner);
 	}
 
 	@Override
 	public void onInventoryClick(InventoryClickEvent event) {
 		InventoryAction a = event.getAction();
-		if(event.getClick().equals(ClickType.DOUBLE_CLICK) || (a.equals(InventoryAction.MOVE_TO_OTHER_INVENTORY) && !event.getInventory().equals(event.getClickedInventory()))) {
+		if (event.getClick().equals(ClickType.DOUBLE_CLICK) || (a.equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)
+				&& !event.getInventory().equals(event.getClickedInventory()))) {
 			event.setCancelled(true);
 			return;
 		}
-		if(event.getInventory().equals(event.getClickedInventory())) {
+		if (event.getInventory().equals(event.getClickedInventory())) {
 			int slot = event.getSlot();
-			if(isCraftingSlot(slot)) {
+			if (isCraftingSlot(slot)) {
 				return;
 			} else {
 				event.setCancelled(true);
 			}
-			boolean isShaped = event.getInventory().getItem(template.getRecipeTypeSlot()).getItemMeta().getDisplayName().contains("Shaped");
-			if(slot == template.getRecipeTypeSlot()) {
-				if(!isShaped) 
-					event.getInventory().setItem(template.getRecipeTypeSlot(), plugin.getShapedItem() );
-				 else 
-					event.getInventory().setItem(template.getRecipeTypeSlot(), plugin.getShapelessItem());	
+			boolean isShaped = event.getInventory().getItem(template.getRecipeTypeSlot()).getItemMeta().getDisplayName()
+					.contains("Shaped");
+			if (slot == template.getRecipeTypeSlot()) {
+				if (!isShaped)
+					event.getInventory().setItem(template.getRecipeTypeSlot(), plugin.getShapedItem());
+				else
+					event.getInventory().setItem(template.getRecipeTypeSlot(), plugin.getShapelessItem());
 			}
-			
-			if(slot == template.getSaveSlot()) {
+
+			if (slot == template.getSaveSlot()) {
 				ItemStack result = event.getInventory().getItem(template.getResultSlot());
-				if(result == null) {
+				if (result == null) {
 					event.getWhoClicked().sendMessage("§cInvalid recipe!");
 					return;
 				}
 				ItemStack[] ings = new ItemStack[template.getCraftingSlots().length];
-				for(int i = 0; i<ings.length; i++)
+				for (int i = 0; i < ings.length; i++)
 					ings[i] = getItem(template.getCraftingSlots()[i]);
-				if(!Arrays.asList(ings).stream().filter(s -> s != null && !s.getType().equals(XMaterial.AIR.parseMaterial())).findAny().isPresent()) {
+				if (!Arrays.asList(ings).stream()
+						.filter(s -> s != null && !s.getType().equals(XMaterial.AIR.parseMaterial())).findAny()
+						.isPresent()) {
 					event.getWhoClicked().sendMessage("§cInvalid recipe!");
 					return;
 				}
@@ -112,28 +114,30 @@ public class RecipeCreateGUI extends IGUI {
 				} finally {
 					event.getWhoClicked().closeInventory();
 				}
-			}	
+			}
 		}
 	}
 
 	@Override
 	public void onInventoryClose(InventoryCloseEvent event) {
-		for(int i : template.getCraftingSlots()) {
-    		ItemStack is = event.getInventory().getItem(i);
-    		if(is == null) continue;
-    		event.getPlayer().getInventory().addItem(is);
-    	}
-    	ItemStack result = event.getInventory().getItem(template.getResultSlot());
-    	if(result != null) event.getPlayer().getInventory().addItem(result);
-    	IGUIManager.remove(getId());
+		for (int i : template.getCraftingSlots()) {
+			ItemStack is = event.getInventory().getItem(i);
+			if (is == null)
+				continue;
+			event.getPlayer().getInventory().addItem(is);
+		}
+		ItemStack result = event.getInventory().getItem(template.getResultSlot());
+		if (result != null)
+			event.getPlayer().getInventory().addItem(result);
+		IGUIManager.remove(getId());
 	}
 
 	@Override
 	public void onInventoryDrag(InventoryDragEvent event) {
-		for(int i : event.getInventorySlots())
-			if(!isCraftingSlot(i)) {
+		for (int i : event.getInventorySlots())
+			if (!isCraftingSlot(i)) {
 				event.setCancelled(true);
 				return;
 			}
-	}	
+	}
 }
