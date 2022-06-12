@@ -3,6 +3,8 @@ package de.ancash.fancycrafting.gui;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
@@ -31,18 +33,19 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	public CraftingWorkspaceGUI(FancyCrafting pl, Player player, CraftingTemplate template) {
 		super(pl, player, template);
 		for (int i = 0; i < template.getSize(); i++)
-			setItem(pl.getBackgroundItem(), i);
+			setItem(pl.getBackgroundItem().getOriginal(), i);
 		for (int i : template.getCraftingSlots())
 			setItem(null, i);
 
-		addInventoryItem(new InventoryItem(this, pl.getCloseItem(), template.getCloseSlot(), new Clickable() {
+		addInventoryItem(
+				new InventoryItem(this, pl.getCloseItem().getOriginal(), template.getCloseSlot(), new Clickable() {
 
-			@Override
-			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if (topInventory)
-					closeAll();
-			}
-		}));
+					@Override
+					public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
+						if (topInventory)
+							closeAll();
+					}
+				}));
 		onNoRecipeMatch();
 		IGUIManager.register(this, getId());
 		player.openInventory(getInventory());
@@ -70,32 +73,48 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	@Override
 	public void onRecipeMatch() {
-		new BukkitRunnable() {
+		if (Bukkit.isPrimaryThread())
+			onRecipeMatch0();
+		else
+			new BukkitRunnable() {
 
-			@Override
-			public void run() {
-				synchronized (lock) {
-					setItem(getCurrentRecipe().getResult(), template.getResultSlot());
-					for (int i : template.getCraftStateSlots())
-						setItem(pl.getValidItem(), i);
+				@Override
+				public void run() {
+					onRecipeMatch0();
 				}
-			}
-		}.runTask(pl);
+			}.runTask(pl);
+	}
+
+	private void onRecipeMatch0() {
+		synchronized (lock) {
+			if (getCurrentRecipe() == null)
+				return;
+			setItem(getCurrentRecipe().getResult(), template.getResultSlot());
+			for (int i : template.getCraftStateSlots())
+				setItem(pl.getValidItem().getOriginal(), i);
+		}
 	}
 
 	@Override
 	public void onNoRecipeMatch() {
-		new BukkitRunnable() {
+		if (Bukkit.isPrimaryThread())
+			onNoRecipeMatch0();
+		else
+			new BukkitRunnable() {
 
-			@Override
-			public void run() {
-				synchronized (lock) {
-					setItem(pl.getInvalidItem(), template.getResultSlot());
-					for (int i : template.getCraftStateSlots())
-						setItem(pl.getInvalidItem(), i);
+				@Override
+				public void run() {
+					onNoRecipeMatch0();
 				}
-			}
-		}.runTask(pl);
+			}.runTask(pl);
+	}
+
+	private void onNoRecipeMatch0() {
+		synchronized (lock) {
+			setItem(pl.getInvalidItem().getOriginal(), template.getResultSlot());
+			for (int i : template.getCraftStateSlots())
+				setItem(pl.getInvalidItem().getOriginal(), i);
+		}
 	}
 
 	@Override
@@ -113,11 +132,11 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 					if (getItem(template.getResultSlot()) != null) {
 						IItemStack clicked = new IItemStack(
 								event.getView().getBottomInventory().getItem(event.getSlot()));
-						if (new IItemStack(getItem(template.getResultSlot())).isSimilar(clicked)
-								|| new IItemStack(pl.getBackgroundItem()).isSimilar(clicked)
-								|| new IItemStack(pl.getValidItem()).isSimilar(clicked)
-								|| new IItemStack(pl.getInvalidItem()).isSimilar(clicked)
-								|| new IItemStack(pl.getCloseItem()).isSimilar(clicked)) {
+						if (new IItemStack(getItem(template.getResultSlot())).hashCode() == clicked.hashCode()
+								|| pl.getBackgroundItem().hashCode() == clicked.hashCode()
+								|| pl.getValidItem().hashCode() == clicked.hashCode()
+								|| pl.getInvalidItem().hashCode() == clicked.hashCode()
+								|| pl.getCloseItem().hashCode() == clicked.hashCode()) {
 							event.setCancelled(true);
 							return;
 						}
@@ -146,7 +165,115 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				return;
 			}
 		}
+		if (!event.isCancelled()) {
+			if (workbenchInv && onTopInventoryClick(event)) {
+				event.setCancelled(true);
+				checkRecipe();
+				return;
+			}
+			if (!workbenchInv && onBottomInventoryClick(event)) {
+				return;
+			}
+		}
 		checkRecipeDelayed();
+	}
+
+	private boolean onBottomInventoryClick(InventoryClickEvent event) {
+		if (!event.isShiftClick()) {
+			return true;
+		}
+		ItemStack shift = event.getClickedInventory().getItem(event.getSlot());
+		if (shift == null || shift.getType() == Material.AIR)
+			return true;
+
+		IItemStack iShift = new IItemStack(shift);
+		if (iShift.hashCode() == pl.getCloseItem().hashCode()
+				|| iShift.hashCode() == pl.getBackgroundItem().hashCode()) {
+			event.setCancelled(true);
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean onTopInventoryClick(InventoryClickEvent event) {
+		ItemStack slotItem = event.getCurrentItem();
+		ItemStack cursor = event.getCursor();
+		boolean isCursorNull = cursor == null || cursor.getType() == Material.AIR;
+		boolean isSlotNull = slotItem == null || slotItem.getType() == Material.AIR;
+
+		if (isSlotNull && isCursorNull && event.getAction() != InventoryAction.HOTBAR_SWAP)
+			return true;
+		if (event.getAction() == InventoryAction.HOTBAR_SWAP
+				|| event.getAction() == InventoryAction.HOTBAR_MOVE_AND_READD) {
+			event.getInventory().setItem(event.getSlot(),
+					event.getWhoClicked().getInventory().getItem(event.getHotbarButton()));
+			event.getWhoClicked().getInventory().setItem(event.getHotbarButton(), slotItem);
+			return true;
+		}
+		if (!isSlotNull && event.isShiftClick()) {
+			ItemStack toAdd = slotItem.clone();
+			toAdd.setAmount(1);
+			int free = InventoryUtils.getFreeSpaceExact(getInventoryContents(event.getWhoClicked().getInventory()),
+					toAdd);
+			int adding = free < slotItem.getAmount() ? free : slotItem.getAmount();
+			InventoryUtils.addItemAmount(adding, toAdd, player);
+			setAmount(slotItem.getAmount(), adding, event.getSlot(), event.getInventory());
+			return true;
+		} else if (isCursorNull && !isSlotNull) {
+			if (event.isLeftClick()) {
+				event.getWhoClicked().setItemOnCursor(event.getInventory().getItem(event.getSlot()));
+				event.getInventory().setItem(event.getSlot(), null);
+			} else {
+				int taking = (int) Math.ceil(slotItem.getAmount() / 2);
+				if (slotItem.getAmount() == 1)
+					taking = 1;
+				ItemStack clone = slotItem.clone();
+				clone.setAmount(taking);
+				event.getWhoClicked().setItemOnCursor(clone);
+				setAmount(slotItem.getAmount(), taking, event.getSlot(), event.getInventory());
+			}
+			return true;
+		} else if (!isCursorNull && isSlotNull) {
+			if (event.isLeftClick()) {
+				event.getInventory().setItem(event.getSlot(), cursor);
+				event.getWhoClicked().setItemOnCursor(null);
+			} else {
+				ItemStack clone = cursor.clone();
+				clone.setAmount(1);
+				event.getInventory().setItem(event.getSlot(), clone);
+				if (cursor.getAmount() - 1 > 0)
+					cursor.setAmount(cursor.getAmount() - 1);
+				else
+					event.getWhoClicked().setItemOnCursor(null);
+			}
+			return true;
+		} else if (!isCursorNull && !isSlotNull) {
+			IItemStack iSlotItem = new IItemStack(slotItem);
+			IItemStack iCursor = new IItemStack(cursor);
+			if (iSlotItem.hashCode() == iCursor.hashCode() && slotItem.getAmount() < slotItem.getMaxStackSize()) {
+				if (event.isLeftClick()) {
+					int free = slotItem.getMaxStackSize() - slotItem.getAmount();
+					int adding = free > cursor.getAmount() ? cursor.getAmount() : free;
+					slotItem.setAmount(slotItem.getAmount() + adding);
+					if (cursor.getAmount() - adding > 0)
+						cursor.setAmount(cursor.getAmount() - adding);
+					else
+						event.getWhoClicked().setItemOnCursor(null);
+				} else {
+					slotItem.setAmount(slotItem.getAmount() + 1);
+					if (cursor.getAmount() - 1 > 0)
+						cursor.setAmount(cursor.getAmount() - 1);
+					else
+						event.getWhoClicked().setItemOnCursor(null);
+				}
+			} else {
+				event.getWhoClicked().setItemOnCursor(slotItem);
+				event.getInventory().setItem(event.getSlot(), cursor);
+			}
+			return true;
+		}
+		return false;
 	}
 
 	public boolean isCraftingSlot(int s) {
@@ -180,7 +307,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	@Override
 	public void onInventoryDrag(InventoryDragEvent event) {
-		if (event.getInventory() == null || event.getInventorySlots().contains(template.getResultSlot())) {
+		if (event.getRawSlots().stream().filter(i -> i < template.getSize()).filter(i -> !isCraftingSlot(i)).findAny()
+				.isPresent()) {
 			event.setCancelled(true);
 			return;
 		}
@@ -207,12 +335,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 			@Override
 			public void run() {
-				updateMatrix();
-
-				if (pl.checkRecipesAsync())
-					matchRecipeAsync();
-				else
-					matchRecipe();
+				checkRecipe();
 			}
 		}.runTaskLater(pl, 1);
 	}
@@ -233,8 +356,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				return;
 			}
 		} else if (event.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
-			InventoryUtils.addItemAmount(shiftCollectIngredients(event.getInventory(), recipe), recipe.getResult(),
-					player);
+			int i = shiftCollectIngredients(event.getInventory(), recipe);
+			InventoryUtils.addItemAmount(i * recipe.getResult().getAmount(), recipe.getResult(), player);
 			checkRecipe();
 			return;
 		} else if (event.getAction().equals(InventoryAction.PLACE_ONE)
@@ -330,7 +453,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				if (shaped.getIngredientsArray()[i] == null)
 					continue;
 				ItemStack ing = matrix.getArray()[i];
-				int amount = ing.getAmount() - shaped.getIngredientsArray()[i].getOriginal().getAmount() * multiplicator;
+				int amount = ing.getAmount()
+						- shaped.getIngredientsArray()[i].getOriginal().getAmount() * multiplicator;
 				int slot = template.getCraftingSlots()[base + i / shaped.getWidth() * template.getWidth()
 						+ i % shaped.getWidth()];
 				if (amount > 0)
