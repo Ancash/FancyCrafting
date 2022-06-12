@@ -47,6 +47,7 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 	private static FancyCrafting singleton;
 	private final Map<UUID, VanillaRecipeMatcher> recipeMatcher = new HashMap<>();
 	private Response response;
+	private UpdateChecker updateChecker;
 	
 	private RecipeManager recipeManager;
 	private boolean checkRecipesAsync;
@@ -156,7 +157,7 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 	private final int SPIGOT_RESOURCE_ID = 87300;
 
 	private void checkForUpdates() {
-		new UpdateChecker(this, UpdateCheckSource.SPIGOT, SPIGOT_RESOURCE_ID + "")
+		updateChecker = new UpdateChecker(this, UpdateCheckSource.SPIGOT, SPIGOT_RESOURCE_ID + "")
 				.setUsedVersion("v" + getDescription().getVersion()).setDownloadLink(SPIGOT_RESOURCE_ID)
 				.setChangelogLink(SPIGOT_RESOURCE_ID).setNotifyOpsOnJoin(true).checkEveryXHours(6).checkNow();
 	}
@@ -200,6 +201,8 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 
 	@Override
 	public void onDisable() {
+		updateChecker.stop();
+		updateChecker = null;
 		recipeManager = null;
 		threadPool.shutdownNow();
 	}
