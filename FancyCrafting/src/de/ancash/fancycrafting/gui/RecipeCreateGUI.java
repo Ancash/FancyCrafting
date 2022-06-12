@@ -31,7 +31,7 @@ public class RecipeCreateGUI extends IGUI {
 		super(player.getUniqueId(), CraftingTemplate.get(8, 6).getSize(), pl.getCreateRecipeTitle());
 		this.template = CraftingTemplate.get(8, 6);
 		for (int i = 0; i < getSize(); i++)
-			setItem(pl.getBackgroundItem(), i);
+			setItem(pl.getBackgroundItem().getOriginal(), i);
 		for (int i : template.getCraftingSlots())
 			setItem(null, i);
 		setItem(null, template.getResultSlot());

@@ -38,7 +38,7 @@ public class RecipeEditGUI extends IGUI {
 		this.edit = recipe;
 		this.plugin = pl;
 		for (int i = 0; i < getSize(); i++)
-			setItem(pl.getBackgroundItem(), i);
+			setItem(pl.getBackgroundItem().getOriginal(), i);
 		for (int i : template.getCraftingSlots())
 			setItem(null, i);
 		if (recipe instanceof IShapedRecipe)

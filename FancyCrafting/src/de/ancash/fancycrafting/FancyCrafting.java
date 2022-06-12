@@ -33,6 +33,7 @@ import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.VanillaRecipeMatcher;
+import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.Metrics;
 import de.ancash.minecraft.updatechecker.UpdateCheckSource;
@@ -57,12 +58,12 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 	private int defaultTemplateHeight;
 
 	private ItemStack backItem;
-	private ItemStack closeItem;
+	private IItemStack closeItem;
 	private ItemStack prevItem;
 	private ItemStack nextItem;
-	private ItemStack invalid;
-	private ItemStack valid;
-	private ItemStack background;
+	private IItemStack invalid;
+	private IItemStack valid;
+	private IItemStack background;
 	private ItemStack shapeless;
 	private ItemStack shaped;
 	private ItemStack save;
@@ -164,13 +165,13 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 
 	@SuppressWarnings("deprecation")
 	public void loadConfig() throws IOException, org.bukkit.configuration.InvalidConfigurationException {
-		background = ItemStackUtils.get(config, "background");
+		background = new IItemStack(ItemStackUtils.get(config, "background"));
 		backItem = ItemStackUtils.get(config, "recipe-view-gui.back");
-		closeItem = ItemStackUtils.get(config, "close");
+		closeItem = new IItemStack(ItemStackUtils.get(config, "close"));
 		prevItem = ItemStackUtils.get(config, "recipe-view-gui.previous");
 		nextItem = ItemStackUtils.get(config, "recipe-view-gui.next");
-		valid = ItemStackUtils.get(config, "workbench.valid_recipe");
-		invalid = ItemStackUtils.get(config, "workbench.invalid_recipe");
+		valid = new IItemStack(ItemStackUtils.get(config, "workbench.valid_recipe"));
+		invalid = new IItemStack(ItemStackUtils.get(config, "workbench.invalid_recipe"));
 		shapeless = ItemStackUtils.get(config, "recipe-create-gui.shapeless");
 		shaped = ItemStackUtils.get(config, "recipe-create-gui.shaped");
 		save = ItemStackUtils.get(config, "recipe-create-gui.save");
@@ -235,15 +236,15 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 		return singleton.getRecipeManager().registerRecipe(recipe);
 	}
 
-	public ItemStack getValidItem() {
+	public IItemStack getValidItem() {
 		return valid;
 	}
 
-	public ItemStack getInvalidItem() {
+	public IItemStack getInvalidItem() {
 		return invalid;
 	}
 
-	public ItemStack getBackgroundItem() {
+	public IItemStack getBackgroundItem() {
 		return background;
 	}
 
@@ -255,7 +256,7 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 		return backItem;
 	}
 
-	public ItemStack getCloseItem() {
+	public IItemStack getCloseItem() {
 		return closeItem;
 	}
 

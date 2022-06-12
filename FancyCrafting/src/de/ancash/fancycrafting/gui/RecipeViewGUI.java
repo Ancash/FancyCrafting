@@ -1,3 +1,4 @@
+
 package de.ancash.fancycrafting.gui;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class RecipeViewGUI extends IGUI {
 		this.plugin = pl;
 		this.player = player;
 		for (int i = 0; i < getSize(); i++)
-			setItem(pl.getBackgroundItem(), i);
+			setItem(pl.getBackgroundItem().getOriginal(), i);
 		for (int i : CraftingTemplate.get(recipe.getWidth(), recipe.getHeight()).getCraftingSlots())
 			setItem(null, i);
 		setItem(null, CraftingTemplate.get(recipe.getWidth(), recipe.getHeight()).getResultSlot());
@@ -65,7 +66,7 @@ public class RecipeViewGUI extends IGUI {
 		if (getSize() != template.getSize()) {
 			newInventory(recipe.getName(), template.getSize());
 			for (int i = 0; i < getSize(); i++)
-				setItem(plugin.getBackgroundItem(), i);
+				setItem(plugin.getBackgroundItem().getOriginal(), i);
 		}
 		clearInventoryItems();
 		for (int i : template.getCraftingSlots())
@@ -83,7 +84,7 @@ public class RecipeViewGUI extends IGUI {
 			for (int i = 0; i < shapeless.getIngredients().size(); i++)
 				setItem((ItemStack) shapeless.getIngredients().toArray()[i], template.getCraftingSlots()[i]);
 		}
-		addInventoryItem(new InventoryItem(this, plugin.getCloseItem(), template.getCloseSlot(), new Clickable() {
+		addInventoryItem(new InventoryItem(this, plugin.getCloseItem().getOriginal(), template.getCloseSlot(), new Clickable() {
 
 			@Override
 			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
