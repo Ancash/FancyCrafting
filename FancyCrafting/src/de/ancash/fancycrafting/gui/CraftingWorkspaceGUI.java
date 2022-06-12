@@ -265,7 +265,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				if (recipe.isVanilla()) {
 					shiftSize = Math.min(shiftSize, matrix.getArray()[i].getAmount());
 				} else {
-					IItemStack serializedIngredient = new IItemStack(((IShapedRecipe) recipe).getIngredientsArray()[i]);
+					IItemStack serializedIngredient = ((IShapedRecipe) recipe).getIngredientsArray()[i];
 					IItemStack serializedCompareTo = new IItemStack(matrix.getArray()[i]);
 					if (!serializedIngredient.isSimilar(serializedCompareTo))
 						continue;
@@ -330,8 +330,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				if (shaped.getIngredientsArray()[i] == null)
 					continue;
 				ItemStack ing = matrix.getArray()[i];
-				ItemStack orig = shaped.getIngredientsArray()[i];
-				int amount = ing.getAmount() - orig.getAmount() * multiplicator;
+				int amount = ing.getAmount() - shaped.getIngredientsArray()[i].getOriginal().getAmount() * multiplicator;
 				int slot = template.getCraftingSlots()[base + i / shaped.getWidth() * template.getWidth()
 						+ i % shaped.getWidth()];
 				if (amount > 0)

@@ -59,20 +59,20 @@ public abstract class IRecipe {
 		if (recipe.getWidth() != width || recipe.getHeight() != height)
 			return false;
 		for (int i = 0; i < ings.length; i++) {
-			if ((recipe.getIngredientsArray()[i] == null) != (ings[i] == null))
+			if ((recipe.asArray()[i] == null) != (ings[i] == null))
 				return false;
 			if (ings[i] == null)
 				continue;
-			if (!new IItemStack(recipe.getIngredientsArray()[i]).isSimilar(ings[i])
-					|| ings[i].getAmount() < recipe.getIngredientsArray()[i].getAmount())
+			if (recipe.asArray()[i].hashCode() != new IItemStack(ings[i]).hashCode()
+					|| ings[i].getAmount() < recipe.getIngredientsArray()[i].getOriginal().getAmount())
 				return false;
 		}
 		return true;
 	}
 
-	public static boolean matchesShapeless(ItemStack[] originals, ItemStack[] ingredients) {
-		List<ItemStack> origs = Arrays.asList(originals).stream().filter(i -> i != null).collect(Collectors.toList());
-		List<ItemStack> ings = Arrays.asList(ingredients).stream().filter(i -> i != null).collect(Collectors.toList());
+	public static boolean matchesShapeless(IShapelessRecipe recipe, ItemStack[] ingredients) {
+		List<IItemStack> origs = recipe.getIIngredients();
+		List<IItemStack> ings = Arrays.asList(ingredients).stream().filter(i -> i != null).map(IItemStack::new).collect(Collectors.toList());
 
 		if (ings.size() != origs.size())
 			return false;
@@ -80,8 +80,8 @@ public abstract class IRecipe {
 		for (int i1 = 0; i1 < origs.size(); i1++) {
 			boolean matches = false;
 			for (int i2 = 0; i2 < ings.size(); i2++) {
-				if (new IItemStack(origs.get(i1)).isSimilar(ings.get(i2))
-						&& origs.get(i1).getAmount() <= ings.get(i2).getAmount()) {
+				if (origs.get(i1).hashCode() == ings.get(i2).hashCode()
+						&& origs.get(i1).getOriginal().getAmount() <= ings.get(i2).getOriginal().getAmount()) {
 					matches = true;
 					ings.remove(i2);
 					break;
@@ -133,5 +133,9 @@ public abstract class IRecipe {
 	@Override
 	public String toString() {
 		return "IRecipe{name=" + name + ";result=" + result + ";ingredients=" + getIngredients() + "}";
+	}
+
+	public static IItemStack[] toIItemStackArray(ItemStack[] from) {
+		return Arrays.asList(from).stream().map(item -> item == null ? null : new IItemStack(item)).toArray(IItemStack[]::new);
 	}
 }

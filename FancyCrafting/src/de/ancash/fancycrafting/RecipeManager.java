@@ -186,9 +186,7 @@ public class RecipeManager {
 			if (recipe instanceof IShapedRecipe && IRecipe.matchesShaped((IShapedRecipe) recipe, matrix.getArray(),
 					matrix.getWidth(), matrix.getHeight()))
 				return recipe;
-			else if (recipe instanceof IShapelessRecipe && IRecipe.matchesShapeless(
-					recipe.getIngredients().stream().filter(item -> item != null).toArray(ItemStack[]::new),
-					matrix.getArray()))
+			else if (recipe instanceof IShapelessRecipe && IRecipe.matchesShapeless((IShapelessRecipe) recipe, matrix.getArray()))
 				return recipe;
 		return null;
 	}

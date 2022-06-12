@@ -8,15 +8,19 @@ import java.util.stream.Collectors;
 
 import org.bukkit.inventory.ItemStack;
 
+import de.ancash.minecraft.IItemStack;
+
 public class IShapelessRecipe extends IRecipe {
 
 	private final List<ItemStack> ings;
+	private final List<IItemStack> iings;
 	private final int width;
 	private final int height;
 
 	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, UUID uuid) {
 		super(result, name, uuid);
 		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null).collect(Collectors.toList()));
+		this.iings = Collections.unmodifiableList(this.ings.stream().map(IItemStack::new).collect(Collectors.toList()));
 		int w = 1;
 		int h = 1;
 		while (w * h < ings.size()) {
@@ -34,6 +38,7 @@ public class IShapelessRecipe extends IRecipe {
 	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, boolean vanilla) {
 		super(result, name, vanilla);
 		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null).collect(Collectors.toList()));
+		this.iings = Collections.unmodifiableList(this.ings.stream().map(IItemStack::new).collect(Collectors.toList()));
 		int w = 1;
 		int h = 1;
 		while (w * h < ings.size()) {
@@ -51,7 +56,11 @@ public class IShapelessRecipe extends IRecipe {
 	public List<ItemStack> getIngredients() {
 		return ings;
 	}
-
+	
+	public List<IItemStack> getIIngredients() {
+		return iings;
+	}
+	
 	@Override
 	public int getIngredientsSize() {
 		return ings.size();

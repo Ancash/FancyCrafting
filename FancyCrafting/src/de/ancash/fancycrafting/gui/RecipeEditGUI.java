@@ -17,6 +17,7 @@ import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
+import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.XMaterial;
 import de.ancash.minecraft.inventory.Clickable;
 import de.ancash.minecraft.inventory.IGUI;
@@ -48,10 +49,10 @@ public class RecipeEditGUI extends IGUI {
 		setItem(pl.getSaveItem(), template.getSaveSlot());
 		if (recipe instanceof IShapedRecipe) {
 			IShapedRecipe shaped = (IShapedRecipe) recipe;
-			ItemStack[] ings = shaped.getInMatrix(8, 6);
+			IItemStack[] ings = shaped.getInMatrix(8, 6);
 			for (int i = 0; i < ings.length; i++)
 				if (ings[i] != null)
-					setItem(ings[i], template.getCraftingSlots()[i]);
+					setItem(ings[i] == null ? null : ings[i].getOriginal(), template.getCraftingSlots()[i]);
 		} else {
 			IShapelessRecipe shapeless = (IShapelessRecipe) recipe;
 			int i = 0;

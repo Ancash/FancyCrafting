@@ -74,9 +74,9 @@ public class RecipeViewGUI extends IGUI {
 		setItem(recipe.getResult(), template.getResultSlot());
 		if (recipe instanceof IShapedRecipe) {
 			IShapedRecipe shaped = (IShapedRecipe) recipe;
-			ItemStack[] ings = shaped.getInMatrix(template.getWidth(), template.getHeight());
+			IItemStack[] ings = shaped.getInMatrix(template.getWidth(), template.getHeight());
 			for (int i = 0; i < ings.length; i++)
-				setItem(ings[i], template.getCraftingSlots()[i]);
+				setItem(ings[i] == null ? null : ings[i].getOriginal(), template.getCraftingSlots()[i]);
 		}
 		if (recipe instanceof IShapelessRecipe) {
 			IShapelessRecipe shapeless = (IShapelessRecipe) recipe;

@@ -3,39 +3,42 @@ package de.ancash.fancycrafting.recipe;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.inventory.ItemStack;
 
+import de.ancash.minecraft.IItemStack;
+
 public class IShapedRecipe extends IRecipe {
 
-	private final IMatrix<ItemStack> matrix;
+	private final IMatrix<IItemStack> matrix;
 	private final int size;
-
+	
 	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, UUID uuid) {
 		super(result, name, uuid);
-		this.matrix = new IMatrix<>(ings, width, height);
+		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
 		matrix.optimize();
 		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
 	}
 
 	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, boolean vanilla) {
 		super(result, name, vanilla);
-		this.matrix = new IMatrix<>(ings, width, height);
+		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
 		matrix.optimize();
-		this.size = (int) Arrays.asList(matrix.getArray()).stream().filter(i -> i != null).count();
+		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
 	}
 
-	public List<ItemStack> getIngredients() {
-		return Arrays.asList(matrix.getArray());
+	public IItemStack[] getIngredientsArray() {
+		return matrix.getArray();
 	}
-
-	public ItemStack[] getIngredientsArray() {
+	
+	public IItemStack[] asArray() {
 		return matrix.getArray();
 	}
 
-	public ItemStack[] getInMatrix(int width, int height) {
+	public IItemStack[] getInMatrix(int width, int height) {
 		matrix.cut(width, height);
-		ItemStack[] temp = matrix.getArray();
+		IItemStack[] temp = matrix.getArray();
 		matrix.optimize();
 		return temp;
 	}
@@ -51,5 +54,10 @@ public class IShapedRecipe extends IRecipe {
 
 	public int getHeight() {
 		return matrix.getHeight();
+	}
+
+	@Override
+	public List<ItemStack> getIngredients() {
+		return Arrays.asList(matrix.getArray()).stream().map(i -> i == null ? null : i.getOriginal()).collect(Collectors.toList());
 	}
 }
