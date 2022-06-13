@@ -206,76 +206,96 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			return true;
 		if (event.getAction() == InventoryAction.HOTBAR_SWAP
 				|| event.getAction() == InventoryAction.HOTBAR_MOVE_AND_READD) {
-			event.getInventory().setItem(event.getSlot(),
-					event.getWhoClicked().getInventory().getItem(event.getHotbarButton()));
-			event.getWhoClicked().getInventory().setItem(event.getHotbarButton(), slotItem);
+			onTopHotbawSwap(event, slotItem);
 			return true;
 		}
 		if (!isSlotNull && event.isShiftClick()) {
-			ItemStack toAdd = slotItem.clone();
-			toAdd.setAmount(1);
-			int free = InventoryUtils.getFreeSpaceExact(getInventoryContents(event.getWhoClicked().getInventory()),
-					toAdd);
-			int adding = free < slotItem.getAmount() ? free : slotItem.getAmount();
-			InventoryUtils.addItemAmount(adding, toAdd, player);
-			setAmount(slotItem.getAmount(), adding, event.getSlot(), event.getInventory());
+			onTopSlotNotNullShift(event, slotItem);
 			return true;
 		} else if (isCursorNull && !isSlotNull) {
-			if (event.isLeftClick()) {
-				event.getWhoClicked().setItemOnCursor(event.getInventory().getItem(event.getSlot()));
-				event.getInventory().setItem(event.getSlot(), null);
-			} else {
-				int taking = (int) Math.ceil(slotItem.getAmount() / 2);
-				if (slotItem.getAmount() == 1)
-					taking = 1;
-				ItemStack clone = slotItem.clone();
-				clone.setAmount(taking);
-				event.getWhoClicked().setItemOnCursor(clone);
-				setAmount(slotItem.getAmount(), taking, event.getSlot(), event.getInventory());
-			}
+			onTopCursorNullSlotNotNull(event, slotItem);
 			return true;
 		} else if (!isCursorNull && isSlotNull) {
-			if (event.isLeftClick()) {
-				event.getInventory().setItem(event.getSlot(), cursor);
-				event.getWhoClicked().setItemOnCursor(null);
-			} else {
-				ItemStack clone = cursor.clone();
-				clone.setAmount(1);
-				event.getInventory().setItem(event.getSlot(), clone);
-				if (cursor.getAmount() - 1 > 0)
-					cursor.setAmount(cursor.getAmount() - 1);
-				else
-					event.getWhoClicked().setItemOnCursor(null);
-			}
+			onTopCursorNotNullSlotNull(event, cursor);
 			return true;
 		} else if (!isCursorNull && !isSlotNull) {
-			IItemStack iSlotItem = new IItemStack(slotItem);
-			IItemStack iCursor = new IItemStack(cursor);
-			if (iSlotItem.hashCode() == iCursor.hashCode() && slotItem.getAmount() < slotItem.getMaxStackSize()) {
-				if (event.isLeftClick()) {
-					int free = slotItem.getMaxStackSize() - slotItem.getAmount();
-					int adding = free > cursor.getAmount() ? cursor.getAmount() : free;
-					slotItem.setAmount(slotItem.getAmount() + adding);
-					if (cursor.getAmount() - adding > 0)
-						cursor.setAmount(cursor.getAmount() - adding);
-					else
-						event.getWhoClicked().setItemOnCursor(null);
-				} else {
-					slotItem.setAmount(slotItem.getAmount() + 1);
-					if (cursor.getAmount() - 1 > 0)
-						cursor.setAmount(cursor.getAmount() - 1);
-					else
-						event.getWhoClicked().setItemOnCursor(null);
-				}
-			} else {
-				event.getWhoClicked().setItemOnCursor(slotItem);
-				event.getInventory().setItem(event.getSlot(), cursor);
-			}
+			onTopCursorNotNullSlotNotNull(event, slotItem, cursor);
 			return true;
 		}
 		return false;
 	}
 
+	private void onTopHotbawSwap(InventoryClickEvent event, ItemStack slotItem) {
+		event.getInventory().setItem(event.getSlot(),
+				event.getWhoClicked().getInventory().getItem(event.getHotbarButton()));
+		event.getWhoClicked().getInventory().setItem(event.getHotbarButton(), slotItem);
+	}
+	
+	private void onTopSlotNotNullShift(InventoryClickEvent event, ItemStack slotItem) {
+		ItemStack toAdd = slotItem.clone();
+		toAdd.setAmount(1);
+		int free = InventoryUtils.getFreeSpaceExact(getInventoryContents(event.getWhoClicked().getInventory()),
+				toAdd);
+		int adding = free < slotItem.getAmount() ? free : slotItem.getAmount();
+		InventoryUtils.addItemAmount(adding, toAdd, player);
+		setAmount(slotItem.getAmount(), adding, event.getSlot(), event.getInventory());
+	}
+	
+	private void onTopCursorNullSlotNotNull(InventoryClickEvent event, ItemStack slotItem) {
+		if (event.isLeftClick()) {
+			event.getWhoClicked().setItemOnCursor(event.getInventory().getItem(event.getSlot()));
+			event.getInventory().setItem(event.getSlot(), null);
+		} else {
+			int taking = (int) Math.ceil(slotItem.getAmount() / 2);
+			if (slotItem.getAmount() == 1)
+				taking = 1;
+			ItemStack clone = slotItem.clone();
+			clone.setAmount(taking);
+			event.getWhoClicked().setItemOnCursor(clone);
+			setAmount(slotItem.getAmount(), taking, event.getSlot(), event.getInventory());
+		}
+	}
+	
+	private void onTopCursorNotNullSlotNull(InventoryClickEvent event, ItemStack cursor) {
+		if (event.isLeftClick()) {
+			event.getInventory().setItem(event.getSlot(), cursor);
+			event.getWhoClicked().setItemOnCursor(null);
+		} else {
+			ItemStack clone = cursor.clone();
+			clone.setAmount(1);
+			event.getInventory().setItem(event.getSlot(), clone);
+			if (cursor.getAmount() - 1 > 0)
+				cursor.setAmount(cursor.getAmount() - 1);
+			else
+				event.getWhoClicked().setItemOnCursor(null);
+		}
+	}
+	
+	private void onTopCursorNotNullSlotNotNull(InventoryClickEvent event, ItemStack slotItem, ItemStack cursor) {
+		IItemStack iSlotItem = new IItemStack(slotItem);
+		IItemStack iCursor = new IItemStack(cursor);
+		if (iSlotItem.hashCode() == iCursor.hashCode() && slotItem.getAmount() < slotItem.getMaxStackSize()) {
+			if (event.isLeftClick()) {
+				int free = slotItem.getMaxStackSize() - slotItem.getAmount();
+				int adding = free > cursor.getAmount() ? cursor.getAmount() : free;
+				slotItem.setAmount(slotItem.getAmount() + adding);
+				if (cursor.getAmount() - adding > 0)
+					cursor.setAmount(cursor.getAmount() - adding);
+				else
+					event.getWhoClicked().setItemOnCursor(null);
+			} else {
+				slotItem.setAmount(slotItem.getAmount() + 1);
+				if (cursor.getAmount() - 1 > 0)
+					cursor.setAmount(cursor.getAmount() - 1);
+				else
+					event.getWhoClicked().setItemOnCursor(null);
+			}
+		} else {
+			event.getWhoClicked().setItemOnCursor(slotItem);
+			event.getInventory().setItem(event.getSlot(), cursor);
+		}
+	}
+	
 	public boolean isCraftingSlot(int s) {
 		for (int i = 0; i < template.getCraftingSlots().length; i++)
 			if (template.getCraftingSlots()[i] == s)
