@@ -3,7 +3,9 @@ package de.ancash.fancycrafting.recipe;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.bukkit.inventory.ItemStack;
@@ -11,26 +13,32 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 
+import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.XMaterial;
 
 public abstract class IRecipe {
 
-	private final ItemStack result;
+	private final IItemStack result;
 	private final String name;
 	private final boolean vanilla;
+	private final boolean suitableForAutoMatching;
 	private UUID uuid;
 
 	public IRecipe(ItemStack result, String name, UUID uuid) {
-		this(result, name, false);
+		this(result, name, false, true);
 		this.uuid = uuid;
 	}
 
-	public IRecipe(ItemStack result, String name, boolean vanilla) {
+	public IRecipe(ItemStack result, String name, boolean vanilla, boolean suitableForAutoMatching) {
 		if (name == null && !vanilla)
 			throw new IllegalArgumentException("Custom recipe must have a name");
-		this.result = result;
+		this.result = new IItemStack(result);
 		this.vanilla = vanilla;
+		if(vanilla)
+			this.suitableForAutoMatching = suitableForAutoMatching;
+		else
+			this.suitableForAutoMatching = true;
 		if (vanilla)
 			this.name = XMaterial.matchXMaterial(result).toString();
 		else
@@ -42,8 +50,16 @@ public abstract class IRecipe {
 	public abstract int getWidth();
 
 	public abstract int getIngredientsSize();
+	
+	public abstract Map<Integer, Integer> getIngredientsHashCodes();
 
+	public abstract List<ItemStack> getIngredients();
+	
 	public ItemStack getResult() {
+		return result.getOriginal();
+	}
+	
+	public IItemStack getResultAsIItemStack() {
 		return result;
 	}
 
@@ -55,6 +71,14 @@ public abstract class IRecipe {
 		return name;
 	}
 
+	public UUID getUUID() {
+		return uuid;
+	}
+
+	public boolean isSuitableForAutoMatching() {
+		return suitableForAutoMatching;
+	}
+	
 	public static boolean matchesShaped(IShapedRecipe recipe, ItemStack[] ings, int width, int height) {
 		if (recipe.getWidth() != width || recipe.getHeight() != height)
 			return false;
@@ -93,23 +117,29 @@ public abstract class IRecipe {
 		return true;
 	}
 
-	public static IRecipe fromVanillaRecipe(Recipe v) {
+	public static IRecipe fromVanillaRecipe(FancyCrafting pl, Recipe v) {
 		if (v == null)
 			return null;
 		IRecipe r = null;
 		try {
+			AtomicBoolean suitableForAutoMatching = new AtomicBoolean(true);
 			if (v instanceof ShapedRecipe) {
 				ShapedRecipe s = (ShapedRecipe) v;
 				ItemStack[] ings = new ItemStack[9];
 				for (int a = 0; a < s.getShape().length; a++) {
 					String str = s.getShape()[a];
-					for (int b = 0; b < str.length(); b++)
-						ings[a * 3 + b] = s.getIngredientMap().get(str.charAt(b));
+					for (int b = 0; b < str.length(); b++) {
+						suitableForAutoMatching.compareAndSet(true, isSuitableForAutoMatching(s.getIngredientMap().get(str.charAt(b))));
+						ings[a * 3 + b] = removeUnspecificMeta(s, s.getIngredientMap().get(str.charAt(b)));
+					}
 				}
-				r = new IShapedRecipe(ings, 3, 3, v.getResult(), null, true);
+				r = new IShapedRecipe(ings, 3, 3, v.getResult(), null, true, suitableForAutoMatching.get());
 			} else if (v instanceof ShapelessRecipe) {
 				ShapelessRecipe s = (ShapelessRecipe) v;
-				r = new IShapelessRecipe(s.getIngredientList(), v.getResult(), null, true);
+				r = new IShapelessRecipe(s.getIngredientList().stream().map(i -> {
+					suitableForAutoMatching.compareAndSet(true, isSuitableForAutoMatching(i));
+					return removeUnspecificMeta(s, i);
+				}).collect(Collectors.toList()), v.getResult(), null, true, suitableForAutoMatching.get());
 			}
 		} catch (Exception e) {
 			List<ItemStack> ings = null;
@@ -124,12 +154,22 @@ public abstract class IRecipe {
 		return r;
 	}
 
-	public UUID getUUID() {
-		return uuid;
+	@SuppressWarnings("deprecation")
+	private static boolean isSuitableForAutoMatching(ItemStack i) {
+		if(i == null)
+			return true;
+		return i.getDurability() != Short.MAX_VALUE;
 	}
-
-	public abstract List<ItemStack> getIngredients();
-
+	
+	@SuppressWarnings("deprecation")
+	private static ItemStack removeUnspecificMeta(Recipe r, ItemStack is) {
+		if(is == null)
+			return null;
+		if(is.getItemMeta().toString().toLowerCase().contains("unspecific") && is.getDurability() == 0)
+			is.setItemMeta(null);
+		return is;
+	}
+	
 	@Override
 	public String toString() {
 		return "IRecipe{name=" + name + ";result=" + result + ";ingredients=" + getIngredients() + "}";
