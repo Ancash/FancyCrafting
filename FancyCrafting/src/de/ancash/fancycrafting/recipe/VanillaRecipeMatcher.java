@@ -4,15 +4,18 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
+import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.minecraft.crafting.IContainerWorkbench;
 import de.ancash.minecraft.crafting.ICraftingManager;
 
 public class VanillaRecipeMatcher {
 
 	private final IContainerWorkbench icw;
-
-	public VanillaRecipeMatcher(Player player) {
+	private final FancyCrafting pl;
+	
+	public VanillaRecipeMatcher(FancyCrafting pl, Player player) {
 		icw = ICraftingManager.getSingleton().newInstance(player);
+		this.pl = pl;
 	}
 
 	public IContainerWorkbench getContainerWorkbench() {
@@ -32,6 +35,6 @@ public class VanillaRecipeMatcher {
 		Recipe r = icw.getCurrentRecipe();
 		for (int i = 0; i < 9; i++)
 			icw.setItem(i, null);
-		return IRecipe.fromVanillaRecipe(r);
+		return IRecipe.fromVanillaRecipe(pl, r);
 	}
 }
