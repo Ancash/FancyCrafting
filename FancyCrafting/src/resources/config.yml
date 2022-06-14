@@ -1,4 +1,5 @@
-check-recipes-async: true
+check-recipes-async: false
+check-quick-crafting-async: true
 perms-for-custom-recipes: false
 perms-for-vanilla-recipes: false
 default-template-width: 3
@@ -20,6 +21,14 @@ background:
    meta:
       displayname: " "
 workbench:
+   quick_crafting:
+      type: WHITE_STAINED_GLASS_PANE
+      meta:
+         displayname: "§cQuick Crafting Slot"
+         lore:
+         - "§7Quick crafting allows you to"
+         - "§7craft items without assembling"
+         - "§7the recipe."
    invalid_recipe:
       type: RED_STAINED_GLASS_PANE
       meta:
