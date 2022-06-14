@@ -35,10 +35,11 @@ public class CraftingTemplate {
 	private final int recipeTypeSlot;
 	private final int[] craftingSlots;
 	private final int[] craftStateSlots;
+	private final int[] autoCraftingSlots;
 
 	public CraftingTemplate(String title, int width, int height, int size, int resultSlot, int closeSlot, int backSlot,
 			int prevSlot, int nextSlot, int editSlot, int saveSlot, int deleteSlot, int recipeTypeSlot,
-			int[] craftingSlots, int[] craftStateSlots) {
+			int[] craftingSlots, int[] craftStateSlots, int[] autoCraftingSlots) {
 		this.title = title;
 		this.width = width;
 		this.height = height;
@@ -54,6 +55,7 @@ public class CraftingTemplate {
 		this.recipeTypeSlot = recipeTypeSlot;
 		this.craftingSlots = craftingSlots;
 		this.craftStateSlots = craftStateSlots;
+		this.autoCraftingSlots = autoCraftingSlots;
 	}
 
 	public int getResultSlot() {
@@ -114,5 +116,9 @@ public class CraftingTemplate {
 
 	public int getHeight() {
 		return height;
+	}
+
+	public int[] getAutoCraftingSlots() {
+		return autoCraftingSlots;
 	}
 }

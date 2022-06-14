@@ -35,6 +35,7 @@ public class RecipeManager {
 
 	private final FancyCrafting plugin;
 	private final Set<IRecipe> customRecipes = new HashSet<>();
+	private final Set<IRecipe> autoMatchingRecipes = new HashSet<>();
 	private final Map<Integer, Set<IRecipe>> customRecipesBySize = new HashMap<Integer, Set<IRecipe>>();
 	private final Map<String, Set<IRecipe>> recipesByName = new HashMap<>();
 	private final Map<Integer, Set<IRecipe>> recipesByResult = new HashMap<>();
@@ -98,6 +99,7 @@ public class RecipeManager {
 				recipesByName.clear();
 				customRecipesBySize.clear();
 				recipesByResult.clear();
+				autoMatchingRecipes.clear();
 				loadBukkitRecipes();
 				try {
 					loadCustomRecipes();
@@ -153,7 +155,7 @@ public class RecipeManager {
 	}
 
 	private void loadBukkitRecipes() {
-		Bukkit.recipeIterator().forEachRemaining(r -> registerRecipe(IRecipe.fromVanillaRecipe(r)));
+		Bukkit.recipeIterator().forEachRemaining(r -> registerRecipe(IRecipe.fromVanillaRecipe(plugin, r)));
 	}
 
 	public boolean registerRecipe(IRecipe recipe) {
@@ -170,7 +172,12 @@ public class RecipeManager {
 		recipesByName.get(name).add(recipe);
 		recipesByResult.computeIfAbsent(hash, k -> new HashSet<>());
 		recipesByResult.get(hash).add(recipe);
-
+		
+		if(recipe.isSuitableForAutoMatching())
+			autoMatchingRecipes.add(recipe);
+		else
+			if(recipe.isVanilla())
+				plugin.getLogger().info(String.format("'%s' is not included in auto recipe matching (no unique ingredient identification)", recipe.getName()));
 		if (!recipe.isVanilla()) {
 			customRecipesBySize.computeIfAbsent(recipe.getIngredientsSize(), k -> new HashSet<>());
 			customRecipesBySize.get(recipe.getIngredientsSize()).add(recipe);
@@ -191,6 +198,10 @@ public class RecipeManager {
 		return null;
 	}
 
+	public Set<IRecipe> getAutoMatchingRecipes() {
+		return Collections.unmodifiableSet(autoMatchingRecipes);
+	}
+	
 	public Set<IRecipe> getCustomRecipes() {
 		return Collections.unmodifiableSet(customRecipes);
 	}
@@ -214,6 +225,10 @@ public class RecipeManager {
 		reloadRecipes();
 	}
 
+	public Set<IRecipe> getRecipeByResult(ItemStack itemStack) {
+		return getRecipeByResult(new IItemStack(itemStack));
+	}
+	
 	public Set<IRecipe> getRecipeByResult(IItemStack iItemStack) {
 		if (recipesByResult.get(iItemStack.hashCode()) == null)
 			return null;

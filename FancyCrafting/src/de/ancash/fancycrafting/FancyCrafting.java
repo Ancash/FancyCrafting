@@ -44,14 +44,16 @@ import de.ancash.minecraft.updatechecker.UpdateChecker;
  */
 public class FancyCrafting extends JavaPlugin implements Listener {
 
-	private final ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	private final ExecutorService threadPool = Executors
+			.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 	private static FancyCrafting singleton;
 	private final Map<UUID, VanillaRecipeMatcher> recipeMatcher = new HashMap<>();
 	private Response response;
 	private UpdateChecker updateChecker;
-	
+
 	private RecipeManager recipeManager;
 	private boolean checkRecipesAsync;
+	private boolean checkQuickCraftingAsync;
 	private boolean permsForCustomRecipes;
 	private boolean permsForVanillaRecipes;
 	private int defaultTemplateWidth;
@@ -69,12 +71,13 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 	private ItemStack save;
 	private ItemStack edit;
 	private ItemStack delete;
+	private ItemStack quickCrafting;
 	private String createRecipeTitle;
 	private String customRecipesTitle;
 	private String viewRecipeTitle;
 	private String editRecipeTitle;
 	private List<String> backCommands;
-	
+
 	private FileConfiguration config;
 
 	public void onEnable() {
@@ -93,7 +96,7 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 
 			getCommand("fc").setExecutor(new FancyCraftingCommand(this));
 			for (Player p : Bukkit.getOnlinePlayers())
-				recipeMatcher.put(p.getUniqueId(), new VanillaRecipeMatcher(p));
+				recipeMatcher.put(p.getUniqueId(), new VanillaRecipeMatcher(this, p));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
@@ -136,7 +139,9 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 							craftingTemplateConfig.getIntegerList("crafting-slots").stream().mapToInt(Integer::intValue)
 									.toArray(),
 							craftingTemplateConfig.getIntegerList("craft-state-slots").stream()
-									.mapToInt(Integer::intValue).toArray()),
+									.mapToInt(Integer::intValue).toArray(),
+							craftingTemplateConfig.getIntegerList("quick-crafting-slots").stream().mapToInt(Integer::intValue)
+									.toArray()),
 							width, height);
 					getLogger().info(String.format("Loaded %dx%d crafting template", width, height));
 				} catch (Exception ex) {
@@ -177,6 +182,7 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 		save = ItemStackUtils.get(config, "recipe-create-gui.save");
 		edit = ItemStackUtils.get(config, "recipe-create-gui.edit");
 		delete = ItemStackUtils.get(config, "recipe-create-gui.delete");
+		quickCrafting = ItemStackUtils.get(config, "workbench.quick_crafting");
 		defaultTemplateWidth = config.getInt("default-template-width");
 		defaultTemplateHeight = config.getInt("default-template-height");
 		createRecipeTitle = config.getString("recipe-create-gui.title");
@@ -187,12 +193,15 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 		permsForCustomRecipes = config.getBoolean("perms-for-custom-recipes");
 		permsForVanillaRecipes = config.getBoolean("perms-for-vanilla-recipes");
 		checkRecipesAsync = config.getBoolean("check-recipes-async");
+		checkQuickCraftingAsync = config.getBoolean("check-quick-crafting-async");
+		getLogger().info("Check recipes async: " + checkRecipesAsync);
+		getLogger().info("Check quick crafting async: " + checkQuickCraftingAsync);
 		getLogger().info("Default crafting template is " + defaultTemplateWidth + "x" + defaultTemplateWidth);
 	}
 
 	@EventHandler
 	public void onJoin(PlayerJoinEvent j) {
-		recipeMatcher.put(j.getPlayer().getUniqueId(), new VanillaRecipeMatcher(j.getPlayer()));
+		recipeMatcher.put(j.getPlayer().getUniqueId(), new VanillaRecipeMatcher(this, j.getPlayer()));
 	}
 
 	@EventHandler
@@ -318,5 +327,13 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 
 	public Response getResponse() {
 		return response;
+	}
+
+	public ItemStack getQuickCraftingItem() {
+		return quickCrafting;
+	}
+
+	public boolean checkQuickCraftingAsync() {
+		return checkQuickCraftingAsync;
 	}
 }

@@ -3,13 +3,13 @@ package de.ancash.fancycrafting.gui;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
+import de.ancash.fancycrafting.recipe.AutoRecipeMatcher;
 import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.inventory.IGUI;
@@ -19,24 +19,26 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	protected final FancyCrafting pl;
 	protected final CraftingTemplate template;
 	protected IMatrix<ItemStack> matrix = new IMatrix<>(new ItemStack[0], 0, 0);
-	protected Supplier<Set<IRecipe>> recipes = null;
+	protected Set<IRecipe> recipes = null;
 	protected IRecipe currentRecipe;
 	protected boolean includeVanillaRecipes;
 	protected final Player player;
+	protected final AutoRecipeMatcher matcher;
 	protected final Object lock = new Object();
 
 	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template) {
-		this(pl, player, template, true, () -> pl.getRecipeManager().getCustomRecipes());
+		this(pl, player, template, true);
 	}
 
 	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template,
 			boolean includeVanillaRecipes) {
-		this(pl, player, template, includeVanillaRecipes, () -> pl.getRecipeManager().getCustomRecipes());
+		this(pl, player, template, includeVanillaRecipes, pl.getRecipeManager().getCustomRecipes(), new AutoRecipeMatcher(player.getInventory(), includeVanillaRecipes ? pl.getRecipeManager().getAutoMatchingRecipes() : pl.getRecipeManager().getCustomRecipes()));
 	}
 
 	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template,
-			boolean includeVanillaRecipes, Supplier<Set<IRecipe>> recipes) {
+			boolean includeVanillaRecipes, Set<IRecipe> recipes, AutoRecipeMatcher matcher) {
 		super(player.getUniqueId(), template.getSize(), template.getTitle());
+		this.matcher = matcher;
 		this.pl = pl;
 		this.template = template;
 		this.recipes = recipes;
@@ -48,7 +50,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		this.includeVanillaRecipes = b;
 	}
 
-	public void setRecipes(Supplier<Set<IRecipe>> recipes) {
+	public void setRecipes(Set<IRecipe> recipes) {
 		this.recipes = recipes;
 	}
 
@@ -71,6 +73,22 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		return pl.submit(new RecipeMatcherCallable());
 	}
 
+	public void autoMatch() {
+		matcher.compute();
+		onAutoMatchFinish();
+	}
+	
+	public void autoMatchAsync() {
+		pl.submit(new Runnable() {
+			
+			@Override
+			public void run() {
+				matcher.compute();
+				onAutoMatchFinish();
+			}
+		});
+	}
+	
 	public boolean hasMatchingRecipe() {
 		return currentRecipe != null;
 	}
@@ -84,6 +102,8 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	public abstract void onNoRecipeMatch();
 
 	public abstract void onNoPermission(IRecipe recipe, Player p);
+	
+	public abstract void onAutoMatchFinish();
 
 	class RecipeMatcherCallable implements Callable<IRecipe> {
 
@@ -106,7 +126,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 
 			Set<IRecipe> customRecipes;
 
-			if (recipes != null && !(customRecipes = recipes.get()).isEmpty())
+			if (recipes != null && !(customRecipes = recipes).isEmpty())
 				if ((match = pl.getRecipeManager().matchRecipe(matrix, customRecipes)) != null)
 					if (canCraftRecipe(match, player))
 						return currentRecipe = match;
