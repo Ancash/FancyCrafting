@@ -1,45 +1,45 @@
 # Title of the GUI
-title: 'Crafting Table'
+title: Crafting Table
 # Size of the GUI, make sure you don't define slots above the size-1
 size: 54
 # Slots in which can be crafted
 crafting-slots:
-  - 0
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 9
-  - 10
-  - 11
-  - 12
-  - 13
-  - 14
-  - 18
-  - 19
-  - 20
-  - 21
-  - 22
-  - 23
-  - 27
-  - 28
-  - 29
-  - 30
-  - 31
-  - 32
-  - 36
-  - 37
-  - 38
-  - 39
-  - 40
-  - 41
-  - 45
-  - 46
-  - 47
-  - 48
-  - 49
-  - 50
+- 0
+- 1
+- 2
+- 3
+- 4
+- 5
+- 9
+- 10
+- 11
+- 12
+- 13
+- 14
+- 18
+- 19
+- 20
+- 21
+- 22
+- 23
+- 27
+- 28
+- 29
+- 30
+- 31
+- 32
+- 36
+- 37
+- 38
+- 39
+- 40
+- 41
+- 45
+- 46
+- 47
+- 48
+- 49
+- 50
 close-slot: 53
 back-slot: 52
 prev-slot: 43
@@ -50,10 +50,16 @@ recipe-type-slot: 34
 delete-slot: 26
 # Slots in which the state of the craft will be shown (invalid recipe/valid recipe)
 craft-state-slots:
-  - 8
-  - 17
-  - 26
-  - 35
-  - 44
+- 7
+- 16
+- 25
+- 34
+- 43
+- 52
 # Slot in which the crafting result will end up
-result-slot: 25
+result-slot: 26
+quick-crafting-slots:
+- 8
+- 17
+- 35
+- 44
