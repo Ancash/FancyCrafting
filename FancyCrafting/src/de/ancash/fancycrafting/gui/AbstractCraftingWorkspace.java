@@ -7,7 +7,6 @@ import java.util.concurrent.Future;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.AutoRecipeMatcher;
 import de.ancash.fancycrafting.recipe.IMatrix;
@@ -17,7 +16,7 @@ import de.ancash.minecraft.inventory.IGUI;
 public abstract class AbstractCraftingWorkspace extends IGUI {
 
 	protected final FancyCrafting pl;
-	protected final CraftingTemplate template;
+	protected final WorkspaceTemplate template;
 	protected IMatrix<ItemStack> matrix = new IMatrix<>(new ItemStack[0], 0, 0);
 	protected Set<IRecipe> recipes = null;
 	protected IRecipe currentRecipe;
@@ -26,18 +25,21 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	protected final AutoRecipeMatcher matcher;
 	protected final Object lock = new Object();
 
-	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template) {
+	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, WorkspaceTemplate template) {
 		this(pl, player, template, true);
 	}
 
-	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template,
+	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, WorkspaceTemplate template,
 			boolean includeVanillaRecipes) {
-		this(pl, player, template, includeVanillaRecipes, pl.getRecipeManager().getCustomRecipes(), new AutoRecipeMatcher(player.getInventory(), includeVanillaRecipes ? pl.getRecipeManager().getAutoMatchingRecipes() : pl.getRecipeManager().getCustomRecipes()));
+		this(pl, player, template, includeVanillaRecipes, pl.getRecipeManager().getCustomRecipes(),
+				new AutoRecipeMatcher(player.getInventory(),
+						includeVanillaRecipes ? pl.getRecipeManager().getAutoMatchingRecipes()
+								: pl.getRecipeManager().getCustomRecipes()));
 	}
 
-	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, CraftingTemplate template,
+	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, WorkspaceTemplate template,
 			boolean includeVanillaRecipes, Set<IRecipe> recipes, AutoRecipeMatcher matcher) {
-		super(player.getUniqueId(), template.getSize(), template.getTitle());
+		super(player.getUniqueId(), template.getDimension().getSize(), template.getTitle());
 		this.matcher = matcher;
 		this.pl = pl;
 		this.template = template;
@@ -56,7 +58,8 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 
 	public void updateMatrix() {
 		synchronized (lock) {
-			matrix = new IMatrix<>(getIngredients(), template.getWidth(), template.getHeight());
+			matrix = new IMatrix<>(getIngredients(), template.getDimension().getWidth(),
+					template.getDimension().getHeight());
 			matrix.optimize();
 		}
 	}
@@ -77,10 +80,10 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		matcher.compute();
 		onAutoMatchFinish();
 	}
-	
+
 	public void autoMatchAsync() {
 		pl.submit(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				matcher.compute();
@@ -88,7 +91,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 			}
 		});
 	}
-	
+
 	public boolean hasMatchingRecipe() {
 		return currentRecipe != null;
 	}
@@ -102,7 +105,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	public abstract void onNoRecipeMatch();
 
 	public abstract void onNoPermission(IRecipe recipe, Player p);
-	
+
 	public abstract void onAutoMatchFinish();
 
 	class RecipeMatcherCallable implements Callable<IRecipe> {

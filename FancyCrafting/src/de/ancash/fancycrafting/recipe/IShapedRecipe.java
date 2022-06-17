@@ -17,27 +17,28 @@ public class IShapedRecipe extends IRecipe {
 	private final IMatrix<IItemStack> matrix;
 	private final int size;
 	private final Map<Integer, Integer> hashCodes = new HashMap<>();
-	
+
 	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, UUID uuid) {
 		super(result, name, uuid);
 		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
 		matrix.optimize();
 		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
-		for(IItemStack ii : matrix.getArray()) {
-			if(ii == null)
+		for (IItemStack ii : matrix.getArray()) {
+			if (ii == null)
 				continue;
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
 			hashCodes.put(ii.hashCode(), hashCodes.get(ii.hashCode()) + ii.getOriginal().getAmount());
 		}
 	}
 
-	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, boolean vanilla, boolean suitableForAutoMatching) {
+	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, boolean vanilla,
+			boolean suitableForAutoMatching) {
 		super(result, name, vanilla, suitableForAutoMatching);
 		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
 		matrix.optimize();
 		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
-		for(IItemStack ii : matrix.getArray()) {
-			if(ii == null)
+		for (IItemStack ii : matrix.getArray()) {
+			if (ii == null)
 				continue;
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
 			hashCodes.put(ii.hashCode(), hashCodes.get(ii.hashCode()) + ii.getOriginal().getAmount());
@@ -47,7 +48,7 @@ public class IShapedRecipe extends IRecipe {
 	public IItemStack[] getIngredientsArray() {
 		return matrix.getArray();
 	}
-	
+
 	public IItemStack[] asArray() {
 		return matrix.getArray();
 	}
@@ -74,7 +75,8 @@ public class IShapedRecipe extends IRecipe {
 
 	@Override
 	public List<ItemStack> getIngredients() {
-		return Arrays.asList(matrix.getArray()).stream().map(i -> i == null ? null : i.getOriginal()).collect(Collectors.toList());
+		return Arrays.asList(matrix.getArray()).stream().map(i -> i == null ? null : i.getOriginal())
+				.collect(Collectors.toList());
 	}
 
 	@Override

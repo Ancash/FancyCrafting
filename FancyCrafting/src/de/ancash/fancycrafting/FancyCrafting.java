@@ -30,6 +30,9 @@ import de.ancash.libs.org.apache.commons.io.FileUtils;
 import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
 
 import de.ancash.fancycrafting.commands.FancyCraftingCommand;
+import de.ancash.fancycrafting.gui.WorkspaceDimension;
+import de.ancash.fancycrafting.gui.WorkspaceSlotsBuilder;
+import de.ancash.fancycrafting.gui.WorkspaceTemplate;
 import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.VanillaRecipeMatcher;
@@ -56,8 +59,7 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 	private boolean checkQuickCraftingAsync;
 	private boolean permsForCustomRecipes;
 	private boolean permsForVanillaRecipes;
-	private int defaultTemplateWidth;
-	private int defaultTemplateHeight;
+	private WorkspaceDimension defaultDim;
 
 	private ItemStack backItem;
 	private IItemStack closeItem;
@@ -129,20 +131,24 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 
 					FileConfiguration craftingTemplateConfig = YamlConfiguration
 							.loadConfiguration(craftingTemplateFile);
-					CraftingTemplate.add(this, new CraftingTemplate(craftingTemplateConfig.getString("title"), width,
-							height, craftingTemplateConfig.getInt("size"), craftingTemplateConfig.getInt("result-slot"),
-							craftingTemplateConfig.getInt("close-slot"), craftingTemplateConfig.getInt("back-slot"),
-							craftingTemplateConfig.getInt("prev-slot"), craftingTemplateConfig.getInt("next-slot"),
-							craftingTemplateConfig.getInt("edit-slot"), craftingTemplateConfig.getInt("save-slot"),
-							craftingTemplateConfig.getInt("delete-slot"),
-							craftingTemplateConfig.getInt("recipe-type-slot"),
-							craftingTemplateConfig.getIntegerList("crafting-slots").stream().mapToInt(Integer::intValue)
-									.toArray(),
-							craftingTemplateConfig.getIntegerList("craft-state-slots").stream()
-									.mapToInt(Integer::intValue).toArray(),
-							craftingTemplateConfig.getIntegerList("quick-crafting-slots").stream().mapToInt(Integer::intValue)
-									.toArray()),
-							width, height);
+					WorkspaceTemplate.add(this, new WorkspaceTemplate(craftingTemplateConfig.getString("title"),
+							new WorkspaceDimension(width, height, craftingTemplateConfig.getInt("size")),
+							new WorkspaceSlotsBuilder().setResultSlot(craftingTemplateConfig.getInt("result-slot"))
+									.setCloseSlot(craftingTemplateConfig.getInt("close-slot"))
+									.setBackSlot(craftingTemplateConfig.getInt("back-slot"))
+									.setPrevSlot(craftingTemplateConfig.getInt("prev-slot"))
+									.setNextSlot(craftingTemplateConfig.getInt("next-slot"))
+									.setEditSlot(craftingTemplateConfig.getInt("edit-slot"))
+									.setSaveSlot(craftingTemplateConfig.getInt("save-slot"))
+									.setDeleteSlot(craftingTemplateConfig.getInt("delete-slot"))
+									.setRecipeTypeSlot(craftingTemplateConfig.getInt("recipe-type-slot"))
+									.setCraftingSlots(craftingTemplateConfig.getIntegerList("crafting-slots").stream()
+											.mapToInt(Integer::intValue).toArray())
+									.setCraftStateSlots(craftingTemplateConfig.getIntegerList("craft-state-slots")
+											.stream().mapToInt(Integer::intValue).toArray())
+									.setAutoCraftingSlots(craftingTemplateConfig.getIntegerList("quick-crafting-slots")
+											.stream().mapToInt(Integer::intValue).toArray())
+									.build()));
 					getLogger().info(String.format("Loaded %dx%d crafting template", width, height));
 				} catch (Exception ex) {
 					getLogger().warning(String.format("Could not load %dx%d crafting template!", width, height));
@@ -183,8 +189,8 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 		edit = ItemStackUtils.get(config, "recipe-create-gui.edit");
 		delete = ItemStackUtils.get(config, "recipe-create-gui.delete");
 		quickCrafting = ItemStackUtils.get(config, "workbench.quick_crafting");
-		defaultTemplateWidth = config.getInt("default-template-width");
-		defaultTemplateHeight = config.getInt("default-template-height");
+		defaultDim = new WorkspaceDimension(config.getInt("default-template-width"),
+				config.getInt("default-template-height"));
 		createRecipeTitle = config.getString("recipe-create-gui.title");
 		customRecipesTitle = config.getString("recipe-view-gui.page-title");
 		viewRecipeTitle = config.getString("recipe-view-gui.single-title");
@@ -196,7 +202,7 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 		checkQuickCraftingAsync = config.getBoolean("check-quick-crafting-async");
 		getLogger().info("Check recipes async: " + checkRecipesAsync);
 		getLogger().info("Check quick crafting async: " + checkQuickCraftingAsync);
-		getLogger().info("Default crafting template is " + defaultTemplateWidth + "x" + defaultTemplateWidth);
+		getLogger().info("Default crafting template is " + defaultDim.getWidth() + "x" + defaultDim.getHeight());
 	}
 
 	@EventHandler
@@ -285,12 +291,8 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 		return prevItem;
 	}
 
-	public int getDefaultTemplateWidth() {
-		return defaultTemplateWidth;
-	}
-
-	public int getDefaultTemplateHeight() {
-		return defaultTemplateHeight;
+	public WorkspaceDimension getDefaultDimension() {
+		return defaultDim;
 	}
 
 	public ItemStack getShapelessItem() {

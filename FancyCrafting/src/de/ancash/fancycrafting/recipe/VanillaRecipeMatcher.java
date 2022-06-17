@@ -12,7 +12,7 @@ public class VanillaRecipeMatcher {
 
 	private final IContainerWorkbench icw;
 	private final FancyCrafting pl;
-	
+
 	public VanillaRecipeMatcher(FancyCrafting pl, Player player) {
 		icw = ICraftingManager.getSingleton().newInstance(player);
 		this.pl = pl;

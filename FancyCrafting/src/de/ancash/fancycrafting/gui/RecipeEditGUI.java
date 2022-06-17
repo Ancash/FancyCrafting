@@ -12,7 +12,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 
-import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
@@ -28,10 +27,10 @@ public class RecipeEditGUI extends IGUI {
 
 	private final IRecipe edit;
 	private final FancyCrafting plugin;
-	private final CraftingTemplate template = CraftingTemplate.get(8, 6);
+	private final WorkspaceTemplate template = WorkspaceTemplate.get(8, 6);
 
 	public RecipeEditGUI(FancyCrafting pl, Player player, IRecipe recipe) {
-		super(player.getUniqueId(), CraftingTemplate.get(8, 6).getSize(),
+		super(player.getUniqueId(), WorkspaceTemplate.get(8, 6).getDimension().getSize(),
 				pl.getEditRecipeTitle().replace("%r", recipe.getName()));
 		if (recipe.isVanilla())
 			throw new IllegalArgumentException("Cannot edit vanilla recipe!");
@@ -39,52 +38,53 @@ public class RecipeEditGUI extends IGUI {
 		this.plugin = pl;
 		for (int i = 0; i < getSize(); i++)
 			setItem(pl.getBackgroundItem().getOriginal(), i);
-		for (int i : template.getCraftingSlots())
+		for (int i : template.getSlots().getCraftingSlots())
 			setItem(null, i);
 		if (recipe instanceof IShapedRecipe)
-			setItem(pl.getShapedItem(), template.getRecipeTypeSlot());
+			setItem(pl.getShapedItem(), template.getSlots().getRecipeTypeSlot());
 		else
-			setItem(pl.getShapelessItem(), template.getRecipeTypeSlot());
-		setItem(recipe.getResult(), template.getResultSlot());
-		setItem(pl.getSaveItem(), template.getSaveSlot());
+			setItem(pl.getShapelessItem(), template.getSlots().getRecipeTypeSlot());
+		setItem(recipe.getResult(), template.getSlots().getResultSlot());
+		setItem(pl.getSaveItem(), template.getSlots().getSaveSlot());
 		if (recipe instanceof IShapedRecipe) {
 			IShapedRecipe shaped = (IShapedRecipe) recipe;
 			IItemStack[] ings = shaped.getInMatrix(8, 6);
 			for (int i = 0; i < ings.length; i++)
 				if (ings[i] != null)
-					setItem(ings[i] == null ? null : ings[i].getOriginal(), template.getCraftingSlots()[i]);
+					setItem(ings[i] == null ? null : ings[i].getOriginal(), template.getSlots().getCraftingSlots()[i]);
 		} else {
 			IShapelessRecipe shapeless = (IShapelessRecipe) recipe;
 			int i = 0;
 			for (ItemStack ingredient : shapeless.getIngredients()) {
-				setItem(ingredient, template.getCraftingSlots()[i]);
+				setItem(ingredient, template.getSlots().getCraftingSlots()[i]);
 				i++;
 			}
 		}
-		addInventoryItem(new InventoryItem(this, pl.getDeleteItem(), template.getDeleteSlot(), new Clickable() {
+		addInventoryItem(
+				new InventoryItem(this, pl.getDeleteItem(), template.getSlots().getDeleteSlot(), new Clickable() {
 
-			@Override
-			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if (topInventory) {
-					player.closeInventory();
-					try {
-						plugin.getRecipeManager().delete(recipe.getUUID().toString());
-						player.sendMessage("§aRecipe deleted");
-					} catch (IOException | InvalidConfigurationException e) {
-						e.printStackTrace();
+					@Override
+					public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
+						if (topInventory) {
+							player.closeInventory();
+							try {
+								plugin.getRecipeManager().delete(recipe.getUUID().toString());
+								player.sendMessage("§aRecipe deleted");
+							} catch (IOException | InvalidConfigurationException e) {
+								e.printStackTrace();
+							}
+						}
 					}
-				}
-			}
-		}));
+				}));
 		IGUIManager.register(this, getId());
 		player.openInventory(getInventory());
 	}
 
 	private boolean isCraftingSlot(int a) {
-		for (int i : template.getCraftingSlots())
+		for (int i : template.getSlots().getCraftingSlots())
 			if (i == a)
 				return true;
-		return a == template.getResultSlot();
+		return a == template.getSlots().getResultSlot();
 	}
 
 	@Override
@@ -102,24 +102,24 @@ public class RecipeEditGUI extends IGUI {
 			} else {
 				event.setCancelled(true);
 			}
-			boolean isShaped = event.getInventory().getItem(template.getRecipeTypeSlot()).getItemMeta().getDisplayName()
-					.contains("Shaped");
-			if (slot == template.getRecipeTypeSlot()) {
+			boolean isShaped = event.getInventory().getItem(template.getSlots().getRecipeTypeSlot()).getItemMeta()
+					.getDisplayName().contains("Shaped");
+			if (slot == template.getSlots().getRecipeTypeSlot()) {
 				if (!isShaped)
-					event.getInventory().setItem(template.getRecipeTypeSlot(), plugin.getShapedItem());
+					event.getInventory().setItem(template.getSlots().getRecipeTypeSlot(), plugin.getShapedItem());
 				else
-					event.getInventory().setItem(template.getRecipeTypeSlot(), plugin.getShapelessItem());
+					event.getInventory().setItem(template.getSlots().getRecipeTypeSlot(), plugin.getShapelessItem());
 			}
 
-			if (slot == template.getSaveSlot()) {
-				ItemStack result = event.getInventory().getItem(template.getResultSlot());
+			if (slot == template.getSlots().getSaveSlot()) {
+				ItemStack result = event.getInventory().getItem(template.getSlots().getResultSlot());
 				if (result == null) {
 					event.getWhoClicked().sendMessage("§cInvalid recipe!");
 					return;
 				}
-				ItemStack[] ings = new ItemStack[template.getCraftingSlots().length];
+				ItemStack[] ings = new ItemStack[template.getSlots().getCraftingSlots().length];
 				for (int i = 0; i < ings.length; i++)
-					ings[i] = getItem(template.getCraftingSlots()[i]);
+					ings[i] = getItem(template.getSlots().getCraftingSlots()[i]);
 				if (!Arrays.asList(ings).stream()
 						.filter(s -> s != null && !s.getType().equals(XMaterial.AIR.parseMaterial())).findAny()
 						.isPresent()) {

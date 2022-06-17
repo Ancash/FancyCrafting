@@ -1,3 +1,4 @@
+
 package de.ancash.fancycrafting.commands;
 
 import java.util.ArrayList;
@@ -10,8 +11,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
+import de.ancash.fancycrafting.gui.WorkspaceTemplate;
 import de.ancash.fancycrafting.gui.CraftingWorkspaceGUI;
 import de.ancash.fancycrafting.gui.PagedRecipesViewGUI;
 import de.ancash.fancycrafting.gui.RecipeCreateGUI;
@@ -52,26 +53,28 @@ public class FancyCraftingCommand implements CommandExecutor {
 					width = Integer.valueOf(args[1]);
 					height = Integer.valueOf(args[2]);
 				} catch (NumberFormatException nfe) {
-					player.sendMessage(plugin.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1]).replace("%h", args[2]));
+					player.sendMessage(plugin.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1])
+							.replace("%h", args[2]));
 					return true;
 				}
 				if (width < 1 || width > 8 || height < 1 || height > 6) {
-					player.sendMessage(plugin.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1]).replace("%h", args[2]));
+					player.sendMessage(plugin.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1])
+							.replace("%h", args[2]));
 					return true;
 				}
 				if (!player.hasPermission("fancycrafting.open." + width + "x" + height)) {
 					sender.sendMessage(plugin.getResponse().NO_PERMISSION);
 					return true;
 				}
-				new CraftingWorkspaceGUI(plugin, player, CraftingTemplate.get(width, height));
+				new CraftingWorkspaceGUI(plugin, player, WorkspaceTemplate.get(width, height));
 				return true;
 			}
 			if (!player.hasPermission("fancycrafting.open.default")) {
 				sender.sendMessage(plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
-			new CraftingWorkspaceGUI(plugin, player,
-					CraftingTemplate.get(plugin.getDefaultTemplateWidth(), plugin.getDefaultTemplateHeight()));
+			new CraftingWorkspaceGUI(plugin, player, WorkspaceTemplate.get(plugin.getDefaultDimension().getWidth(),
+					plugin.getDefaultDimension().getHeight()));
 			return true;
 		case "create":
 			if (!player.hasPermission("fancycrafting.create")) {
@@ -127,7 +130,6 @@ public class FancyCraftingCommand implements CommandExecutor {
 		}
 
 		toSend.forEach(str -> player.sendMessage(str));
-
 		return true;
 	}
 }

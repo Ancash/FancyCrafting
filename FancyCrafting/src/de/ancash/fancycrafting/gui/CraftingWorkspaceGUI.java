@@ -23,7 +23,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import de.ancash.datastructures.tuples.Duplet;
 import de.ancash.datastructures.tuples.Tuple;
-import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
@@ -39,17 +38,17 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	protected Set<Integer> quickCraftingResultHashCodes = new HashSet<>();
 
-	public CraftingWorkspaceGUI(FancyCrafting pl, Player player, CraftingTemplate template) {
+	public CraftingWorkspaceGUI(FancyCrafting pl, Player player, WorkspaceTemplate template) {
 		super(pl, player, template);
-		for (int i = 0; i < template.getSize(); i++)
+		for (int i = 0; i < template.getDimension().getSize(); i++)
 			setItem(pl.getBackgroundItem().getOriginal(), i);
-		for (int i : template.getCraftingSlots())
+		for (int i : template.getSlots().getCraftingSlots())
 			setItem(null, i);
-		for (int i : template.getAutoCraftingSlots())
+		for (int i : template.getSlots().getAutoCraftingSlots())
 			setItem(pl.getQuickCraftingItem(), i);
 
-		addInventoryItem(
-				new InventoryItem(this, pl.getCloseItem().getOriginal(), template.getCloseSlot(), new Clickable() {
+		addInventoryItem(new InventoryItem(this, pl.getCloseItem().getOriginal(), template.getSlots().getCloseSlot(),
+				new Clickable() {
 
 					@Override
 					public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
@@ -77,9 +76,9 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	@Override
 	public ItemStack[] getIngredients() {
-		ItemStack[] ings = new ItemStack[template.getCraftingSlots().length];
+		ItemStack[] ings = new ItemStack[template.getSlots().getCraftingSlots().length];
 		for (int i = 0; i < ings.length; i++)
-			ings[i] = getItem(template.getCraftingSlots()[i]);
+			ings[i] = getItem(template.getSlots().getCraftingSlots()[i]);
 		return ings;
 	}
 
@@ -101,8 +100,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		synchronized (lock) {
 			if (getCurrentRecipe() == null)
 				return;
-			setItem(getCurrentRecipe().getResult(), template.getResultSlot());
-			for (int i : template.getCraftStateSlots())
+			setItem(getCurrentRecipe().getResult(), template.getSlots().getResultSlot());
+			for (int i : template.getSlots().getCraftStateSlots())
 				setItem(pl.getValidItem().getOriginal(), i);
 		}
 	}
@@ -123,8 +122,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	private void onNoRecipeMatch0() {
 		synchronized (lock) {
-			setItem(pl.getInvalidItem().getOriginal(), template.getResultSlot());
-			for (int i : template.getCraftStateSlots())
+			setItem(pl.getInvalidItem().getOriginal(), template.getSlots().getResultSlot());
+			for (int i : template.getSlots().getCraftStateSlots())
 				setItem(pl.getInvalidItem().getOriginal(), i);
 		}
 	}
@@ -141,11 +140,11 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			if (event.isShiftClick()) {
 
 				if (event.getView().getBottomInventory().getItem(event.getSlot()) != null) {
-					if (getItem(template.getResultSlot()) != null) {
+					if (getItem(template.getSlots().getResultSlot()) != null) {
 						IItemStack clicked = new IItemStack(
 								event.getView().getBottomInventory().getItem(event.getSlot()));
-						if (new IItemStack(getItem(template.getResultSlot())).hashCode() == clicked.hashCode()
-								|| pl.getBackgroundItem().hashCode() == clicked.hashCode()
+						if (new IItemStack(getItem(template.getSlots().getResultSlot())).hashCode() == clicked
+								.hashCode() || pl.getBackgroundItem().hashCode() == clicked.hashCode()
 								|| pl.getValidItem().hashCode() == clicked.hashCode()
 								|| pl.getInvalidItem().hashCode() == clicked.hashCode()
 								|| pl.getCloseItem().hashCode() == clicked.hashCode()) {
@@ -163,14 +162,14 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				&& event.getClickedInventory().equals(event.getInventory());
 		boolean craftingSlot = isCraftingSlot(event.getSlot());
 
-		if (workbenchInv && !craftingSlot && event.getSlot() != template.getResultSlot()) {
+		if (workbenchInv && !craftingSlot && event.getSlot() != template.getSlots().getResultSlot()) {
 			event.setCancelled(true);
 			return;
 		}
 
 		if (workbenchInv && craftingSlot) {
 			event.setCancelled(false);
-		} else if (workbenchInv && event.getSlot() == template.getResultSlot()) {
+		} else if (workbenchInv && event.getSlot() == template.getSlots().getResultSlot()) {
 			event.setCancelled(true);
 			if (getCurrentRecipe() != null) {
 				craftItem(event, currentRecipe, new int[] { matrix.getLeftMoves(), matrix.getUpMoves() });
@@ -312,8 +311,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	}
 
 	public boolean isCraftingSlot(int s) {
-		for (int i = 0; i < template.getCraftingSlots().length; i++)
-			if (template.getCraftingSlots()[i] == s)
+		for (int i = 0; i < template.getSlots().getCraftingSlots().length; i++)
+			if (template.getSlots().getCraftingSlots()[i] == s)
 				return true;
 		return false;
 	}
@@ -321,7 +320,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	@Override
 	public void onInventoryClose(InventoryCloseEvent event) {
 		IGUIManager.remove(getId());
-		for (int i : template.getCraftingSlots()) {
+		for (int i : template.getSlots().getCraftingSlots()) {
 			ItemStack item = getItem(i);
 			if (item == null || item.getType().equals(XMaterial.AIR.parseMaterial()))
 				continue;
@@ -342,8 +341,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	@Override
 	public void onInventoryDrag(InventoryDragEvent event) {
-		if (event.getRawSlots().stream().filter(i -> i < template.getSize()).filter(i -> !isCraftingSlot(i)).findAny()
-				.isPresent()) {
+		if (event.getRawSlots().stream().filter(i -> i < template.getDimension().getSize())
+				.filter(i -> !isCraftingSlot(i)).findAny().isPresent()) {
 			event.setCancelled(true);
 			return;
 		}
@@ -474,7 +473,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	private void collectShapeless(Inventory inventory, IShapelessRecipe shapeless, int multiplicator) {
 		Set<Integer> done = new HashSet<>();
 		for (ItemStack ingredient : shapeless.getIngredients()) {
-			for (int craftSlot : template.getCraftingSlots()) {
+			for (int craftSlot : template.getSlots().getCraftingSlots()) {
 				if (done.contains(craftSlot))
 					continue;
 				if (inventory.getItem(craftSlot) == null)
@@ -491,15 +490,15 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	private void collectShaped(Inventory inventory, IShapedRecipe shaped, int multiplicator) {
 		synchronized (super.lock) {
-			int base = template.getWidth() * matrix.getUpMoves() + matrix.getLeftMoves();
+			int base = template.getDimension().getWidth() * matrix.getUpMoves() + matrix.getLeftMoves();
 			for (int i = 0; i < shaped.getIngredientsArray().length; i++) {
 				if (shaped.getIngredientsArray()[i] == null)
 					continue;
 				ItemStack ing = matrix.getArray()[i];
 				int amount = ing.getAmount()
 						- shaped.getIngredientsArray()[i].getOriginal().getAmount() * multiplicator;
-				int slot = template.getCraftingSlots()[base + i / shaped.getWidth() * template.getWidth()
-						+ i % shaped.getWidth()];
+				int slot = template.getSlots().getCraftingSlots()[base
+						+ i / shaped.getWidth() * template.getDimension().getWidth() + i % shaped.getWidth()];
 				if (amount > 0)
 					ing.setAmount(amount);
 				else {
@@ -535,11 +534,11 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		Set<Integer> temp = new HashSet<>();
 		Collections.shuffle(matches);
 		int i = 0;
-		for (i = 0; i < template.getAutoCraftingSlots().length && i < matches.size(); i++) {
+		for (i = 0; i < template.getSlots().getAutoCraftingSlots().length && i < matches.size(); i++) {
 			IRecipe recipe = matches.get(i);
 			temp.add(recipe.getResultAsIItemStack().hashCode());
-			addInventoryItem(
-					new InventoryItem(this, recipe.getResult(), template.getAutoCraftingSlots()[i], new Clickable() {
+			addInventoryItem(new InventoryItem(this, recipe.getResult(), template.getSlots().getAutoCraftingSlots()[i],
+					new Clickable() {
 
 						@Override
 						public void onClick(int arg0, boolean arg1, InventoryAction arg2, boolean arg3) {
@@ -550,9 +549,9 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 						}
 					}));
 		}
-		while (i < template.getAutoCraftingSlots().length) {
-			removeInventoryItem(template.getAutoCraftingSlots()[i]);
-			setItem(pl.getQuickCraftingItem(), template.getAutoCraftingSlots()[i]);
+		while (i < template.getSlots().getAutoCraftingSlots().length) {
+			removeInventoryItem(template.getSlots().getAutoCraftingSlots()[i]);
+			setItem(pl.getQuickCraftingItem(), template.getSlots().getAutoCraftingSlots()[i]);
 			i++;
 		}
 		quickCraftingResultHashCodes = temp;

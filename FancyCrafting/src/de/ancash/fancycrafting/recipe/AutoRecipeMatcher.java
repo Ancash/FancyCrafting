@@ -31,7 +31,9 @@ public class AutoRecipeMatcher {
 	public void compute() {
 		ingredients = getInventoryContentsAsIItemStack();
 		Map<Integer, Integer> mappedIngredientHashCodes = mapHashCodes(ingredients);
-		matchedRecipes = Collections.unmodifiableSet(possibleRecipes.stream().filter(r -> r.isSuitableForAutoMatching() && match(r, mappedIngredientHashCodes)).collect(Collectors.toSet()));
+		matchedRecipes = Collections.unmodifiableSet(possibleRecipes.stream()
+				.filter(r -> r.isSuitableForAutoMatching() && match(r, mappedIngredientHashCodes))
+				.collect(Collectors.toSet()));
 	}
 
 	private boolean match(IRecipe recipe, Map<Integer, Integer> map) {

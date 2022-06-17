@@ -14,7 +14,6 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.minecraft.XMaterial;
 import de.ancash.minecraft.anvilgui.AnvilGUI;
@@ -23,20 +22,20 @@ import de.ancash.minecraft.inventory.IGUIManager;
 
 public class RecipeCreateGUI extends IGUI {
 
-	private final CraftingTemplate template;
+	private final WorkspaceTemplate template;
 	private final FancyCrafting plugin;
 	private final String recipeName;
 
 	public RecipeCreateGUI(FancyCrafting pl, Player player, String name) {
-		super(player.getUniqueId(), CraftingTemplate.get(8, 6).getSize(), pl.getCreateRecipeTitle());
-		this.template = CraftingTemplate.get(8, 6);
+		super(player.getUniqueId(), WorkspaceTemplate.get(8, 6).getDimension().getSize(), pl.getCreateRecipeTitle());
+		this.template = WorkspaceTemplate.get(8, 6);
 		for (int i = 0; i < getSize(); i++)
 			setItem(pl.getBackgroundItem().getOriginal(), i);
-		for (int i : template.getCraftingSlots())
+		for (int i : template.getSlots().getCraftingSlots())
 			setItem(null, i);
-		setItem(null, template.getResultSlot());
-		setItem(pl.getSaveItem(), template.getSaveSlot());
-		setItem(pl.getShapedItem(), template.getRecipeTypeSlot());
+		setItem(null, template.getSlots().getResultSlot());
+		setItem(pl.getSaveItem(), template.getSlots().getSaveSlot());
+		setItem(pl.getShapedItem(), template.getSlots().getRecipeTypeSlot());
 		this.recipeName = name;
 		this.plugin = pl;
 		IGUIManager.register(this, getId());
@@ -44,10 +43,10 @@ public class RecipeCreateGUI extends IGUI {
 	}
 
 	private boolean isCraftingSlot(int a) {
-		for (int i : template.getCraftingSlots())
+		for (int i : template.getSlots().getCraftingSlots())
 			if (i == a)
 				return true;
-		return a == template.getResultSlot();
+		return a == template.getSlots().getResultSlot();
 	}
 
 	public static void open(FancyCrafting plugin, Player owner) {
@@ -82,24 +81,24 @@ public class RecipeCreateGUI extends IGUI {
 			} else {
 				event.setCancelled(true);
 			}
-			boolean isShaped = event.getInventory().getItem(template.getRecipeTypeSlot()).getItemMeta().getDisplayName()
-					.contains("Shaped");
-			if (slot == template.getRecipeTypeSlot()) {
+			boolean isShaped = event.getInventory().getItem(template.getSlots().getRecipeTypeSlot()).getItemMeta()
+					.getDisplayName().contains("Shaped");
+			if (slot == template.getSlots().getRecipeTypeSlot()) {
 				if (!isShaped)
-					event.getInventory().setItem(template.getRecipeTypeSlot(), plugin.getShapedItem());
+					event.getInventory().setItem(template.getSlots().getRecipeTypeSlot(), plugin.getShapedItem());
 				else
-					event.getInventory().setItem(template.getRecipeTypeSlot(), plugin.getShapelessItem());
+					event.getInventory().setItem(template.getSlots().getRecipeTypeSlot(), plugin.getShapelessItem());
 			}
 
-			if (slot == template.getSaveSlot()) {
-				ItemStack result = event.getInventory().getItem(template.getResultSlot());
+			if (slot == template.getSlots().getSaveSlot()) {
+				ItemStack result = event.getInventory().getItem(template.getSlots().getResultSlot());
 				if (result == null) {
 					event.getWhoClicked().sendMessage("§cInvalid recipe!");
 					return;
 				}
-				ItemStack[] ings = new ItemStack[template.getCraftingSlots().length];
+				ItemStack[] ings = new ItemStack[template.getSlots().getCraftingSlots().length];
 				for (int i = 0; i < ings.length; i++)
-					ings[i] = getItem(template.getCraftingSlots()[i]);
+					ings[i] = getItem(template.getSlots().getCraftingSlots()[i]);
 				if (!Arrays.asList(ings).stream()
 						.filter(s -> s != null && !s.getType().equals(XMaterial.AIR.parseMaterial())).findAny()
 						.isPresent()) {
@@ -120,13 +119,13 @@ public class RecipeCreateGUI extends IGUI {
 
 	@Override
 	public void onInventoryClose(InventoryCloseEvent event) {
-		for (int i : template.getCraftingSlots()) {
+		for (int i : template.getSlots().getCraftingSlots()) {
 			ItemStack is = event.getInventory().getItem(i);
 			if (is == null)
 				continue;
 			event.getPlayer().getInventory().addItem(is);
 		}
-		ItemStack result = event.getInventory().getItem(template.getResultSlot());
+		ItemStack result = event.getInventory().getItem(template.getSlots().getResultSlot());
 		if (result != null)
 			event.getPlayer().getInventory().addItem(result);
 		IGUIManager.remove(getId());

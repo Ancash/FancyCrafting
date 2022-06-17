@@ -5,8 +5,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
+import de.ancash.fancycrafting.gui.WorkspaceTemplate;
 import de.ancash.fancycrafting.gui.CraftingWorkspaceGUI;
 import de.ancash.minecraft.XMaterial;
 
@@ -27,7 +27,7 @@ public class WorkbenchClickListener implements Listener {
 		if (!event.getClickedBlock().getType().equals(XMaterial.CRAFTING_TABLE.parseMaterial()))
 			return;
 		event.setCancelled(true);
-		new CraftingWorkspaceGUI(plugin, event.getPlayer(),
-				CraftingTemplate.get(plugin.getDefaultTemplateWidth(), plugin.getDefaultTemplateHeight()));
+		new CraftingWorkspaceGUI(plugin, event.getPlayer(), WorkspaceTemplate
+				.get(plugin.getDefaultDimension().getWidth(), plugin.getDefaultDimension().getHeight()));
 	}
 }

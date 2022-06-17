@@ -5,7 +5,6 @@ import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
 
-import de.ancash.fancycrafting.CraftingTemplate;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.ItemBuilder;
@@ -31,31 +30,33 @@ public class RecipesCollectionViewGUI {
 
 	public void openRecipe(int i) {
 		IRecipe recipe = recipes.get(i);
-		CraftingTemplate template = CraftingTemplate.get(recipe.getWidth(), recipe.getHeight());
+		WorkspaceTemplate template = WorkspaceTemplate.get(recipe.getWidth(), recipe.getHeight());
 		gui.openRecipe(recipe);
-		gui.addInventoryItem(new InventoryItem(gui, pl.getNextItem(), template.getNextSlot(), new Clickable() {
+		gui.addInventoryItem(
+				new InventoryItem(gui, pl.getNextItem(), template.getSlots().getNextSlot(), new Clickable() {
 
-			@Override
-			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if (topInventory) {
-					openRecipe(increment());
-				}
-			}
-		}));
-		gui.addInventoryItem(new InventoryItem(gui, pl.getPrevItem(), template.getPrevSlot(), new Clickable() {
+					@Override
+					public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
+						if (topInventory) {
+							openRecipe(increment());
+						}
+					}
+				}));
+		gui.addInventoryItem(
+				new InventoryItem(gui, pl.getPrevItem(), template.getSlots().getPrevSlot(), new Clickable() {
 
-			@Override
-			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if (topInventory) {
-					openRecipe(decrement());
-				}
-			}
-		}));
+					@Override
+					public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
+						if (topInventory) {
+							openRecipe(decrement());
+						}
+					}
+				}));
 
 		if (player.hasPermission("fancycrafting.admin.edit") && !recipes.get(i).isVanilla())
 			gui.addInventoryItem(new InventoryItem(gui,
 					new ItemBuilder(XMaterial.WRITABLE_BOOK).setDisplayname("§aClick to edit recipe").build(),
-					template.getEditSlot(), new Clickable() {
+					template.getSlots().getEditSlot(), new Clickable() {
 
 						@Override
 						public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {

@@ -35,7 +35,7 @@ public abstract class IRecipe {
 			throw new IllegalArgumentException("Custom recipe must have a name");
 		this.result = new IItemStack(result);
 		this.vanilla = vanilla;
-		if(vanilla)
+		if (vanilla)
 			this.suitableForAutoMatching = suitableForAutoMatching;
 		else
 			this.suitableForAutoMatching = true;
@@ -50,15 +50,15 @@ public abstract class IRecipe {
 	public abstract int getWidth();
 
 	public abstract int getIngredientsSize();
-	
+
 	public abstract Map<Integer, Integer> getIngredientsHashCodes();
 
 	public abstract List<ItemStack> getIngredients();
-	
+
 	public ItemStack getResult() {
 		return result.getOriginal();
 	}
-	
+
 	public IItemStack getResultAsIItemStack() {
 		return result;
 	}
@@ -78,7 +78,7 @@ public abstract class IRecipe {
 	public boolean isSuitableForAutoMatching() {
 		return suitableForAutoMatching;
 	}
-	
+
 	public static boolean matchesShaped(IShapedRecipe recipe, ItemStack[] ings, int width, int height) {
 		if (recipe.getWidth() != width || recipe.getHeight() != height)
 			return false;
@@ -96,7 +96,8 @@ public abstract class IRecipe {
 
 	public static boolean matchesShapeless(IShapelessRecipe recipe, ItemStack[] ingredients) {
 		List<IItemStack> origs = recipe.getIIngredients();
-		List<IItemStack> ings = Arrays.asList(ingredients).stream().filter(i -> i != null).map(IItemStack::new).collect(Collectors.toList());
+		List<IItemStack> ings = Arrays.asList(ingredients).stream().filter(i -> i != null).map(IItemStack::new)
+				.collect(Collectors.toList());
 
 		if (ings.size() != origs.size())
 			return false;
@@ -129,7 +130,8 @@ public abstract class IRecipe {
 				for (int a = 0; a < s.getShape().length; a++) {
 					String str = s.getShape()[a];
 					for (int b = 0; b < str.length(); b++) {
-						suitableForAutoMatching.compareAndSet(true, isSuitableForAutoMatching(s.getIngredientMap().get(str.charAt(b))));
+						suitableForAutoMatching.compareAndSet(true,
+								isSuitableForAutoMatching(s.getIngredientMap().get(str.charAt(b))));
 						ings[a * 3 + b] = removeUnspecificMeta(s, s.getIngredientMap().get(str.charAt(b)));
 					}
 				}
@@ -156,26 +158,27 @@ public abstract class IRecipe {
 
 	@SuppressWarnings("deprecation")
 	private static boolean isSuitableForAutoMatching(ItemStack i) {
-		if(i == null)
+		if (i == null)
 			return true;
 		return i.getDurability() != Short.MAX_VALUE;
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	private static ItemStack removeUnspecificMeta(Recipe r, ItemStack is) {
-		if(is == null)
+		if (is == null)
 			return null;
-		if(is.getItemMeta().toString().toLowerCase().contains("unspecific") && is.getDurability() == 0)
+		if (is.getItemMeta().toString().toLowerCase().contains("unspecific") && is.getDurability() == 0)
 			is.setItemMeta(null);
 		return is;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "IRecipe{name=" + name + ";result=" + result + ";ingredients=" + getIngredients() + "}";
 	}
 
 	public static IItemStack[] toIItemStackArray(ItemStack[] from) {
-		return Arrays.asList(from).stream().map(item -> item == null ? null : new IItemStack(item)).toArray(IItemStack[]::new);
+		return Arrays.asList(from).stream().map(item -> item == null ? null : new IItemStack(item))
+				.toArray(IItemStack[]::new);
 	}
 }

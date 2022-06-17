@@ -24,7 +24,7 @@ public class IShapelessRecipe extends IRecipe {
 		super(result, name, uuid);
 		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null).collect(Collectors.toList()));
 		this.iings = Collections.unmodifiableList(this.ings.stream().map(IItemStack::new).collect(Collectors.toList()));
-		for(IItemStack ii : iings) {
+		for (IItemStack ii : iings) {
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
 			hashCodes.put(ii.hashCode(), hashCodes.get(ii.hashCode()) + ii.getOriginal().getAmount());
 		}
@@ -42,11 +42,12 @@ public class IShapelessRecipe extends IRecipe {
 		height = h;
 	}
 
-	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, boolean vanilla, boolean suitableForAutoMatching) {
+	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, boolean vanilla,
+			boolean suitableForAutoMatching) {
 		super(result, name, vanilla, suitableForAutoMatching);
 		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null).collect(Collectors.toList()));
 		this.iings = Collections.unmodifiableList(this.ings.stream().map(IItemStack::new).collect(Collectors.toList()));
-		for(IItemStack ii : iings) {
+		for (IItemStack ii : iings) {
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
 			hashCodes.put(ii.hashCode(), hashCodes.get(ii.hashCode()) + ii.getOriginal().getAmount());
 		}
@@ -67,11 +68,11 @@ public class IShapelessRecipe extends IRecipe {
 	public List<ItemStack> getIngredients() {
 		return ings;
 	}
-	
+
 	public List<IItemStack> getIIngredients() {
 		return iings;
 	}
-	
+
 	@Override
 	public int getIngredientsSize() {
 		return ings.size();

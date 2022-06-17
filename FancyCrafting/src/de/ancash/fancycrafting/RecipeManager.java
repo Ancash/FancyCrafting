@@ -172,12 +172,14 @@ public class RecipeManager {
 		recipesByName.get(name).add(recipe);
 		recipesByResult.computeIfAbsent(hash, k -> new HashSet<>());
 		recipesByResult.get(hash).add(recipe);
-		
-		if(recipe.isSuitableForAutoMatching())
+
+		if (recipe.isSuitableForAutoMatching())
 			autoMatchingRecipes.add(recipe);
-		else
-			if(recipe.isVanilla())
-				plugin.getLogger().info(String.format("'%s' is not included in auto recipe matching (no unique ingredient identification)", recipe.getName()));
+		else if (recipe.isVanilla())
+			plugin.getLogger()
+					.info(String.format(
+							"'%s' is not included in auto recipe matching (no unique ingredient identification)",
+							recipe.getName()));
 		if (!recipe.isVanilla()) {
 			customRecipesBySize.computeIfAbsent(recipe.getIngredientsSize(), k -> new HashSet<>());
 			customRecipesBySize.get(recipe.getIngredientsSize()).add(recipe);
@@ -193,7 +195,8 @@ public class RecipeManager {
 			if (recipe instanceof IShapedRecipe && IRecipe.matchesShaped((IShapedRecipe) recipe, matrix.getArray(),
 					matrix.getWidth(), matrix.getHeight()))
 				return recipe;
-			else if (recipe instanceof IShapelessRecipe && IRecipe.matchesShapeless((IShapelessRecipe) recipe, matrix.getArray()))
+			else if (recipe instanceof IShapelessRecipe
+					&& IRecipe.matchesShapeless((IShapelessRecipe) recipe, matrix.getArray()))
 				return recipe;
 		return null;
 	}
@@ -201,7 +204,7 @@ public class RecipeManager {
 	public Set<IRecipe> getAutoMatchingRecipes() {
 		return Collections.unmodifiableSet(autoMatchingRecipes);
 	}
-	
+
 	public Set<IRecipe> getCustomRecipes() {
 		return Collections.unmodifiableSet(customRecipes);
 	}
@@ -228,7 +231,7 @@ public class RecipeManager {
 	public Set<IRecipe> getRecipeByResult(ItemStack itemStack) {
 		return getRecipeByResult(new IItemStack(itemStack));
 	}
-	
+
 	public Set<IRecipe> getRecipeByResult(IItemStack iItemStack) {
 		if (recipesByResult.get(iItemStack.hashCode()) == null)
 			return null;
