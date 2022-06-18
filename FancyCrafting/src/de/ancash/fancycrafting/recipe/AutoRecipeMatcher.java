@@ -8,19 +8,20 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.bukkit.inventory.Inventory;
+import org.bukkit.entity.Player;
 
+import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.minecraft.IItemStack;
 
 public class AutoRecipeMatcher {
 
-	private final Inventory inv;
+	private final Player player;
 	private Set<IRecipe> matchedRecipes = new HashSet<>();
 	private final Set<IRecipe> possibleRecipes;
 	private Map<Integer, IItemStack> ingredients;
 
-	public AutoRecipeMatcher(Inventory inv, Set<IRecipe> recipes) {
-		this.inv = inv;
+	public AutoRecipeMatcher(Player player, Set<IRecipe> recipes) {
+		this.player = player;
 		this.possibleRecipes = recipes;
 	}
 
@@ -32,10 +33,10 @@ public class AutoRecipeMatcher {
 		ingredients = getInventoryContentsAsIItemStack();
 		Map<Integer, Integer> mappedIngredientHashCodes = mapHashCodes(ingredients);
 		matchedRecipes = Collections.unmodifiableSet(possibleRecipes.stream()
-				.filter(r -> r.isSuitableForAutoMatching() && match(r, mappedIngredientHashCodes))
+				.filter(r -> r.isSuitableForAutoMatching() && FancyCrafting.canCraftRecipe(r, player) && match(r, mappedIngredientHashCodes))
 				.collect(Collectors.toSet()));
 	}
-
+	
 	private boolean match(IRecipe recipe, Map<Integer, Integer> map) {
 		for (Entry<Integer, Integer> entry : recipe.getIngredientsHashCodes().entrySet())
 			if (!map.containsKey(entry.getKey()) || map.get(entry.getKey()) < entry.getValue())
@@ -44,8 +45,8 @@ public class AutoRecipeMatcher {
 	}
 
 	private Map<Integer, IItemStack> getInventoryContentsAsIItemStack() {
-		return IntStream.range(0, inv.getSize()).filter(i -> inv.getContents()[i] != null).boxed()
-				.collect(Collectors.toMap(i -> i, i -> new IItemStack(inv.getContents()[i])));
+		return IntStream.range(0, player.getInventory().getSize()).filter(i -> player.getInventory().getContents()[i] != null).boxed()
+				.collect(Collectors.toMap(i -> i, i -> new IItemStack(player.getInventory().getContents()[i])));
 	}
 
 	private Map<Integer, Integer> mapHashCodes(Map<Integer, IItemStack> from) {
