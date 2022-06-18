@@ -15,7 +15,7 @@ import de.ancash.minecraft.inventory.InventoryItem;
 public class RecipesCollectionViewGUI {
 
 	protected final List<IRecipe> recipes;
-	protected int pos = 0;
+	protected int pos;
 	protected final RecipeViewGUI gui;
 	protected final FancyCrafting pl;
 	protected final Player player;

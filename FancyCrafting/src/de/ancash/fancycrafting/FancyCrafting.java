@@ -4,11 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,11 +14,6 @@ import java.util.concurrent.Future;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -35,7 +27,6 @@ import de.ancash.fancycrafting.gui.WorkspaceSlotsBuilder;
 import de.ancash.fancycrafting.gui.WorkspaceTemplate;
 import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
 import de.ancash.fancycrafting.recipe.IRecipe;
-import de.ancash.fancycrafting.recipe.VanillaRecipeMatcher;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.Metrics;
@@ -45,18 +36,19 @@ import de.ancash.minecraft.updatechecker.UpdateChecker;
 /**
  * 
  */
-public class FancyCrafting extends JavaPlugin implements Listener {
+public class FancyCrafting extends JavaPlugin {
 
 	private final ExecutorService threadPool = Executors
 			.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 	private static FancyCrafting singleton;
-	private final Map<UUID, VanillaRecipeMatcher> recipeMatcher = new HashMap<>();
+	
+	private final int resourceId = 87300;
 	private Response response;
 	private UpdateChecker updateChecker;
 
 	private RecipeManager recipeManager;
 	private boolean checkRecipesAsync;
-	private boolean checkQuickCraftingAsync;
+	private boolean quickCraftingAsync;
 	private boolean permsForCustomRecipes;
 	private boolean permsForVanillaRecipes;
 	private WorkspaceDimension defaultDim;
@@ -65,15 +57,15 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 	private IItemStack closeItem;
 	private ItemStack prevItem;
 	private ItemStack nextItem;
-	private IItemStack invalid;
-	private IItemStack valid;
-	private IItemStack background;
+	private IItemStack invalidItem;
+	private IItemStack validItem;
+	private IItemStack backgroundItem;
 	private ItemStack shapeless;
-	private ItemStack shaped;
-	private ItemStack save;
-	private ItemStack edit;
-	private ItemStack delete;
-	private ItemStack quickCrafting;
+	private ItemStack shapedItem;
+	private ItemStack saveItem;
+	private ItemStack editItem;
+	private ItemStack deleteItem;
+	private ItemStack quickCraftingItem;
 	private String createRecipeTitle;
 	private String customRecipesTitle;
 	private String viewRecipeTitle;
@@ -92,13 +84,10 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 			recipeManager = new RecipeManager(this);
 			loadConfig();
 			response = new Response(this);
-			Bukkit.getPluginManager().registerEvents(this, singleton);
 			PluginManager pm = Bukkit.getServer().getPluginManager();
 			pm.registerEvents(new WorkbenchClickListener(singleton), this);
 
 			getCommand("fc").setExecutor(new FancyCraftingCommand(this));
-			for (Player p : Bukkit.getOnlinePlayers())
-				recipeMatcher.put(p.getUniqueId(), new VanillaRecipeMatcher(this, p));
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
@@ -166,29 +155,27 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 				new HashSet<>(Arrays.asList("type")));
 	}
 
-	private final int SPIGOT_RESOURCE_ID = 87300;
-
 	private void checkForUpdates() {
-		updateChecker = new UpdateChecker(this, UpdateCheckSource.SPIGOT, SPIGOT_RESOURCE_ID + "")
-				.setUsedVersion("v" + getDescription().getVersion()).setDownloadLink(SPIGOT_RESOURCE_ID)
-				.setChangelogLink(SPIGOT_RESOURCE_ID).setNotifyOpsOnJoin(true).checkEveryXHours(6).checkNow();
+		updateChecker = new UpdateChecker(this, UpdateCheckSource.SPIGOT, String.valueOf(resourceId))
+				.setUsedVersion("v" + getDescription().getVersion()).setDownloadLink(resourceId)
+				.setChangelogLink(resourceId).setNotifyOpsOnJoin(true).checkEveryXHours(6).checkNow();
 	}
 
 	@SuppressWarnings("deprecation")
 	public void loadConfig() throws IOException, org.bukkit.configuration.InvalidConfigurationException {
-		background = new IItemStack(ItemStackUtils.get(config, "background"));
+		backgroundItem = new IItemStack(ItemStackUtils.get(config, "background"));
 		backItem = ItemStackUtils.get(config, "recipe-view-gui.back");
 		closeItem = new IItemStack(ItemStackUtils.get(config, "close"));
 		prevItem = ItemStackUtils.get(config, "recipe-view-gui.previous");
 		nextItem = ItemStackUtils.get(config, "recipe-view-gui.next");
-		valid = new IItemStack(ItemStackUtils.get(config, "workbench.valid_recipe"));
-		invalid = new IItemStack(ItemStackUtils.get(config, "workbench.invalid_recipe"));
+		validItem = new IItemStack(ItemStackUtils.get(config, "workbench.valid_recipe"));
+		invalidItem = new IItemStack(ItemStackUtils.get(config, "workbench.invalid_recipe"));
 		shapeless = ItemStackUtils.get(config, "recipe-create-gui.shapeless");
-		shaped = ItemStackUtils.get(config, "recipe-create-gui.shaped");
-		save = ItemStackUtils.get(config, "recipe-create-gui.save");
-		edit = ItemStackUtils.get(config, "recipe-create-gui.edit");
-		delete = ItemStackUtils.get(config, "recipe-create-gui.delete");
-		quickCrafting = ItemStackUtils.get(config, "workbench.quick_crafting");
+		shapedItem = ItemStackUtils.get(config, "recipe-create-gui.shaped");
+		saveItem = ItemStackUtils.get(config, "recipe-create-gui.save");
+		editItem = ItemStackUtils.get(config, "recipe-create-gui.edit");
+		deleteItem = ItemStackUtils.get(config, "recipe-create-gui.delete");
+		quickCraftingItem = ItemStackUtils.get(config, "workbench.quick_crafting");
 		defaultDim = new WorkspaceDimension(config.getInt("default-template-width"),
 				config.getInt("default-template-height"));
 		createRecipeTitle = config.getString("recipe-create-gui.title");
@@ -199,20 +186,10 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 		permsForCustomRecipes = config.getBoolean("perms-for-custom-recipes");
 		permsForVanillaRecipes = config.getBoolean("perms-for-vanilla-recipes");
 		checkRecipesAsync = config.getBoolean("check-recipes-async");
-		checkQuickCraftingAsync = config.getBoolean("check-quick-crafting-async");
+		quickCraftingAsync = config.getBoolean("check-quick-crafting-async");
 		getLogger().info("Check recipes async: " + checkRecipesAsync);
-		getLogger().info("Check quick crafting async: " + checkQuickCraftingAsync);
+		getLogger().info("Check quick crafting async: " + quickCraftingAsync);
 		getLogger().info("Default crafting template is " + defaultDim.getWidth() + "x" + defaultDim.getHeight());
-	}
-
-	@EventHandler
-	public void onJoin(PlayerJoinEvent j) {
-		recipeMatcher.put(j.getPlayer().getUniqueId(), new VanillaRecipeMatcher(this, j.getPlayer()));
-	}
-
-	@EventHandler
-	public void onQuit(PlayerQuitEvent q) {
-		recipeMatcher.remove(q.getPlayer().getUniqueId());
 	}
 
 	@Override
@@ -243,24 +220,20 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 		return singleton.permsForVanillaRecipes;
 	}
 
-	public static VanillaRecipeMatcher getVanillaRecipeMatcher(Player p) {
-		return singleton.recipeMatcher.get(p.getUniqueId());
-	}
-
 	public static boolean registerRecipe(IRecipe recipe) {
 		return singleton.getRecipeManager().registerRecipe(recipe);
 	}
 
 	public IItemStack getValidItem() {
-		return valid;
+		return validItem;
 	}
 
 	public IItemStack getInvalidItem() {
-		return invalid;
+		return invalidItem;
 	}
 
 	public IItemStack getBackgroundItem() {
-		return background;
+		return backgroundItem;
 	}
 
 	public String getCreateRecipeTitle() {
@@ -300,19 +273,19 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 	}
 
 	public ItemStack getShapedItem() {
-		return shaped;
+		return shapedItem;
 	}
 
 	public ItemStack getSaveItem() {
-		return save;
+		return saveItem;
 	}
 
 	public ItemStack getEditItem() {
-		return edit;
+		return editItem;
 	}
 
 	public ItemStack getDeleteItem() {
-		return delete;
+		return deleteItem;
 	}
 
 	public boolean checkRecipesAsync() {
@@ -332,10 +305,10 @@ public class FancyCrafting extends JavaPlugin implements Listener {
 	}
 
 	public ItemStack getQuickCraftingItem() {
-		return quickCrafting;
+		return quickCraftingItem;
 	}
 
-	public boolean checkQuickCraftingAsync() {
-		return checkQuickCraftingAsync;
+	public boolean isQuickCraftingAsync() {
+		return quickCraftingAsync;
 	}
 }

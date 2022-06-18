@@ -28,7 +28,7 @@ public class FancyCraftingCommand implements CommandExecutor {
 	@SuppressWarnings("unchecked")
 	public FancyCraftingCommand(FancyCrafting plugin) {
 		this.plugin = plugin;
-		toSend = (List<String>) plugin.getDescription().getCommands().get("fc").get("usage");
+		toSend = (List<String>) this.plugin.getDescription().getCommands().get("fc").get("usage");
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class FancyCraftingCommand implements CommandExecutor {
 			return true;
 		}
 
-		String command = args[0];
+		final String command = args[0];
 
 		switch (command.toLowerCase()) {
 		case "open":
@@ -53,75 +53,75 @@ public class FancyCraftingCommand implements CommandExecutor {
 					width = Integer.valueOf(args[1]);
 					height = Integer.valueOf(args[2]);
 				} catch (NumberFormatException nfe) {
-					player.sendMessage(plugin.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1])
+					player.sendMessage(this.plugin.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1])
 							.replace("%h", args[2]));
 					return true;
 				}
 				if (width < 1 || width > 8 || height < 1 || height > 6) {
-					player.sendMessage(plugin.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1])
+					player.sendMessage(this.plugin.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1])
 							.replace("%h", args[2]));
 					return true;
 				}
 				if (!player.hasPermission("fancycrafting.open." + width + "x" + height)) {
-					sender.sendMessage(plugin.getResponse().NO_PERMISSION);
+					sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 					return true;
 				}
-				new CraftingWorkspaceGUI(plugin, player, WorkspaceTemplate.get(width, height));
+				new CraftingWorkspaceGUI(this.plugin, player, WorkspaceTemplate.get(width, height));
 				return true;
 			}
 			if (!player.hasPermission("fancycrafting.open.default")) {
-				sender.sendMessage(plugin.getResponse().NO_PERMISSION);
+				sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
-			new CraftingWorkspaceGUI(plugin, player, WorkspaceTemplate.get(plugin.getDefaultDimension().getWidth(),
-					plugin.getDefaultDimension().getHeight()));
+			new CraftingWorkspaceGUI(this.plugin, player, WorkspaceTemplate.get(this.plugin.getDefaultDimension().getWidth(),
+					this.plugin.getDefaultDimension().getHeight()));
 			return true;
 		case "create":
 			if (!player.hasPermission("fancycrafting.create")) {
-				sender.sendMessage(plugin.getResponse().NO_PERMISSION);
+				sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
-			RecipeCreateGUI.open(plugin, player);
+			RecipeCreateGUI.open(this.plugin, player);
 			return true;
 		case "edit":
 			if (!sender.hasPermission("fancycrafting.edit")) {
-				sender.sendMessage(plugin.getResponse().NO_PERMISSION);
+				sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
 			if (args.length == 2) {
 
-				Set<IRecipe> recipes = plugin.getRecipeManager().getRecipeByName(args[1]);
+				Set<IRecipe> recipes = this.plugin.getRecipeManager().getRecipeByName(args[1]);
 				if (recipes != null)
 					recipes = recipes.stream().filter(r -> !r.isVanilla()).collect(Collectors.toSet());
 				if (recipes == null || recipes.isEmpty()) {
-					sender.sendMessage(plugin.getResponse().INVALID_RECIPE.replace("%r", args[1]));
+					sender.sendMessage(this.plugin.getResponse().INVALID_RECIPE.replace("%r", args[1]));
 					return true;
 				}
 				if (recipes.size() > 1) {
-					new PagedRecipesViewGUI(plugin, player, new ArrayList<>(recipes));
+					new PagedRecipesViewGUI(this.plugin, player, new ArrayList<>(recipes));
 				} else {
-					new RecipeEditGUI(plugin, player, recipes.stream().findAny().get());
+					new RecipeEditGUI(this.plugin, player, recipes.stream().findAny().get());
 				}
 				return true;
 			}
 			break;
 		case "view":
 			if (args.length == 1 && sender.hasPermission("fancycrafting.admin.view")) {
-				new PagedRecipesViewGUI(plugin, player, new ArrayList<>(plugin.getRecipeManager().getCustomRecipes()));
+				new PagedRecipesViewGUI(this.plugin, player, new ArrayList<>(this.plugin.getRecipeManager().getCustomRecipes()));
 				return true;
 			}
 			if (args.length == 2) {
 				if (!sender.hasPermission("fancycrafting.view." + args[1].toLowerCase())) {
-					sender.sendMessage(plugin.getResponse().NO_PERMISSION);
+					sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 					return true;
 				}
 
-				Set<IRecipe> recipes = plugin.getRecipeManager().getRecipeByName(args[1]);
+				Set<IRecipe> recipes = this.plugin.getRecipeManager().getRecipeByName(args[1]);
 				if (recipes == null || recipes.isEmpty()) {
-					sender.sendMessage(plugin.getResponse().INVALID_RECIPE.replace("%r", args[1]));
+					sender.sendMessage(this.plugin.getResponse().INVALID_RECIPE.replace("%r", args[1]));
 					return true;
 				}
-				RecipeViewGUI.viewRecipe(plugin, recipes, player);
+				RecipeViewGUI.viewRecipe(this.plugin, recipes, player);
 				return true;
 			}
 			break;

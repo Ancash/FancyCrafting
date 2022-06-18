@@ -54,6 +54,8 @@ public abstract class IRecipe {
 	public abstract Map<Integer, Integer> getIngredientsHashCodes();
 
 	public abstract List<ItemStack> getIngredients();
+	
+	public abstract List<IItemStack> getIIngredients();
 
 	public ItemStack getResult() {
 		return result.getOriginal();
@@ -79,7 +81,7 @@ public abstract class IRecipe {
 		return suitableForAutoMatching;
 	}
 
-	public static boolean matchesShaped(IShapedRecipe recipe, ItemStack[] ings, int width, int height) {
+	public static boolean matchesShaped(IShapedRecipe recipe, IItemStack[] ings, int width, int height) {
 		if (recipe.getWidth() != width || recipe.getHeight() != height)
 			return false;
 		for (int i = 0; i < ings.length; i++) {
@@ -87,17 +89,16 @@ public abstract class IRecipe {
 				return false;
 			if (ings[i] == null)
 				continue;
-			if (recipe.asArray()[i].hashCode() != new IItemStack(ings[i]).hashCode()
-					|| ings[i].getAmount() < recipe.getIngredientsArray()[i].getOriginal().getAmount())
+			if (recipe.asArray()[i].hashCode() != ings[i].hashCode()
+					|| ings[i].getOriginal().getAmount() < recipe.getIngredientsArray()[i].getOriginal().getAmount())
 				return false;
 		}
 		return true;
 	}
 
-	public static boolean matchesShapeless(IShapelessRecipe recipe, ItemStack[] ingredients) {
+	public static boolean matchesShapeless(IShapelessRecipe recipe, IItemStack[] ingredients) {
 		List<IItemStack> origs = recipe.getIIngredients();
-		List<IItemStack> ings = Arrays.asList(ingredients).stream().filter(i -> i != null).map(IItemStack::new)
-				.collect(Collectors.toList());
+		List<IItemStack> ings = Arrays.asList(ingredients);
 
 		if (ings.size() != origs.size())
 			return false;

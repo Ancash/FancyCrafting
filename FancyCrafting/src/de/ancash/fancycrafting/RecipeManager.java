@@ -72,11 +72,11 @@ public class RecipeManager {
 
 	public void saveRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name, UUID uuid, int width,
 			int height) throws FileNotFoundException, IOException, InvalidConfigurationException {
-		IMatrix<ItemStack> matrix = new IMatrix<>(ingredients, width, height);
+		final IMatrix<ItemStack> matrix = new IMatrix<>(ingredients, width, height);
 		matrix.optimize();
 		ingredients = matrix.getArray();
 		recipeCfg.load(recipeFile);
-		recipeCfg.set(uuid + "", null);
+		recipeCfg.set(uuid.toString(), null);
 		recipeCfg.set(uuid + ".name", name);
 		ItemStackUtils.setItemStack(recipeCfg, uuid + ".result", result);
 		recipeCfg.set(uuid + ".shaped", shaped);
@@ -188,7 +188,7 @@ public class RecipeManager {
 		return true;
 	}
 
-	public IRecipe matchRecipe(IMatrix<ItemStack> matrix, Set<IRecipe> recipes) {
+	public IRecipe matchRecipe(IMatrix<IItemStack> matrix, Set<IRecipe> recipes) {
 		int size = (int) Arrays.asList(matrix.getArray()).stream().filter(item -> item != null).count();
 		for (IRecipe recipe : recipes.stream().filter(recipe -> recipe.getIngredientsSize() == size)
 				.collect(Collectors.toSet()))
@@ -223,7 +223,7 @@ public class RecipeManager {
 
 	public void delete(String recipeName) throws FileNotFoundException, IOException, InvalidConfigurationException {
 		recipeCfg.load(recipeFile);
-		recipeCfg.set(recipeName + "", null);
+		recipeCfg.set(recipeName, null);
 		recipeCfg.save(recipeFile);
 		reloadRecipes();
 	}

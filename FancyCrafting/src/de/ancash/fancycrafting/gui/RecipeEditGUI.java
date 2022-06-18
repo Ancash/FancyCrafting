@@ -80,11 +80,11 @@ public class RecipeEditGUI extends IGUI {
 		player.openInventory(getInventory());
 	}
 
-	private boolean isCraftingSlot(int a) {
+	private boolean isCraftingSlot(int slot) {
 		for (int i : template.getSlots().getCraftingSlots())
-			if (i == a)
+			if (i == slot)
 				return true;
-		return a == template.getSlots().getResultSlot();
+		return slot == template.getSlots().getResultSlot();
 	}
 
 	@Override
@@ -145,7 +145,7 @@ public class RecipeEditGUI extends IGUI {
 	}
 
 	@Override
-	public void onInventoryDrag(InventoryDragEvent event) {
+	public void onInventoryDrag(final InventoryDragEvent event) {
 		for (int i : event.getInventorySlots())
 			if (!isCraftingSlot(i)) {
 				event.setCancelled(true);

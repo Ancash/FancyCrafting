@@ -78,6 +78,11 @@ public class IShapedRecipe extends IRecipe {
 		return Arrays.asList(matrix.getArray()).stream().map(i -> i == null ? null : i.getOriginal())
 				.collect(Collectors.toList());
 	}
+	
+	@Override
+	public List<IItemStack> getIIngredients() {
+		return Arrays.asList(matrix.getArray());
+	}
 
 	@Override
 	public Map<Integer, Integer> getIngredientsHashCodes() {

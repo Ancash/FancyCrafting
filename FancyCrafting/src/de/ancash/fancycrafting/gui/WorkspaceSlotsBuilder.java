@@ -55,17 +55,17 @@ public class WorkspaceSlotsBuilder {
 		return this;
 	}
 
-	public WorkspaceSlotsBuilder setCraftingSlots(int[] craftingSlots) {
+	public WorkspaceSlotsBuilder setCraftingSlots(int...craftingSlots) {
 		this.craftingSlots = craftingSlots;
 		return this;
 	}
 
-	public WorkspaceSlotsBuilder setCraftStateSlots(int[] craftStateSlots) {
+	public WorkspaceSlotsBuilder setCraftStateSlots(int...craftStateSlots) {
 		this.craftStateSlots = craftStateSlots;
 		return this;
 	}
 
-	public WorkspaceSlotsBuilder setAutoCraftingSlots(int[] autoCraftingSlots) {
+	public WorkspaceSlotsBuilder setAutoCraftingSlots(int...autoCraftingSlots) {
 		this.autoCraftingSlots = autoCraftingSlots;
 		return this;
 	}

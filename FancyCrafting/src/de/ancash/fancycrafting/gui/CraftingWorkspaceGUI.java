@@ -75,10 +75,12 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	}
 
 	@Override
-	public ItemStack[] getIngredients() {
-		ItemStack[] ings = new ItemStack[template.getSlots().getCraftingSlots().length];
-		for (int i = 0; i < ings.length; i++)
-			ings[i] = getItem(template.getSlots().getCraftingSlots()[i]);
+	public IItemStack[] getIngredients() {
+		IItemStack[] ings = new IItemStack[template.getSlots().getCraftingSlots().length];
+		for (int i = 0; i < ings.length; i++) {
+			ItemStack item = getItem(template.getSlots().getCraftingSlots()[i]);
+			ings[i] = item == null || item.getType() == Material.AIR ? null : new IItemStack(item);
+		}
 		return ings;
 	}
 
@@ -135,8 +137,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			return;
 		}
 		InventoryAction a = event.getAction();
-		if (event.getClick().equals(ClickType.DOUBLE_CLICK) || (a.equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)
-				&& !event.getInventory().equals(event.getClickedInventory()))) {
+		if (event.getClick().equals(ClickType.DOUBLE_CLICK) || a.equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)
+				&& !event.getInventory().equals(event.getClickedInventory())) {
 			if (event.isShiftClick()) {
 
 				if (event.getView().getBottomInventory().getItem(event.getSlot()) != null) {
@@ -368,7 +370,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	}
 
 	public void updateQuickCrafting() {
-		if (pl.checkQuickCraftingAsync())
+		if (pl.isQuickCraftingAsync())
 			autoMatchAsync();
 		else
 			autoMatch();
@@ -428,14 +430,14 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				if (matrix.getArray()[i] == null)
 					continue;
 				if (recipe.isVanilla()) {
-					shiftSize = Math.min(shiftSize, matrix.getArray()[i].getAmount());
+					shiftSize = Math.min(shiftSize, matrix.getArray()[i].getOriginal().getAmount());
 				} else {
-					IItemStack serializedIngredient = ((IShapedRecipe) recipe).getIngredientsArray()[i];
-					IItemStack serializedCompareTo = new IItemStack(matrix.getArray()[i]);
-					if (!serializedIngredient.isSimilar(serializedCompareTo))
+					IItemStack iIngredient = ((IShapedRecipe) recipe).getIngredientsArray()[i];
+					IItemStack iCompare = matrix.getArray()[i];
+					if (!iIngredient.isSimilar(iCompare))
 						continue;
-					shiftSize = Math.min(shiftSize, (int) (serializedCompareTo.getOriginal().getAmount()
-							/ serializedIngredient.getOriginal().getAmount()));
+					shiftSize = Math.min(shiftSize, (int) (iCompare.getOriginal().getAmount()
+							/ iIngredient.getOriginal().getAmount()));
 				}
 			}
 		}
@@ -443,13 +445,13 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			for (ItemStack ingredient : ((IShapelessRecipe) recipe).getIngredients()) {
 				if (ingredient == null)
 					continue;
-				for (ItemStack currentItem : matrix.getArray()) {
+				for (IItemStack currentItem : matrix.getArray()) {
 					if (currentItem == null)
 						continue;
 					if (recipe.isVanilla())
-						shiftSize = Math.min(shiftSize, currentItem.getAmount());
+						shiftSize = Math.min(shiftSize, currentItem.getOriginal().getAmount());
 					else if (new IItemStack(ingredient).isSimilar(currentItem))
-						shiftSize = Math.min(shiftSize, (int) (currentItem.getAmount() / ingredient.getAmount()));
+						shiftSize = Math.min(shiftSize, (int) (currentItem.getOriginal().getAmount() / ingredient.getAmount()));
 				}
 			}
 		}
@@ -472,16 +474,16 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	private void collectShapeless(Inventory inventory, IShapelessRecipe shapeless, int multiplicator) {
 		Set<Integer> done = new HashSet<>();
-		for (ItemStack ingredient : shapeless.getIngredients()) {
+		for (IItemStack ingredient : shapeless.getIIngredients()) {
 			for (int craftSlot : template.getSlots().getCraftingSlots()) {
 				if (done.contains(craftSlot))
 					continue;
 				if (inventory.getItem(craftSlot) == null)
 					continue;
-				if (!new IItemStack(ingredient).isSimilar(new IItemStack(inventory.getItem(craftSlot)))
+				if (ingredient.hashCode() != new IItemStack(inventory.getItem(craftSlot)).hashCode()
 						&& !shapeless.isVanilla())
 					continue;
-				setAmount(inventory.getItem(craftSlot).getAmount(), ingredient.getAmount() * multiplicator, craftSlot,
+				setAmount(inventory.getItem(craftSlot).getAmount(), ingredient.getOriginal().getAmount() * multiplicator, craftSlot,
 						inventory);
 				done.add(craftSlot);
 			}
@@ -494,13 +496,13 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			for (int i = 0; i < shaped.getIngredientsArray().length; i++) {
 				if (shaped.getIngredientsArray()[i] == null)
 					continue;
-				ItemStack ing = matrix.getArray()[i];
-				int amount = ing.getAmount()
+				IItemStack ing = matrix.getArray()[i];
+				int amount = ing.getOriginal().getAmount()
 						- shaped.getIngredientsArray()[i].getOriginal().getAmount() * multiplicator;
 				int slot = template.getSlots().getCraftingSlots()[base
 						+ i / shaped.getWidth() * template.getDimension().getWidth() + i % shaped.getWidth()];
 				if (amount > 0)
-					ing.setAmount(amount);
+					ing.getOriginal().setAmount(amount);
 				else {
 					setItem(null, slot);
 				}

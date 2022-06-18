@@ -5,25 +5,27 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.AutoRecipeMatcher;
 import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
+import de.ancash.fancycrafting.recipe.VanillaRecipeMatcher;
+import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.inventory.IGUI;
 
 public abstract class AbstractCraftingWorkspace extends IGUI {
 
 	protected final FancyCrafting pl;
 	protected final WorkspaceTemplate template;
-	protected IMatrix<ItemStack> matrix = new IMatrix<>(new ItemStack[0], 0, 0);
-	protected Set<IRecipe> recipes = null;
+	protected IMatrix<IItemStack> matrix = new IMatrix<>(new IItemStack[0], 0, 0);
+	protected Set<IRecipe> recipes;
 	protected IRecipe currentRecipe;
 	protected boolean includeVanillaRecipes;
 	protected final Player player;
 	protected final AutoRecipeMatcher matcher;
 	protected final Object lock = new Object();
+	protected final VanillaRecipeMatcher vanillaMatcher;
 
 	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, WorkspaceTemplate template) {
 		this(pl, player, template, true);
@@ -46,6 +48,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		this.recipes = recipes;
 		this.includeVanillaRecipes = includeVanillaRecipes;
 		this.player = player;
+		this.vanillaMatcher = new VanillaRecipeMatcher(pl, player);
 	}
 
 	public void setIncludeVanillaRecipes(boolean b) {
@@ -98,7 +101,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 
 	public abstract boolean canCraftRecipe(IRecipe recipe, Player p);
 
-	public abstract ItemStack[] getIngredients();
+	public abstract IItemStack[] getIngredients();
 
 	public abstract void onRecipeMatch();
 
@@ -137,7 +140,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 						onNoPermission(match, player);
 
 			if (includeVanillaRecipes)
-				if ((match = FancyCrafting.getVanillaRecipeMatcher(player).matchVanillaRecipe(matrix)) != null)
+				if ((match = vanillaMatcher.matchVanillaRecipe(matrix)) != null)
 					if (canCraftRecipe(match, player))
 						return currentRecipe = match;
 					else

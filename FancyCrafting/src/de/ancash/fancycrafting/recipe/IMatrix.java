@@ -9,8 +9,8 @@ public class IMatrix<E> implements Cloneable {
 	private E[] array;
 	private int width;
 	private int height;
-	private int leftMoves = 0;
-	private int upMoves = 0;
+	private int leftMoves;
+	private int upMoves;
 
 	@SuppressWarnings("unchecked")
 	public IMatrix(E[] array, int width, int height) {
