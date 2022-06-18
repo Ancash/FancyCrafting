@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.bukkit.inventory.ItemStack;
@@ -98,7 +99,7 @@ public abstract class IRecipe {
 
 	public static boolean matchesShapeless(IShapelessRecipe recipe, IItemStack[] ingredients) {
 		List<IItemStack> origs = recipe.getIIngredients();
-		List<IItemStack> ings = Arrays.asList(ingredients);
+		List<IItemStack> ings = Arrays.asList(ingredients).stream().filter(i -> i != null).collect(Collectors.toList());
 
 		if (ings.size() != origs.size())
 			return false;
@@ -151,7 +152,7 @@ public abstract class IRecipe {
 			} else if (v instanceof ShapelessRecipe) {
 				ings = ((ShapelessRecipe) v).getIngredientList();
 			}
-			System.err.println("Could not load Bukkit recipe w/ result: " + v.getResult() + " & ingredients: " + ings);
+			pl.getLogger().log(Level.SEVERE, "Could not load Bukkit recipe w/ result: " + v.getResult() + " & ingredients: " + ings, e);
 			r = null;
 		}
 		return r;

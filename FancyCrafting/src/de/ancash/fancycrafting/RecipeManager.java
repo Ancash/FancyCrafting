@@ -5,11 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -36,9 +36,9 @@ public class RecipeManager {
 	private final FancyCrafting plugin;
 	private final Set<IRecipe> customRecipes = new HashSet<>();
 	private final Set<IRecipe> autoMatchingRecipes = new HashSet<>();
-	private final Map<Integer, Set<IRecipe>> customRecipesBySize = new HashMap<Integer, Set<IRecipe>>();
-	private final Map<String, Set<IRecipe>> recipesByName = new HashMap<>();
-	private final Map<Integer, Set<IRecipe>> recipesByResult = new HashMap<>();
+	private final Map<Integer, Set<IRecipe>> customRecipesBySize = new ConcurrentHashMap<Integer, Set<IRecipe>>();
+	private final Map<String, Set<IRecipe>> recipesByName = new ConcurrentHashMap<>();
+	private final Map<Integer, Set<IRecipe>> recipesByResult = new ConcurrentHashMap<>();
 
 	public RecipeManager(FancyCrafting plugin) throws IOException, InvalidConfigurationException {
 		this.plugin = plugin;
@@ -120,8 +120,7 @@ public class RecipeManager {
 				plugin.getLogger()
 						.info("Loaded custom recipe: " + recipeCfg.getString(key + ".name") + " (" + key + ")");
 			} catch (ClassNotFoundException | IOException e) {
-				System.err.println("Could not load recipe w/ key " + key + ":");
-				e.printStackTrace();
+				plugin.getLogger().log(Level.SEVERE, "Could not load recipe w/ key " + key, e);
 			}
 		}
 		plugin.getLogger().info("Loaded custom recipes!");
@@ -158,7 +157,7 @@ public class RecipeManager {
 		Bukkit.recipeIterator().forEachRemaining(r -> registerRecipe(IRecipe.fromVanillaRecipe(plugin, r)));
 	}
 
-	public boolean registerRecipe(IRecipe recipe) {
+	public final boolean registerRecipe(IRecipe recipe) {
 		if (recipe == null)
 			return false;
 		if (recipe.getResult() == null || recipe.getResult().getType().equals(Material.AIR)) {

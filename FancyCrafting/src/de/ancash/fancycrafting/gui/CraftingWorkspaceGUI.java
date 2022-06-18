@@ -56,22 +56,17 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 							closeAll();
 					}
 				}));
-		onNoRecipeMatch();
 		IGUIManager.register(this, getId());
-		autoMatch();
-		player.openInventory(getInventory());
 		new BukkitRunnable() {
 
 			@Override
 			public void run() {
+				onNoRecipeMatch();
+				autoMatch();
+				player.openInventory(getInventory());
 				player.updateInventory();
 			}
 		}.runTask(pl);
-	}
-
-	@Override
-	public boolean canCraftRecipe(IRecipe recipe, Player pl) {
-		return player.isOp() || player.hasPermission("fancycrafting.craft." + recipe.getName().replace(" ", "-"));
 	}
 
 	@Override
@@ -79,7 +74,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		IItemStack[] ings = new IItemStack[template.getSlots().getCraftingSlots().length];
 		for (int i = 0; i < ings.length; i++) {
 			ItemStack item = getItem(template.getSlots().getCraftingSlots()[i]);
-			ings[i] = item == null || item.getType() == Material.AIR ? null : new IItemStack(item);
+			if (item != null && item.getType() != Material.AIR)
+				ings[i] = new IItemStack(item);
 		}
 		return ings;
 	}
@@ -404,16 +400,14 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			InventoryUtils.addItemAmount(i * recipe.getResult().getAmount(), recipe.getResult(), player);
 			updateAll();
 			return;
-		} else if (event.getAction().equals(InventoryAction.PLACE_ONE)
-				|| event.getAction().equals(InventoryAction.PLACE_ALL)) {
-			if (new IItemStack(cursor).isSimilar(recipe.getResult())) {
-				if (cursor.getAmount() + recipe.getResult().getAmount() <= cursor.getMaxStackSize()) {
-					cursor.setAmount(cursor.getAmount() + recipe.getResult().getAmount());
-					collectIngredients(event.getInventory(), recipe);
-					updateAll();
-					return;
-				}
-			}
+		} else if ((event.getAction().equals(InventoryAction.PLACE_ONE)
+				|| event.getAction().equals(InventoryAction.PLACE_ALL))
+				&& new IItemStack(cursor).hashCode() == recipe.getResultAsIItemStack().hashCode()
+				&& cursor.getAmount() + recipe.getResult().getAmount() <= cursor.getMaxStackSize()) {
+			cursor.setAmount(cursor.getAmount() + recipe.getResult().getAmount());
+			collectIngredients(event.getInventory(), recipe);
+			updateAll();
+			return;
 		}
 		updateAll();
 		player.updateInventory();
@@ -436,8 +430,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 					IItemStack iCompare = matrix.getArray()[i];
 					if (!iIngredient.isSimilar(iCompare))
 						continue;
-					shiftSize = Math.min(shiftSize, (int) (iCompare.getOriginal().getAmount()
-							/ iIngredient.getOriginal().getAmount()));
+					shiftSize = Math.min(shiftSize,
+							(int) (iCompare.getOriginal().getAmount() / iIngredient.getOriginal().getAmount()));
 				}
 			}
 		}
@@ -451,7 +445,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 					if (recipe.isVanilla())
 						shiftSize = Math.min(shiftSize, currentItem.getOriginal().getAmount());
 					else if (new IItemStack(ingredient).isSimilar(currentItem))
-						shiftSize = Math.min(shiftSize, (int) (currentItem.getOriginal().getAmount() / ingredient.getAmount()));
+						shiftSize = Math.min(shiftSize,
+								(int) (currentItem.getOriginal().getAmount() / ingredient.getAmount()));
 				}
 			}
 		}
@@ -483,8 +478,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				if (ingredient.hashCode() != new IItemStack(inventory.getItem(craftSlot)).hashCode()
 						&& !shapeless.isVanilla())
 					continue;
-				setAmount(inventory.getItem(craftSlot).getAmount(), ingredient.getOriginal().getAmount() * multiplicator, craftSlot,
-						inventory);
+				setAmount(inventory.getItem(craftSlot).getAmount(),
+						ingredient.getOriginal().getAmount() * multiplicator, craftSlot, inventory);
 				done.add(craftSlot);
 			}
 		}
@@ -502,10 +497,9 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				int slot = template.getSlots().getCraftingSlots()[base
 						+ i / shaped.getWidth() * template.getDimension().getWidth() + i % shaped.getWidth()];
 				if (amount > 0)
-					ing.getOriginal().setAmount(amount);
-				else {
+					getItem(slot).setAmount(amount);
+				else 
 					setItem(null, slot);
-				}
 			}
 		}
 	}

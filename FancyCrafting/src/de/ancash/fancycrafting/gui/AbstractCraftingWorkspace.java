@@ -34,7 +34,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, WorkspaceTemplate template,
 			boolean includeVanillaRecipes) {
 		this(pl, player, template, includeVanillaRecipes, pl.getRecipeManager().getCustomRecipes(),
-				new AutoRecipeMatcher(player.getInventory(),
+				new AutoRecipeMatcher(player,
 						includeVanillaRecipes ? pl.getRecipeManager().getAutoMatchingRecipes()
 								: pl.getRecipeManager().getCustomRecipes()));
 	}
@@ -99,8 +99,6 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		return currentRecipe != null;
 	}
 
-	public abstract boolean canCraftRecipe(IRecipe recipe, Player p);
-
 	public abstract IItemStack[] getIngredients();
 
 	public abstract void onRecipeMatch();
@@ -134,14 +132,14 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 
 			if (recipes != null && !(customRecipes = recipes).isEmpty())
 				if ((match = pl.getRecipeManager().matchRecipe(matrix, customRecipes)) != null)
-					if (canCraftRecipe(match, player))
+					if (FancyCrafting.canCraftRecipe(match, player))
 						return currentRecipe = match;
 					else
 						onNoPermission(match, player);
 
 			if (includeVanillaRecipes)
 				if ((match = vanillaMatcher.matchVanillaRecipe(matrix)) != null)
-					if (canCraftRecipe(match, player))
+					if (FancyCrafting.canCraftRecipe(match, player))
 						return currentRecipe = match;
 					else
 						onNoPermission(match, player);
