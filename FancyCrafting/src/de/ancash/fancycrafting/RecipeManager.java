@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -104,7 +103,7 @@ public class RecipeManager {
 				try {
 					loadCustomRecipes();
 				} catch (IOException | InvalidConfigurationException e) {
-					plugin.getLogger().log(Level.SEVERE, "Could not load custom recipes from file", e);
+					plugin.getLogger().severe("Could not load custom recipes from file: " + e);
 				}
 				plugin.getLogger().info("Reloaded! " + (System.currentTimeMillis() - now) + " ms");
 			}
@@ -120,7 +119,7 @@ public class RecipeManager {
 				plugin.getLogger()
 						.info("Loaded custom recipe: " + recipeCfg.getString(key + ".name") + " (" + key + ")");
 			} catch (ClassNotFoundException | IOException e) {
-				plugin.getLogger().log(Level.SEVERE, "Could not load recipe w/ key " + key, e);
+				plugin.getLogger().severe("Could not load recipe w/ key " + key + ": " + e);
 			}
 		}
 		plugin.getLogger().info("Loaded custom recipes!");
@@ -165,7 +164,7 @@ public class RecipeManager {
 			return false;
 		}
 		int hash = new IItemStack(recipe.getResult()).hashCode();
-		String name = recipe.getName().replace(" ", "-");
+		String name = recipe.getRecipeName().replace(" ", "-");
 
 		recipesByName.computeIfAbsent(name, k -> new HashSet<>());
 		recipesByName.get(name).add(recipe);
@@ -178,7 +177,7 @@ public class RecipeManager {
 			plugin.getLogger()
 					.info(String.format(
 							"'%s' is not included in auto recipe matching (no unique ingredient identification)",
-							recipe.getName()));
+							recipe.getRecipeName()));
 		if (!recipe.isVanilla()) {
 			customRecipesBySize.computeIfAbsent(recipe.getIngredientsSize(), k -> new HashSet<>());
 			customRecipesBySize.get(recipe.getIngredientsSize()).add(recipe);

@@ -27,7 +27,7 @@ public class PagedRecipesViewGUI extends IGUI {
 
 	public PagedRecipesViewGUI(FancyCrafting pl, Player player, List<IRecipe> recipes) {
 		super(player.getUniqueId(), 45, pl.getCustomRecipesTitle());
-		Collections.sort(recipes, (a, b) -> a.getName().toLowerCase().compareTo(b.getName().toLowerCase()));
+		Collections.sort(recipes, (a, b) -> pl.sortRecipesByRecipeName() ? a.getRecipeName().compareTo(b.getRecipeName()) : a.getResultName().compareTo(b.getResultName()));
 		this.recipes = recipes;
 		int mp = 0;
 		while (mp * 36 < recipes.size())
@@ -81,7 +81,7 @@ public class PagedRecipesViewGUI extends IGUI {
 		int i = 0;
 		for (IRecipe recipe : viewing) {
 			addInventoryItem(new InventoryItem(this,
-					ItemStackUtils.setDisplayname(recipe.getResult().clone(), recipe.getName()), i, new Clickable() {
+					ItemStackUtils.setDisplayname(recipe.getResult(), pl.sortRecipesByRecipeName() ?  recipe.getRecipeName() : recipe.getResultName()), i, new Clickable() {
 
 						@Override
 						public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {

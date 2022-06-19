@@ -48,7 +48,7 @@ public class RecipeViewGUI extends IGUI {
 	public RecipeViewGUI(FancyCrafting pl, Player player, IRecipe recipe) {
 		super(player.getUniqueId(),
 				WorkspaceTemplate.get(recipe.getWidth(), recipe.getHeight()).getDimension().getSize(),
-				recipe.getName());
+				recipe.getRecipeName());
 		this.plugin = pl;
 		this.player = player;
 		for (int i = 0; i < getSize(); i++)
@@ -64,7 +64,7 @@ public class RecipeViewGUI extends IGUI {
 	public void openRecipe(IRecipe recipe) {
 		WorkspaceTemplate template = WorkspaceTemplate.get(recipe.getWidth(), recipe.getHeight());
 		if (getSize() != template.getDimension().getSize()) {
-			newInventory(recipe.getName(), template.getDimension().getSize());
+			newInventory(recipe.getRecipeName(), template.getDimension().getSize());
 			for (int i = 0; i < getSize(); i++)
 				setItem(plugin.getBackgroundItem().getOriginal(), i);
 		}
@@ -106,7 +106,7 @@ public class RecipeViewGUI extends IGUI {
 					}
 				}));
 
-		if (player.hasPermission("fancycrafting.admin.edit") && !recipe.isVanilla())
+		if (player.hasPermission(FancyCrafting.EDIT_PERM) && !recipe.isVanilla())
 			addInventoryItem(new InventoryItem(this,
 					new ItemBuilder(XMaterial.WRITABLE_BOOK).setDisplayname("§aClick to edit recipe").build(),
 					template.getSlots().getEditSlot(), new Clickable() {

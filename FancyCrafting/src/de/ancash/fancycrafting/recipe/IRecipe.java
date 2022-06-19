@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.minecraft.IItemStack;
@@ -21,10 +22,13 @@ import de.ancash.minecraft.XMaterial;
 public abstract class IRecipe {
 
 	private final IItemStack result;
-	private final String name;
+	private final String recipeName;
+	private final String resultName;
 	private final boolean vanilla;
 	private final boolean suitableForAutoMatching;
 	private UUID uuid;
+	private final Permission craftPermission;
+	private final Permission viewPermission;
 
 	public IRecipe(ItemStack result, String name, UUID uuid) {
 		this(result, name, false, true);
@@ -41,9 +45,15 @@ public abstract class IRecipe {
 		else
 			this.suitableForAutoMatching = true;
 		if (vanilla)
-			this.name = XMaterial.matchXMaterial(result).toString();
+			this.recipeName = XMaterial.matchXMaterial(result).toString();
 		else
-			this.name = name;
+			this.recipeName = name;
+		resultName = result.getItemMeta().getDisplayName() == null || result.getItemMeta().getDisplayName().isEmpty() ? XMaterial.matchXMaterial(result).toString()
+				: result.getItemMeta().getDisplayName();
+		this.craftPermission = new Permission("fancycrafting.craft." + this.recipeName.replace(" ", "-"),
+				PermissionDefault.FALSE);
+		this.viewPermission = new Permission("fancycrafting.view." + this.recipeName.replace(" ", "-"),
+				PermissionDefault.FALSE);
 	}
 
 	public abstract int getHeight();
@@ -55,11 +65,11 @@ public abstract class IRecipe {
 	public abstract Map<Integer, Integer> getIngredientsHashCodes();
 
 	public abstract List<ItemStack> getIngredients();
-	
+
 	public abstract List<IItemStack> getIIngredients();
 
 	public ItemStack getResult() {
-		return result.getOriginal();
+		return result.getOriginal().clone();
 	}
 
 	public IItemStack getResultAsIItemStack() {
@@ -70,8 +80,8 @@ public abstract class IRecipe {
 		return vanilla;
 	}
 
-	public String getName() {
-		return name;
+	public String getRecipeName() {
+		return recipeName;
 	}
 
 	public UUID getUUID() {
@@ -152,7 +162,8 @@ public abstract class IRecipe {
 			} else if (v instanceof ShapelessRecipe) {
 				ings = ((ShapelessRecipe) v).getIngredientList();
 			}
-			pl.getLogger().log(Level.SEVERE, "Could not load Bukkit recipe w/ result: " + v.getResult() + " & ingredients: " + ings, e);
+			pl.getLogger().warning(
+					"Could not load Bukkit recipe w/ result: " + v.getResult() + " & ingredients: " + ings + ": " + e);
 			r = null;
 		}
 		return r;
@@ -176,11 +187,23 @@ public abstract class IRecipe {
 
 	@Override
 	public String toString() {
-		return "IRecipe{name=" + name + ";result=" + result + ";ingredients=" + getIngredients() + "}";
+		return "IRecipe{name=" + recipeName + ";result=" + result + ";ingredients=" + getIngredients() + "}";
 	}
 
 	public static IItemStack[] toIItemStackArray(ItemStack[] from) {
 		return Arrays.asList(from).stream().map(item -> item == null ? null : new IItemStack(item))
 				.toArray(IItemStack[]::new);
+	}
+
+	public Permission getCraftPermission() {
+		return craftPermission;
+	}
+
+	public Permission getViewPermission() {
+		return viewPermission;
+	}
+
+	public String getResultName() {
+		return resultName;
 	}
 }

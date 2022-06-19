@@ -10,6 +10,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.gui.WorkspaceTemplate;
@@ -62,29 +64,29 @@ public class FancyCraftingCommand implements CommandExecutor {
 							.replace("%h", args[2]));
 					return true;
 				}
-				if (!player.hasPermission("fancycrafting.open." + width + "x" + height)) {
+				if (!player.hasPermission(new Permission("fancycrafting.open." + width + "x" + height, PermissionDefault.FALSE))) {
 					sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 					return true;
 				}
 				new CraftingWorkspaceGUI(this.plugin, player, WorkspaceTemplate.get(width, height));
 				return true;
 			}
-			if (!player.hasPermission("fancycrafting.open.default")) {
+			if (!player.hasPermission(FancyCrafting.OPEN_DEFAULT_PERM)) {
 				sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
-			new CraftingWorkspaceGUI(this.plugin, player, WorkspaceTemplate.get(this.plugin.getDefaultDimension().getWidth(),
-					this.plugin.getDefaultDimension().getHeight()));
+			new CraftingWorkspaceGUI(this.plugin, player, WorkspaceTemplate
+					.get(this.plugin.getDefaultDimension().getWidth(), this.plugin.getDefaultDimension().getHeight()));
 			return true;
 		case "create":
-			if (!player.hasPermission("fancycrafting.create")) {
+			if (!player.hasPermission(FancyCrafting.CREATE_PERM)) {
 				sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
 			RecipeCreateGUI.open(this.plugin, player);
 			return true;
 		case "edit":
-			if (!sender.hasPermission("fancycrafting.edit")) {
+			if (!sender.hasPermission(FancyCrafting.EDIT_PERM)) {
 				sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
@@ -106,12 +108,14 @@ public class FancyCraftingCommand implements CommandExecutor {
 			}
 			break;
 		case "view":
-			if (args.length == 1 && sender.hasPermission("fancycrafting.admin.view")) {
-				new PagedRecipesViewGUI(this.plugin, player, new ArrayList<>(this.plugin.getRecipeManager().getCustomRecipes()));
+			if (args.length == 1 && sender.hasPermission(FancyCrafting.VIEW_ALL_PERM)) {
+				new PagedRecipesViewGUI(this.plugin, player,
+						new ArrayList<>(this.plugin.getRecipeManager().getCustomRecipes()));
 				return true;
 			}
 			if (args.length == 2) {
-				if (!sender.hasPermission("fancycrafting.view." + args[1].toLowerCase())) {
+				if (!sender.hasPermission(
+						new Permission("fancycrafting.view." + args[1].toLowerCase(), PermissionDefault.FALSE))) {
 					sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 					return true;
 				}

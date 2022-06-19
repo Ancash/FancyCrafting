@@ -16,6 +16,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -34,9 +36,6 @@ import de.ancash.minecraft.Metrics;
 import de.ancash.minecraft.updatechecker.UpdateCheckSource;
 import de.ancash.minecraft.updatechecker.UpdateChecker;
 
-/**
- * 
- */
 public class FancyCrafting extends JavaPlugin {
 
 	private final ExecutorService threadPool = Executors
@@ -44,6 +43,12 @@ public class FancyCrafting extends JavaPlugin {
 	private static FancyCrafting singleton;
 
 	private static final int RESOURCE_ID = 87300;
+
+	public static final Permission CREATE_PERM = new Permission("fancycrafting.admin.create", PermissionDefault.FALSE);
+	public static final Permission EDIT_PERM = new Permission("fancycrafting.admin.edit", PermissionDefault.FALSE);
+	public static final Permission VIEW_ALL_PERM = new Permission("fancycrafting.admin.view", PermissionDefault.FALSE);
+	public static final Permission OPEN_DEFAULT_PERM = new Permission("fancycrafting.open", PermissionDefault.FALSE);
+
 	private Response response;
 	private UpdateChecker updateChecker;
 
@@ -52,6 +57,7 @@ public class FancyCrafting extends JavaPlugin {
 	private boolean quickCraftingAsync;
 	private boolean permsForCustomRecipes;
 	private boolean permsForVanillaRecipes;
+	private boolean sortRecipesByRecipeName;
 	private WorkspaceDimension defaultDim;
 
 	private ItemStack backItem;
@@ -186,10 +192,12 @@ public class FancyCrafting extends JavaPlugin {
 		permsForVanillaRecipes = config.getBoolean("perms-for-vanilla-recipes");
 		checkRecipesAsync = config.getBoolean("check-recipes-async");
 		quickCraftingAsync = config.getBoolean("check-quick-crafting-async");
+		sortRecipesByRecipeName = config.getBoolean("sort-recipes-by-recipe-name");
 		getLogger().info("Check recipes async: " + checkRecipesAsync);
 		getLogger().info("Check quick crafting async: " + quickCraftingAsync);
 		getLogger().info("Perms for custom recipes: " + permsForCustomRecipes);
 		getLogger().info("Perms for vanilla recipes: " + permsForVanillaRecipes);
+		getLogger().info("Sort recipes by recipe name: " + sortRecipesByRecipeName);
 		getLogger().info("Default crafting template is " + defaultDim.getWidth() + "x" + defaultDim.getHeight());
 	}
 
@@ -200,13 +208,13 @@ public class FancyCrafting extends JavaPlugin {
 	}
 
 	public static boolean canCraftRecipe(IRecipe recipe, Player pl) {
-		if(recipe.isVanilla() && !singleton.permsForVanillaRecipes)
+		if (recipe.isVanilla() && !singleton.permsForVanillaRecipes)
 			return true;
-		if(!recipe.isVanilla() && !singleton.permsForCustomRecipes)
+		if (!recipe.isVanilla() && !singleton.permsForCustomRecipes)
 			return true;
-		return pl.hasPermission("fancycrafting.craft." + recipe.getName().replace(" ", "-"));
+		return pl.hasPermission(recipe.getCraftPermission());
 	}
-	
+
 	public void submit(Runnable r) {
 		threadPool.submit(r);
 	}
@@ -317,5 +325,9 @@ public class FancyCrafting extends JavaPlugin {
 
 	public boolean isQuickCraftingAsync() {
 		return quickCraftingAsync;
+	}
+
+	public boolean sortRecipesByRecipeName() {
+		return sortRecipesByRecipeName;
 	}
 }

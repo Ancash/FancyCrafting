@@ -53,7 +53,7 @@ public class RecipesCollectionViewGUI {
 					}
 				}));
 
-		if (player.hasPermission("fancycrafting.admin.edit") && !recipes.get(i).isVanilla())
+		if (player.hasPermission(FancyCrafting.EDIT_PERM) && !recipes.get(i).isVanilla())
 			gui.addInventoryItem(new InventoryItem(gui,
 					new ItemBuilder(XMaterial.WRITABLE_BOOK).setDisplayname("§aClick to edit recipe").build(),
 					template.getSlots().getEditSlot(), new Clickable() {

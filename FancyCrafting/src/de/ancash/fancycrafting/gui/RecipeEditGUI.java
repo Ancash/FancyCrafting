@@ -31,7 +31,7 @@ public class RecipeEditGUI extends IGUI {
 
 	public RecipeEditGUI(FancyCrafting pl, Player player, IRecipe recipe) {
 		super(player.getUniqueId(), WorkspaceTemplate.get(8, 6).getDimension().getSize(),
-				pl.getEditRecipeTitle().replace("%r", recipe.getName()));
+				pl.getEditRecipeTitle().replace("%r", recipe.getRecipeName()));
 		if (recipe.isVanilla())
 			throw new IllegalArgumentException("Cannot edit vanilla recipe!");
 		this.edit = recipe;
@@ -127,8 +127,8 @@ public class RecipeEditGUI extends IGUI {
 					return;
 				}
 				try {
-					plugin.getRecipeManager().saveRecipe(result, ings, isShaped, edit.getName(), edit.getUUID(), 8, 6);
-					event.getWhoClicked().sendMessage("§aEdited §r" + edit.getName());
+					plugin.getRecipeManager().saveRecipe(result, ings, isShaped, edit.getRecipeName(), edit.getUUID(), 8, 6);
+					event.getWhoClicked().sendMessage("§aEdited §r" + edit.getRecipeName());
 					plugin.getRecipeManager().reloadRecipes();
 				} catch (IOException | InvalidConfigurationException e) {
 					event.getWhoClicked().sendMessage("§cSomething went wrong while saving: " + e);
