@@ -37,6 +37,8 @@ import de.ancash.minecraft.inventory.InventoryItem;
 public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	protected Set<Integer> quickCraftingResultHashCodes = new HashSet<>();
+	protected int quickCraftingPage;
+	protected List<IRecipe> quickCraftingRecipes = new ArrayList<>();
 
 	public CraftingWorkspaceGUI(FancyCrafting pl, Player player, WorkspaceTemplate template) {
 		super(pl, player, template);
@@ -126,10 +128,52 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		}
 	}
 
+	private void onQuickCraftRecipesChange(InventoryClickEvent e) {
+		if (e.isRightClick()) {
+			if ((quickCraftingPage + 1) * template.getSlots().getAutoCraftingSlots().length < quickCraftingRecipes
+					.size())
+				quickCraftingPage++;
+		} else {
+			if (quickCraftingPage > 0)
+				quickCraftingPage--;
+		}
+		if (quickCraftingPage < quickCraftingRecipes.size()) {
+			int i;
+			for (i = quickCraftingPage * template.getSlots().getAutoCraftingSlots().length; i < (quickCraftingPage + 1)
+					* template.getSlots().getAutoCraftingSlots().length && i < quickCraftingRecipes.size(); i++)
+				addQuickCraftingItem(quickCraftingRecipes.get(i),
+						i - (quickCraftingPage * template.getSlots().getAutoCraftingSlots().length));
+
+			while (i < template.getSlots().getAutoCraftingSlots().length
+					+ (quickCraftingPage * template.getSlots().getAutoCraftingSlots().length)) {
+				removeInventoryItem(template.getSlots().getAutoCraftingSlots()[i
+						- (quickCraftingPage * template.getSlots().getAutoCraftingSlots().length)]);
+				setItem(pl.getQuickCraftingItem(), template.getSlots().getAutoCraftingSlots()[i
+						- (quickCraftingPage * template.getSlots().getAutoCraftingSlots().length)]);
+				i++;
+			}
+		}
+	}
+
+	private void addQuickCraftingItem(IRecipe recipe, int pos) {
+		addInventoryItem(new InventoryItem(this, recipe.getResult(), template.getSlots().getAutoCraftingSlots()[pos],
+				new Clickable() {
+
+					@Override
+					public void onClick(int arg0, boolean arg1, InventoryAction arg2, boolean arg3) {
+						if (arg3) {
+							onQuickCraft(recipe, arg1);
+							updateQuickCrafting();
+						}
+					}
+				}));
+	}
+
 	@Override
 	public void onInventoryClick(InventoryClickEvent event) {
 		if (event.getClickedInventory() == null) {
 			event.setCancelled(true);
+			onQuickCraftRecipesChange(event);
 			return;
 		}
 		InventoryAction a = event.getAction();
@@ -498,7 +542,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 						+ i / shaped.getWidth() * template.getDimension().getWidth() + i % shaped.getWidth()];
 				if (amount > 0)
 					getItem(slot).setAmount(amount);
-				else 
+				else
 					setItem(null, slot);
 			}
 		}
@@ -526,12 +570,13 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	}
 
 	private void onAutoMatchFinish0() {
-		List<IRecipe> matches = new ArrayList<>(matcher.getMatchedRecipes());
+		quickCraftingPage = 0;
+		quickCraftingRecipes = new ArrayList<>(matcher.getMatchedRecipes());
 		Set<Integer> temp = new HashSet<>();
-		Collections.shuffle(matches);
+		Collections.sort(quickCraftingRecipes, (a, b) -> a.getResultName().compareToIgnoreCase(b.getResultName()));
 		int i = 0;
-		for (i = 0; i < template.getSlots().getAutoCraftingSlots().length && i < matches.size(); i++) {
-			IRecipe recipe = matches.get(i);
+		for (i = 0; i < template.getSlots().getAutoCraftingSlots().length && i < quickCraftingRecipes.size(); i++) {
+			IRecipe recipe = quickCraftingRecipes.get(i);
 			temp.add(recipe.getResultAsIItemStack().hashCode());
 			addInventoryItem(new InventoryItem(this, recipe.getResult(), template.getSlots().getAutoCraftingSlots()[i],
 					new Clickable() {
