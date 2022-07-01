@@ -64,14 +64,14 @@ public class FancyCraftingCommand implements CommandExecutor {
 							.replace("%h", args[2]));
 					return true;
 				}
-				if (!player.hasPermission(new Permission("fancycrafting.open." + width + "x" + height, PermissionDefault.FALSE))) {
+				if (!player.isOp() && !player.hasPermission(new Permission("fancycrafting.open." + width + "x" + height, PermissionDefault.FALSE))) {
 					sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 					return true;
 				}
 				new CraftingWorkspaceGUI(this.plugin, player, WorkspaceTemplate.get(width, height));
 				return true;
 			}
-			if (!player.hasPermission(FancyCrafting.OPEN_DEFAULT_PERM)) {
+			if (!player.isOp() && !player.hasPermission(FancyCrafting.OPEN_DEFAULT_PERM)) {
 				sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
@@ -79,14 +79,14 @@ public class FancyCraftingCommand implements CommandExecutor {
 					.get(this.plugin.getDefaultDimension().getWidth(), this.plugin.getDefaultDimension().getHeight()));
 			return true;
 		case "create":
-			if (!player.hasPermission(FancyCrafting.CREATE_PERM)) {
+			if (!player.isOp() && !player.hasPermission(FancyCrafting.CREATE_PERM)) {
 				sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
 			RecipeCreateGUI.open(this.plugin, player);
 			return true;
 		case "edit":
-			if (!sender.hasPermission(FancyCrafting.EDIT_PERM)) {
+			if (!sender.isOp() &&  !sender.hasPermission(FancyCrafting.EDIT_PERM)) {
 				sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 				return true;
 			}
@@ -108,13 +108,13 @@ public class FancyCraftingCommand implements CommandExecutor {
 			}
 			break;
 		case "view":
-			if (args.length == 1 && sender.hasPermission(FancyCrafting.VIEW_ALL_PERM)) {
+			if (args.length == 1 && (sender.hasPermission(FancyCrafting.VIEW_ALL_PERM) || sender.isOp())) {
 				new PagedRecipesViewGUI(this.plugin, player,
 						new ArrayList<>(this.plugin.getRecipeManager().getCustomRecipes()));
 				return true;
 			}
 			if (args.length == 2) {
-				if (!sender.hasPermission(
+				if (!player.isOp() && !sender.hasPermission(
 						new Permission("fancycrafting.view." + args[1].toLowerCase(), PermissionDefault.FALSE))) {
 					sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 					return true;
