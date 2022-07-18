@@ -5,11 +5,17 @@ perms-for-vanilla-recipes: false
 sort-recipes-by-recipe-name: true #false = sorted by result name/material name
 default-template-width: 3
 default-template-height: 3
+debug: true
+player-not-found: "§cCould not find §r%player%"
+no-console-command: "§cThis is not for you!"
 
 #some messages
 no-permission: "§cYou don't have permission to do that!"
-invalid-recipe: "§cThat recipe does not exist: %r"
+invalid-recipe: "§cThat recipe does not exist: %recipe%"
 invalid-crafting-dimension: "§cInvalid crafting dimension: %w & %h"
+invalid-recipe-name: "Invalid recipe name"
+recipe-saved: "§aRecipe saved"
+recipe-deleted: "§eRecipe deleted"
 
 #the item to click to close the inventory
 close:
@@ -38,8 +44,85 @@ workbench:
       type: GREEN_STAINED_GLASS_PANE
       meta:
          displayname: " "
-recipe-create-gui:
+recipe-create-gui: #creating & editing
    title: "Create Recipe"
+   manage-ingredients-title: "Input Ingredients"
+   manage-result-title: "Manage Result"
+   manage-probabilities-title: "Manage probabilities"
+   input-recipe-name-title: "Input recipe name"
+   input-recipe-name-left:
+      type: DIAMOND_SWORD
+      meta:
+         displayname: "§aInput recipe name"
+   input-recipe-name-right:
+      type: DIAMOND_SWORD
+      meta:
+         displayname: "§aInput recipe name"
+   manage-recipe-name:
+      type: OAK_SIGN
+      meta:
+         displayname: "§aEdit recipe name"
+         lore:
+         - "§aRecipe name: §f%recipe%"
+   create-normal:
+      type: PORK
+      meta:
+         displayname: "§eNormal recipe"
+         lore:
+         - "§7Create a normal shaped"
+         - "§7or shapeless recipe"
+   create-random:
+      type: BEEF
+      meta:
+         displayname: "§eRandom recipe"
+         lore:
+         - "§7Create a random shaped"
+         - "§7or shapeless recipe."
+         - ""
+         - "§7What is a random recipe?"
+         - "§7Instead of only one result you can"
+         - "§7set multiple results for one recipe"
+         - "§7Each result has a predefined probability"
+         - "§7of appearing."
+   manage-random-results:
+      format: "§a%prob%%§7: §f%item%"
+      type: CHEST
+      meta:
+         displayname: "§aManage results"
+         lore:
+         - "§7Add/remove results and change"
+         - "§7their probability of appearing."
+         - ""
+         - "§aList of current results and probability:"
+         - ""
+         - "%probability_map%"
+         - ""
+         - "§eClick to manage"
+   manage-random-invalid-result:
+      type: RED_STAINED_GLASS_PANE
+      meta:
+         displayname: "§cClick an item in your inventory"
+   manage-random-result-probability:
+      #header:
+      #- ""
+      footer:
+      - ""
+      - "§aProbability: %probability%"
+      - "§cRight click to delete"
+      - "§eLeft click to edit probability"
+   manage-ingredients:
+      id-format: "§7%id%: §f%item%"
+      type: CRAFTING_TABLE
+      meta:
+         displayname: "§aManage ingredients and type"
+         lore:
+         - "§7Manage the required ingredients and"
+         - "§7make the recipe shaped or shapeless"
+         - ""
+         - "§aRecipe type: §7%rtype%"
+         - "§aIngredients:"
+         - ""
+         - "%ingredients%"
    shapeless:
       type: BLUE_STAINED_GLASS_PANE
       meta:
@@ -60,10 +143,11 @@ recipe-create-gui:
       type: RED_STAINED_GLASS_PANE
       meta:
          displayname: "§cDelete Recipe"
+   
 recipe-view-gui:
-   edit-title: "Edit %r"
+   edit-title: "Edit %recipe%"
    page-title: "Custom Recipes"
-   single-title: "%r Recipe"
+   single-title: "%recipe% Recipe"
    next:
       type: ARROW
       meta:
@@ -78,7 +162,7 @@ recipe-view-gui:
          - "§7Click to view the previous recipe"
    back:
       commands:
-      - "kill %p"
+      - "kill %player%"
       type: ARROW
       meta:
          displayname: "§c§lBack"

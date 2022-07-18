@@ -4,9 +4,20 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 import de.ancash.fancycrafting.FancyCrafting;
+import de.ancash.fancycrafting.gui.handler.IAutoRecipeMatcherHandler;
+import de.ancash.fancycrafting.gui.handler.IRecipeMatchHandler;
+import de.ancash.fancycrafting.gui.handler.IRecipePermissionHandler;
+import de.ancash.fancycrafting.gui.handler.impl.DefaultAutoRecipeMatcherHandler;
+import de.ancash.fancycrafting.gui.handler.impl.DefaultRecipeMatchHandler;
+import de.ancash.fancycrafting.gui.handler.impl.DefaultRecipePermissionHandler;
 import de.ancash.fancycrafting.recipe.AutoRecipeMatcher;
 import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
@@ -23,9 +34,13 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	protected IRecipe currentRecipe;
 	protected boolean includeVanillaRecipes;
 	protected final Player player;
-	protected final AutoRecipeMatcher matcher;
 	protected final Object lock = new Object();
+
+	protected final AutoRecipeMatcher matcher;
 	protected final VanillaRecipeMatcher vanillaMatcher;
+	private IRecipeMatchHandler matchHandler;
+	private IRecipePermissionHandler permissionHandler;
+	private IAutoRecipeMatcherHandler autoRecipeHandler;
 
 	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, WorkspaceTemplate template) {
 		this(pl, player, template, true);
@@ -34,9 +49,8 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, WorkspaceTemplate template,
 			boolean includeVanillaRecipes) {
 		this(pl, player, template, includeVanillaRecipes, pl.getRecipeManager().getCustomRecipes(),
-				new AutoRecipeMatcher(player,
-						includeVanillaRecipes ? pl.getRecipeManager().getAutoMatchingRecipes()
-								: pl.getRecipeManager().getCustomRecipes()));
+				new AutoRecipeMatcher(player, includeVanillaRecipes ? pl.getRecipeManager().getAutoMatchingRecipes()
+						: pl.getRecipeManager().getCustomRecipes()));
 	}
 
 	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, WorkspaceTemplate template,
@@ -49,6 +63,25 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		this.includeVanillaRecipes = includeVanillaRecipes;
 		this.player = player;
 		this.vanillaMatcher = new VanillaRecipeMatcher(pl, player);
+		setRecipeMatchCompletionHandler(new DefaultRecipeMatchHandler(pl, this));
+		setPermissionHandler(new DefaultRecipePermissionHandler(this));
+		setAutoRecipeMatcherHandler(new DefaultAutoRecipeMatcherHandler(pl, this, matcher));
+	}
+
+	public void setAmount(int original, int subtract, int slot, Inventory inventory) {
+		ItemStack is = inventory.getItem(slot);
+		if (original - subtract <= 0)
+			inventory.setItem(slot, null);
+		else
+			is.setAmount(original - subtract);
+	}
+
+	public Player getPlayer() {
+		return player;
+	}
+
+	public WorkspaceTemplate getTemplate() {
+		return template;
 	}
 
 	public void setIncludeVanillaRecipes(boolean b) {
@@ -67,8 +100,44 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		}
 	}
 
+	public boolean isCraftingSlot(int s) {
+		for (int i = 0; i < template.getSlots().getCraftingSlots().length; i++)
+			if (template.getSlots().getCraftingSlots()[i] == s)
+				return true;
+		return false;
+	}
+
+	public ItemStack[] getPlayerInventoryContents(PlayerInventory inv) {
+		try {
+			return player.getInventory().getStorageContents();
+		} catch (NoSuchMethodError e) {
+			return player.getInventory().getContents();
+		}
+	}
+
 	public IRecipe getCurrentRecipe() {
 		return currentRecipe;
+	}
+
+	public Object getLock() {
+		return lock;
+	}
+
+	public void updateAll() {
+		updateRecipe();
+		updateQuickCrafting();
+	}
+
+	public void updateRecipe() {
+		updateMatrix();
+		if (pl.checkRecipesAsync())
+			matchRecipeAsync();
+		else
+			matchRecipe();
+	}
+
+	public void checkDelayed() {
+		Bukkit.getScheduler().runTaskLater(pl, () -> updateAll(), 1);
 	}
 
 	public IRecipe matchRecipe() {
@@ -79,35 +148,54 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		return pl.submit(new RecipeMatcherCallable());
 	}
 
-	public void autoMatch() {
-		matcher.compute();
-		onAutoMatchFinish();
+	public void updateQuickCrafting() {
+		if (pl.isQuickCraftingAsync())
+			autoMatchAsync();
+		else
+			autoRecipeHandler.autoMatch();
 	}
 
 	public void autoMatchAsync() {
-		pl.submit(new Runnable() {
-
-			@Override
-			public void run() {
-				matcher.compute();
-				onAutoMatchFinish();
-			}
-		});
+		pl.submit(() -> autoRecipeHandler.autoMatch());
 	}
 
 	public boolean hasMatchingRecipe() {
 		return currentRecipe != null;
 	}
 
-	public abstract IItemStack[] getIngredients();
+	public IItemStack[] getIngredients() {
+		IItemStack[] ings = new IItemStack[template.getSlots().getCraftingSlots().length];
+		for (int i = 0; i < ings.length; i++) {
+			ItemStack item = getItem(template.getSlots().getCraftingSlots()[i]);
+			if (item != null && item.getType() != Material.AIR)
+				ings[i] = new IItemStack(item);
+		}
+		return ings;
+	}
 
-	public abstract void onRecipeMatch();
+	public IRecipeMatchHandler getRecipeMatchCompletionHandler() {
+		return matchHandler;
+	}
 
-	public abstract void onNoRecipeMatch();
+	public void setRecipeMatchCompletionHandler(IRecipeMatchHandler recipeMatchHandler) {
+		this.matchHandler = recipeMatchHandler;
+	}
 
-	public abstract void onNoPermission(IRecipe recipe, Player p);
+	public IRecipePermissionHandler getPermissionHandler() {
+		return permissionHandler;
+	}
 
-	public abstract void onAutoMatchFinish();
+	public void setPermissionHandler(IRecipePermissionHandler permissionHandler) {
+		this.permissionHandler = permissionHandler;
+	}
+
+	public IAutoRecipeMatcherHandler getAutoRecipeHandler() {
+		return autoRecipeHandler;
+	}
+
+	public void setAutoRecipeMatcherHandler(IAutoRecipeMatcherHandler autoRecipeHandler) {
+		this.autoRecipeHandler = autoRecipeHandler;
+	}
 
 	class RecipeMatcherCallable implements Callable<IRecipe> {
 
@@ -116,9 +204,9 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 			synchronized (lock) {
 				currentRecipe = match();
 				if (currentRecipe == null)
-					onNoRecipeMatch();
+					matchHandler.onNoRecipeMatch();
 				else
-					onRecipeMatch();
+					matchHandler.onRecipeMatch();
 			}
 			return currentRecipe;
 		}
@@ -132,19 +220,19 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 
 			if (recipes != null && !(customRecipes = recipes).isEmpty())
 				if ((match = pl.getRecipeManager().matchRecipe(matrix, customRecipes)) != null)
-					if (FancyCrafting.canCraftRecipe(match, player))
+					if (permissionHandler.canCraftRecipe(match, player))
 						return currentRecipe = match;
 					else
-						onNoPermission(match, player);
+						permissionHandler.onNoPermission(match, player);
 
 			if (includeVanillaRecipes)
 				if ((match = vanillaMatcher.matchVanillaRecipe(matrix)) != null)
-					if (FancyCrafting.canCraftRecipe(match, player))
+					if (permissionHandler.canCraftRecipe(match, player))
 						return currentRecipe = match;
 					else
-						onNoPermission(match, player);
+						permissionHandler.onNoPermission(match, player);
 
-			onNoRecipeMatch();
+			matchHandler.onNoRecipeMatch();
 			return currentRecipe = null;
 		}
 	}

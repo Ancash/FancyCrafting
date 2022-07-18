@@ -8,9 +8,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
 import de.ancash.minecraft.IItemStack;
+import de.ancash.minecraft.ItemStackUtils;
 
 public class IShapedRecipe extends IRecipe {
 
@@ -43,6 +45,11 @@ public class IShapedRecipe extends IRecipe {
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
 			hashCodes.put(ii.hashCode(), hashCodes.get(ii.hashCode()) + ii.getOriginal().getAmount());
 		}
+	}
+
+	private static IItemStack[] toIItemStackArray(ItemStack[] from) {
+		return Arrays.asList(from).stream().map(item -> item == null ? null : new IItemStack(item))
+				.toArray(IItemStack[]::new);
 	}
 
 	public IItemStack[] getIngredientsArray() {
@@ -78,7 +85,7 @@ public class IShapedRecipe extends IRecipe {
 		return Arrays.asList(matrix.getArray()).stream().map(i -> i == null ? null : i.getOriginal())
 				.collect(Collectors.toList());
 	}
-	
+
 	@Override
 	public List<IItemStack> getIIngredients() {
 		return Arrays.asList(matrix.getArray());
@@ -87,5 +94,26 @@ public class IShapedRecipe extends IRecipe {
 	@Override
 	public Map<Integer, Integer> getIngredientsHashCodes() {
 		return Collections.unmodifiableMap(hashCodes);
+	}
+
+	@Override
+	public boolean isShiftCollectable() {
+		return true;
+	}
+
+	@SuppressWarnings("nls")
+	@Override
+	public void saveToFile(FileConfiguration file, String path) {
+		file.set(path, null);
+		file.set(path + ".name", recipeName);
+		ItemStackUtils.setItemStack(file, uuid + ".result", result.getOriginal());
+		file.set(path + ".shaped", true);
+		file.set(path + ".width", matrix.getWidth());
+		file.set(path + ".height", matrix.getHeight());
+		file.set(path + ".uuid", uuid.toString());
+		file.set(path + ".random", false);
+		for (int i = 0; i < getIngredientsArray().length; i++)
+			if (getIngredientsArray()[i] != null)
+				ItemStackUtils.setItemStack(file, path + ".ingredients." + i, getIngredientsArray()[i].getOriginal());
 	}
 }

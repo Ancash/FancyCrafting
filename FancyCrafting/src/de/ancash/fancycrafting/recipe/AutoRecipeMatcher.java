@@ -32,11 +32,11 @@ public class AutoRecipeMatcher {
 	public void compute() {
 		ingredients = getInventoryContentsAsIItemStack();
 		Map<Integer, Integer> mappedIngredientHashCodes = mapHashCodes(ingredients);
-		matchedRecipes = Collections.unmodifiableSet(possibleRecipes.stream()
-				.filter(r -> r.isSuitableForAutoMatching() && FancyCrafting.canCraftRecipe(r, player) && match(r, mappedIngredientHashCodes))
+		matchedRecipes = Collections.unmodifiableSet(possibleRecipes.stream().filter(r -> r.isSuitableForAutoMatching()
+				&& FancyCrafting.canCraftRecipe(r, player) && match(r, mappedIngredientHashCodes))
 				.collect(Collectors.toSet()));
 	}
-	
+
 	private boolean match(IRecipe recipe, Map<Integer, Integer> map) {
 		for (Entry<Integer, Integer> entry : recipe.getIngredientsHashCodes().entrySet())
 			if (!map.containsKey(entry.getKey()) || map.get(entry.getKey()) < entry.getValue())
@@ -45,7 +45,8 @@ public class AutoRecipeMatcher {
 	}
 
 	private Map<Integer, IItemStack> getInventoryContentsAsIItemStack() {
-		return IntStream.range(0, player.getInventory().getSize()).filter(i -> player.getInventory().getContents()[i] != null).boxed()
+		return IntStream.range(0, player.getInventory().getSize())
+				.filter(i -> player.getInventory().getContents()[i] != null).boxed()
 				.collect(Collectors.toMap(i -> i, i -> new IItemStack(player.getInventory().getContents()[i])));
 	}
 

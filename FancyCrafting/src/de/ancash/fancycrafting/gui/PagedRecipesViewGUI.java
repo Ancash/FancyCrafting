@@ -2,9 +2,9 @@ package de.ancash.fancycrafting.gui;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
@@ -12,7 +12,6 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.ItemStackUtils;
-import de.ancash.minecraft.inventory.Clickable;
 import de.ancash.minecraft.inventory.IGUI;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
@@ -26,8 +25,10 @@ public class PagedRecipesViewGUI extends IGUI {
 	private final FancyCrafting pl;
 
 	public PagedRecipesViewGUI(FancyCrafting pl, Player player, List<IRecipe> recipes) {
-		super(player.getUniqueId(), 45, pl.getCustomRecipesTitle());
-		Collections.sort(recipes, (a, b) -> pl.sortRecipesByRecipeName() ? a.getRecipeName().compareTo(b.getRecipeName()) : a.getResultName().compareTo(b.getResultName()));
+		super(player.getUniqueId(), 45, pl.getWorkspaceObjects().getCustomRecipesTitle());
+		Collections.sort(recipes,
+				(a, b) -> pl.sortRecipesByRecipeName() ? a.getRecipeName().compareTo(b.getRecipeName())
+						: a.getResultName().compareTo(b.getResultName()));
 		this.recipes = recipes;
 		int mp = 0;
 		while (mp * 36 < recipes.size())
@@ -35,26 +36,14 @@ public class PagedRecipesViewGUI extends IGUI {
 		this.maxPages = mp;
 		this.player = player;
 		this.pl = pl;
-		addInventoryItem(new InventoryItem(this, pl.getNextItem(), 44, new Clickable() {
+		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getNextItem().getOriginal(), 44,
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(PagedRecipesViewGUI::openNextPage)));
 
-			@Override
-			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if (topInventory)
-					openNextPage();
-			}
-		}));
-
-		addInventoryItem(new InventoryItem(this, pl.getBackItem(), 36, new Clickable() {
-
-			@Override
-			public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-				if (topInventory)
-					openPrevPage();
-			}
-		}));
+		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getBackItem().getOriginal(), 36,
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(PagedRecipesViewGUI::openPrevPage)));
 		IGUIManager.register(this, getId());
 		open(currentPage);
-		player.openInventory(getInventory());
+		open();
 	}
 
 	public void openNextPage() {
@@ -81,16 +70,10 @@ public class PagedRecipesViewGUI extends IGUI {
 		int i = 0;
 		for (IRecipe recipe : viewing) {
 			addInventoryItem(new InventoryItem(this,
-					ItemStackUtils.setDisplayname(recipe.getResult(), pl.sortRecipesByRecipeName() ?  recipe.getRecipeName() : recipe.getResultName()), i, new Clickable() {
-
-						@Override
-						public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-							if (topInventory) {
-								player.closeInventory();
-								RecipeViewGUI.viewRecipe(pl, recipes.get((page - 1) * 36 + slot), player);
-							}
-						}
-					}));
+					ItemStackUtils.setDisplayname(recipe.getResult(),
+							pl.sortRecipesByRecipeName() ? recipe.getRecipeName() : recipe.getResultName()),
+					i, (slot, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(
+							self -> RecipeViewGUI.viewRecipe(pl, recipes.get((page - 1) * 36 + slot), player))));
 			i++;
 		}
 	}

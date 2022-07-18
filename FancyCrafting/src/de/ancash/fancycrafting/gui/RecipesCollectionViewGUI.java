@@ -1,15 +1,13 @@
 package de.ancash.fancycrafting.gui;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryAction;
 
 import de.ancash.fancycrafting.FancyCrafting;
+import de.ancash.fancycrafting.gui.normal.EditNormalRecipeGUI;
 import de.ancash.fancycrafting.recipe.IRecipe;
-import de.ancash.minecraft.ItemBuilder;
-import de.ancash.minecraft.XMaterial;
-import de.ancash.minecraft.inventory.Clickable;
 import de.ancash.minecraft.inventory.InventoryItem;
 
 public class RecipesCollectionViewGUI {
@@ -32,40 +30,17 @@ public class RecipesCollectionViewGUI {
 		IRecipe recipe = recipes.get(i);
 		WorkspaceTemplate template = WorkspaceTemplate.get(recipe.getWidth(), recipe.getHeight());
 		gui.openRecipe(recipe);
-		gui.addInventoryItem(
-				new InventoryItem(gui, pl.getNextItem(), template.getSlots().getNextSlot(), new Clickable() {
-
-					@Override
-					public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-						if (topInventory) {
-							openRecipe(increment());
-						}
-					}
-				}));
-		gui.addInventoryItem(
-				new InventoryItem(gui, pl.getPrevItem(), template.getSlots().getPrevSlot(), new Clickable() {
-
-					@Override
-					public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-						if (topInventory) {
-							openRecipe(decrement());
-						}
-					}
-				}));
+		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getNextItem().getOriginal(),
+				template.getSlots().getNextSlot(),
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(increment()))));
+		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getPrevItem().getOriginal(),
+				template.getSlots().getPrevSlot(),
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(decrement()))));
 
 		if (player.hasPermission(FancyCrafting.EDIT_PERM) && !recipes.get(i).isVanilla())
-			gui.addInventoryItem(new InventoryItem(gui,
-					new ItemBuilder(XMaterial.WRITABLE_BOOK).setDisplayname("§aClick to edit recipe").build(),
-					template.getSlots().getEditSlot(), new Clickable() {
-
-						@Override
-						public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-							if (topInventory) {
-								player.closeInventory();
-								new RecipeEditGUI(pl, player, recipes.get(i));
-							}
-						}
-					}));
+			gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getEditItem().getOriginal(),
+					template.getSlots().getEditSlot(), (a, b, c, top) -> Optional.ofNullable(top ? this : null)
+							.ifPresent(self -> new EditNormalRecipeGUI(pl, player, recipes.get(i)).open())));
 	}
 
 	protected int decrement() {

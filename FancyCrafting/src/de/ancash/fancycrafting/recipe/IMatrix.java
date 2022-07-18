@@ -47,7 +47,7 @@ public class IMatrix<E> implements Cloneable {
 	public void print() {
 		for (int a = 0; a < height; a++) {
 			for (int b = 0; b < width; b++)
-				System.out.print(array[a * width + b] == null ? "0 " : "1 ");
+				System.out.print(array[a * width + b] == null ? "0 " : "1 "); //$NON-NLS-1$ //$NON-NLS-2$
 			System.out.println();
 		}
 	}
@@ -64,7 +64,7 @@ public class IMatrix<E> implements Cloneable {
 	}
 
 	public boolean cutRight() {
-		if (width == 0 || !canMoveRight())
+		if (width <= 1 || !canMoveRight())
 			return false;
 		E[] temp = newArray(height * (width - 1));
 		for (int a = 0; a < height; a++)
@@ -76,7 +76,7 @@ public class IMatrix<E> implements Cloneable {
 	}
 
 	public boolean cutDown() {
-		if (height == 0 || !canMoveDown())
+		if (height <= 1 || !canMoveDown())
 			return false;
 		E[] temp = newArray(width * (height - 1));
 		for (int a = 0; a < height - 1; a++)

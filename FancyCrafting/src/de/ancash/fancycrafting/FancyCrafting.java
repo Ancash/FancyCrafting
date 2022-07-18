@@ -2,20 +2,23 @@ package de.ancash.fancycrafting;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
@@ -26,6 +29,7 @@ import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
 
 import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.gui.WorkspaceDimension;
+import de.ancash.fancycrafting.gui.WorkspaceObjects;
 import de.ancash.fancycrafting.gui.WorkspaceSlotsBuilder;
 import de.ancash.fancycrafting.gui.WorkspaceTemplate;
 import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
@@ -33,9 +37,14 @@ import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.Metrics;
+import de.ancash.minecraft.MinecraftLoggerUtil;
 import de.ancash.minecraft.updatechecker.UpdateCheckSource;
 import de.ancash.minecraft.updatechecker.UpdateChecker;
+import de.ancash.misc.ANSIEscapeCodes;
+import de.ancash.misc.MathsUtils;
+import de.ancash.misc.IPrintStream.ConsoleColor;
 
+@SuppressWarnings("nls")
 public class FancyCrafting extends JavaPlugin {
 
 	private final ExecutorService threadPool = Executors
@@ -48,6 +57,9 @@ public class FancyCrafting extends JavaPlugin {
 	public static final Permission EDIT_PERM = new Permission("fancycrafting.admin.edit", PermissionDefault.FALSE);
 	public static final Permission VIEW_ALL_PERM = new Permission("fancycrafting.admin.view", PermissionDefault.FALSE);
 	public static final Permission OPEN_DEFAULT_PERM = new Permission("fancycrafting.open", PermissionDefault.FALSE);
+	public static final Permission OPEN_OTHER_DEFAULT_PERM = new Permission("fancycrafting.open.other");
+
+	private DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
 	private Response response;
 	private UpdateChecker updateChecker;
@@ -59,49 +71,40 @@ public class FancyCrafting extends JavaPlugin {
 	private boolean permsForVanillaRecipes;
 	private boolean sortRecipesByRecipeName;
 	private WorkspaceDimension defaultDim;
+	private boolean debug;
 
-	private ItemStack backItem;
-	private IItemStack closeItem;
-	private ItemStack prevItem;
-	private ItemStack nextItem;
-	private IItemStack invalidItem;
-	private IItemStack validItem;
-	private IItemStack backgroundItem;
-	private ItemStack shapeless;
-	private ItemStack shapedItem;
-	private ItemStack saveItem;
-	private ItemStack editItem;
-	private ItemStack deleteItem;
-	private ItemStack quickCraftingItem;
-	private String createRecipeTitle;
-	private String customRecipesTitle;
-	private String viewRecipeTitle;
-	private String editRecipeTitle;
-	private List<String> backCommands;
+	private final WorkspaceObjects workspaceObjects = new WorkspaceObjects();
 
 	private FileConfiguration config;
 
 	public void onEnable() {
 		singleton = this;
 		try {
+			getLogger().info("Loading...");
+			long now = System.nanoTime();
+			MinecraftLoggerUtil.enableDebugging(this,
+					(pl, record) -> debug ? true : record.getLevel().intValue() >= Level.INFO.intValue(),
+					(pl, record) -> format(record));
+			getLogger().info("Logger registered");
 			new Metrics(this, 14152, true);
 			checkForUpdates();
 			loadFiles();
-			config = YamlConfiguration.loadConfiguration(new File("plugins/FancyCrafting/config.yml"));
 			recipeManager = new RecipeManager(this);
-			loadConfig();
 			response = new Response(this);
 			PluginManager pm = Bukkit.getServer().getPluginManager();
 			pm.registerEvents(new WorkbenchClickListener(singleton), this);
 
 			getCommand("fc").setExecutor(new FancyCraftingCommand(this));
+
+			getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
 		} catch (Exception e) {
+			Bukkit.getPluginManager().disablePlugin(this);
 			e.printStackTrace();
 			return;
 		}
 	}
 
-	private void loadFiles() throws IOException {
+	private void loadFiles() throws IOException, InvalidConfigurationException {
 		if (!new File("plugins/FancyCrafting/config.yml").exists())
 			FileUtils.copyInputStreamToFile(getResource("resources/config.yml"),
 					new File("plugins/FancyCrafting/config.yml"));
@@ -110,7 +113,11 @@ public class FancyCrafting extends JavaPlugin {
 
 		if (!new File("plugins/FancyCrafting/recipes.yml").exists())
 			new File("plugins/FancyCrafting/recipes.yml").createNewFile();
-		getLogger().info("Loading crafting templates:");
+
+		config = YamlConfiguration.loadConfiguration(new File("plugins/FancyCrafting/config.yml"));
+		loadConfig();
+
+		getLogger().info("Loading crafting templates...");
 		for (int width = 1; width <= 8; width++) {
 			for (int height = 1; height <= 6; height++) {
 				try {
@@ -145,9 +152,10 @@ public class FancyCrafting extends JavaPlugin {
 									.setAutoCraftingSlots(craftingTemplateConfig.getIntegerList("quick-crafting-slots")
 											.stream().mapToInt(Integer::intValue).toArray())
 									.build()));
-					getLogger().info(String.format("Loaded %dx%d crafting template", width, height));
+					getLogger().fine(String.format("Loaded %dx%d crafting template", width, height));
 				} catch (Exception ex) {
-					getLogger().warning(String.format("Could not load %dx%d crafting template!", width, height));
+					getLogger().log(Level.SEVERE,
+							String.format("Could not load %dx%d crafting template!", width, height), ex);
 				}
 			}
 		}
@@ -155,7 +163,7 @@ public class FancyCrafting extends JavaPlugin {
 	}
 
 	public void checkFile(File file, String src) throws IOException {
-		getLogger().info("Checking " + file.getPath() + " for completeness (comparing to " + src + ")");
+		getLogger().fine("Checking " + file.getPath() + " for completeness (comparing to " + src + ")");
 		de.ancash.misc.FileUtils.setMissingConfigurationSections(new YamlFile(file), getResource(src),
 				new HashSet<>(Arrays.asList("type")));
 	}
@@ -168,31 +176,59 @@ public class FancyCrafting extends JavaPlugin {
 
 	@SuppressWarnings("deprecation")
 	public void loadConfig() throws IOException, org.bukkit.configuration.InvalidConfigurationException {
-		backgroundItem = new IItemStack(ItemStackUtils.get(config, "background"));
-		backItem = ItemStackUtils.get(config, "recipe-view-gui.back");
-		closeItem = new IItemStack(ItemStackUtils.get(config, "close"));
-		prevItem = ItemStackUtils.get(config, "recipe-view-gui.previous");
-		nextItem = ItemStackUtils.get(config, "recipe-view-gui.next");
-		validItem = new IItemStack(ItemStackUtils.get(config, "workbench.valid_recipe"));
-		invalidItem = new IItemStack(ItemStackUtils.get(config, "workbench.invalid_recipe"));
-		shapeless = ItemStackUtils.get(config, "recipe-create-gui.shapeless");
-		shapedItem = ItemStackUtils.get(config, "recipe-create-gui.shaped");
-		saveItem = ItemStackUtils.get(config, "recipe-create-gui.save");
-		editItem = ItemStackUtils.get(config, "recipe-create-gui.edit");
-		deleteItem = ItemStackUtils.get(config, "recipe-create-gui.delete");
-		quickCraftingItem = ItemStackUtils.get(config, "workbench.quick_crafting");
+		workspaceObjects.setBackgroundItem(new IItemStack(ItemStackUtils.get(config, "background")))
+				.setBackItem(new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.back")))
+				.setCloseItem(new IItemStack(ItemStackUtils.get(config, "close")))
+				.setPrevItem(new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.previous")))
+				.setNextItem(new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.next")))
+				.setValidItem(new IItemStack(ItemStackUtils.get(config, "workbench.valid_recipe")))
+				.setInvalidItem(new IItemStack(ItemStackUtils.get(config, "workbench.invalid_recipe")))
+				.setShapelessItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.shapeless")))
+				.setShapedItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.shaped")))
+				.setSaveItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.save")))
+				.setEditItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.edit")))
+				.setDeleteItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.delete")))
+				.setQuickCraftingItem(new IItemStack(ItemStackUtils.get(config, "workbench.quick_crafting")))
+				.setCreateNormalRecipeItem(
+						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.create-normal")))
+				.setCreateRandomRecipeItem(
+						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.create-random")))
+				.setManageRandomResultsItem(
+						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-random-results")))
+				.setManageIngredientsItem(
+						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-ingredients")))
+				.setManageRandomInvalidResultItem(
+						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-random-invalid-result")))
+				.setInputRecipeNameLeftItem(
+						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.input-recipe-name-left")))
+				.setInputRecipeNameRightItem(
+						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.input-recipe-name-right")))
+				.setManageRecipeNameItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-recipe-name")))
+				.setCreateRecipeTitle(config.getString("recipe-create-gui.title"))
+				.setCustomRecipesTitle(config.getString("recipe-view-gui.page-title"))
+				.setViewRecipeTitle(config.getString("recipe-view-gui.single-title"))
+				.setManageRandomResultsFormat(config.getString("recipe-create-gui.manage-random-results.format"))
+				.setManageRandomIngredientsIdFormat(config.getString("recipe-create-gui.manage-ingredients.id-format"))
+				.setEditRecipeTitle(config.getString("recipe-view-gui.edit-title"))
+				.setBackCommands(Collections.unmodifiableList(config.getStringList("recipe-view-gui.back.commands")))
+				.setIngredientsInputTitle(config.getString("recipe-create-gui.manage-ingredients-title"))
+				.setManageResultTitle(config.getString("recipe-create-gui.manage-result-title"))
+				.setManageProbabilityFooter(
+						config.getStringList("recipe-create-gui.manage-random-result-probability.footer"))
+				.setManageProbabilityHeader(
+						config.getStringList("recipe-create-gui.manage-random-result-probability.header"))
+				.setManageProbabilitiesTitle(config.getString("recipe-create-gui.manage-probabilities-title"))
+				.setInputRecipeNameTitle(config.getString("recipe-create-gui.input-recipe-name-title"));
+
 		defaultDim = new WorkspaceDimension(config.getInt("default-template-width"),
 				config.getInt("default-template-height"));
-		createRecipeTitle = config.getString("recipe-create-gui.title");
-		customRecipesTitle = config.getString("recipe-view-gui.page-title");
-		viewRecipeTitle = config.getString("recipe-view-gui.single-title");
-		editRecipeTitle = config.getString("recipe-view-gui.edit-title");
-		backCommands = Collections.unmodifiableList(config.getStringList("recipe-view-gui.back.commands"));
 		permsForCustomRecipes = config.getBoolean("perms-for-custom-recipes");
 		permsForVanillaRecipes = config.getBoolean("perms-for-vanilla-recipes");
 		checkRecipesAsync = config.getBoolean("check-recipes-async");
 		quickCraftingAsync = config.getBoolean("check-quick-crafting-async");
 		sortRecipesByRecipeName = config.getBoolean("sort-recipes-by-recipe-name");
+		debug = config.getBoolean("debug");
+		getLogger().info("Debug: " + debug);
 		getLogger().info("Check recipes async: " + checkRecipesAsync);
 		getLogger().info("Check quick crafting async: " + quickCraftingAsync);
 		getLogger().info("Perms for custom recipes: " + permsForCustomRecipes);
@@ -201,10 +237,39 @@ public class FancyCrafting extends JavaPlugin {
 		getLogger().info("Default crafting template is " + defaultDim.getWidth() + "x" + defaultDim.getHeight());
 	}
 
+	private String format(LogRecord record) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(ANSIEscapeCodes.MOVE_CURSOR_TO_BEGINNING_OF_NEXT_LINE_N_LINES_DOWN.replace("n", "0"));
+		builder.append(ANSIEscapeCodes.ERASE_CURSOR_TO_END_OF_LINE);
+		builder.append(parseColor(record.getLevel()));
+		builder.append("[");
+		builder.append(LocalDateTime.now().format(DATE_FORMATTER));
+		builder.append("] [");
+		builder.append(Thread.currentThread().getName());
+		builder.append("/");
+		builder.append(record.getLevel().toString());
+		builder.append("] ");
+		if (Bukkit.isPrimaryThread())
+			builder.append("[FancyCrafting] ");
+		builder.append(record.getMessage());
+		return builder.toString();
+	}
+
+	private String parseColor(Level l) {
+		if (l.intValue() <= 800)
+			return "\033[38;5;159m";
+		if (l.intValue() == 900)
+			return ConsoleColor.YELLOW_BOLD_BRIGHT;
+		if (l.intValue() == 1000)
+			return ConsoleColor.RED_BOLD_BRIGHT;
+		return "";
+	}
+
 	@Override
 	public void onDisable() {
 		updateChecker.stop();
 		threadPool.shutdownNow();
+		MinecraftLoggerUtil.disableDebugging(singleton);
 	}
 
 	public static boolean canCraftRecipe(IRecipe recipe, Player pl) {
@@ -239,88 +304,20 @@ public class FancyCrafting extends JavaPlugin {
 		return singleton.getRecipeManager().registerRecipe(recipe);
 	}
 
-	public IItemStack getValidItem() {
-		return validItem;
-	}
-
-	public IItemStack getInvalidItem() {
-		return invalidItem;
-	}
-
-	public IItemStack getBackgroundItem() {
-		return backgroundItem;
-	}
-
-	public String getCreateRecipeTitle() {
-		return createRecipeTitle;
-	}
-
-	public ItemStack getBackItem() {
-		return backItem;
-	}
-
-	public IItemStack getCloseItem() {
-		return closeItem;
-	}
-
-	public String getViewRecipeTitle() {
-		return viewRecipeTitle;
-	}
-
-	public List<String> getBackCommands() {
-		return backCommands;
-	}
-
-	public ItemStack getNextItem() {
-		return nextItem;
-	}
-
-	public ItemStack getPrevItem() {
-		return prevItem;
+	public WorkspaceObjects getWorkspaceObjects() {
+		return workspaceObjects;
 	}
 
 	public WorkspaceDimension getDefaultDimension() {
 		return defaultDim;
 	}
 
-	public ItemStack getShapelessItem() {
-		return shapeless;
-	}
-
-	public ItemStack getShapedItem() {
-		return shapedItem;
-	}
-
-	public ItemStack getSaveItem() {
-		return saveItem;
-	}
-
-	public ItemStack getEditItem() {
-		return editItem;
-	}
-
-	public ItemStack getDeleteItem() {
-		return deleteItem;
-	}
-
 	public boolean checkRecipesAsync() {
 		return checkRecipesAsync;
 	}
 
-	public String getCustomRecipesTitle() {
-		return customRecipesTitle;
-	}
-
-	public String getEditRecipeTitle() {
-		return editRecipeTitle;
-	}
-
 	public Response getResponse() {
 		return response;
-	}
-
-	public ItemStack getQuickCraftingItem() {
-		return quickCraftingItem;
 	}
 
 	public boolean isQuickCraftingAsync() {

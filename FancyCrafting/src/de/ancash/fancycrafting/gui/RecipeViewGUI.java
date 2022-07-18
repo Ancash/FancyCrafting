@@ -1,27 +1,27 @@
-
 package de.ancash.fancycrafting.gui;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 
 import de.ancash.fancycrafting.FancyCrafting;
+import de.ancash.fancycrafting.gui.normal.EditNormalRecipeGUI;
+import de.ancash.fancycrafting.gui.random.EditRandomRecipeGUI;
+import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.minecraft.IItemStack;
-import de.ancash.minecraft.ItemBuilder;
 import de.ancash.minecraft.XMaterial;
-import de.ancash.minecraft.inventory.Clickable;
 import de.ancash.minecraft.inventory.IGUI;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
@@ -52,13 +52,13 @@ public class RecipeViewGUI extends IGUI {
 		this.plugin = pl;
 		this.player = player;
 		for (int i = 0; i < getSize(); i++)
-			setItem(pl.getBackgroundItem().getOriginal(), i);
+			setItem(pl.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
 		for (int i : WorkspaceTemplate.get(recipe.getWidth(), recipe.getHeight()).getSlots().getCraftingSlots())
 			setItem(null, i);
 		setItem(null, WorkspaceTemplate.get(recipe.getWidth(), recipe.getHeight()).getSlots().getResultSlot());
 		IGUIManager.register(this, getId());
 		openRecipe(recipe);
-		player.openInventory(getInventory());
+		open();
 	}
 
 	public void openRecipe(IRecipe recipe) {
@@ -66,7 +66,7 @@ public class RecipeViewGUI extends IGUI {
 		if (getSize() != template.getDimension().getSize()) {
 			newInventory(recipe.getRecipeName(), template.getDimension().getSize());
 			for (int i = 0; i < getSize(); i++)
-				setItem(plugin.getBackgroundItem().getOriginal(), i);
+				setItem(plugin.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
 		}
 		clearInventoryItems();
 		for (int i : template.getSlots().getCraftingSlots())
@@ -85,40 +85,23 @@ public class RecipeViewGUI extends IGUI {
 			for (int i = 0; i < shapeless.getIngredients().size(); i++)
 				setItem((ItemStack) shapeless.getIngredients().toArray()[i], template.getSlots().getCraftingSlots()[i]);
 		}
-		addInventoryItem(new InventoryItem(this, plugin.getCloseItem().getOriginal(),
-				template.getSlots().getCloseSlot(), new Clickable() {
-
-					@Override
-					public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-						if (topInventory)
-							player.closeInventory();
-					}
-				}));
-		addInventoryItem(
-				new InventoryItem(this, plugin.getBackItem(), template.getSlots().getBackSlot(), new Clickable() {
-
-					@Override
-					public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-						if (topInventory)
-							for (String cmd : plugin.getBackCommands())
-								Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(),
-										cmd.replace("%p", player.getName()));
-					}
-				}));
-
+		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getCloseItem().getOriginal(),
+				template.getSlots().getCloseSlot(),
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(RecipeViewGUI::closeAll)));
+		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getBackItem().getOriginal(),
+				template.getSlots().getBackSlot(),
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(
+						self -> plugin.getWorkspaceObjects().getBackCommands().forEach(cmd -> Bukkit.getServer()
+								.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", player.getName())))))); //$NON-NLS-1$
 		if (player.hasPermission(FancyCrafting.EDIT_PERM) && !recipe.isVanilla())
-			addInventoryItem(new InventoryItem(this,
-					new ItemBuilder(XMaterial.WRITABLE_BOOK).setDisplayname("§aClick to edit recipe").build(),
-					template.getSlots().getEditSlot(), new Clickable() {
-
-						@Override
-						public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-							if (topInventory) {
-								player.closeInventory();
-								new RecipeEditGUI(plugin, player, recipe);
-							}
-						}
-					}));
+			addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getEditItem().getOriginal(),
+					template.getSlots().getEditSlot(),
+					(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> {
+						if (recipe instanceof IRandomRecipe)
+							new EditRandomRecipeGUI(plugin, player, recipe).open();
+						else
+							new EditNormalRecipeGUI(plugin, player, recipe).open();
+					})));
 	}
 
 	@Override

@@ -10,6 +10,8 @@ commands:
       - "§aFancyCrafting Commands:"
       - "§7/fc open (open the crafting gui)"
       - "§7/fc open <1-8> <1-6>"
+      - "§7/fc open <player>"
+      - "§7/fc open <player> <1-8> <1-6>"
       - "§7/fc create (create a new recipe)"
       - "§7/fc edit (edit custom recipes)"
       - "§7/fc view (view all custom recipes)"

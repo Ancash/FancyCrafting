@@ -1,11 +1,9 @@
 package de.ancash.fancycrafting.gui;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -18,19 +16,15 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import de.ancash.datastructures.tuples.Duplet;
-import de.ancash.datastructures.tuples.Tuple;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
+import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.InventoryUtils;
 import de.ancash.minecraft.XMaterial;
-import de.ancash.minecraft.inventory.Clickable;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
 
@@ -42,138 +36,31 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	public CraftingWorkspaceGUI(FancyCrafting pl, Player player, WorkspaceTemplate template) {
 		super(pl, player, template);
+
 		for (int i = 0; i < template.getDimension().getSize(); i++)
-			setItem(pl.getBackgroundItem().getOriginal(), i);
+			setItem(pl.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
 		for (int i : template.getSlots().getCraftingSlots())
 			setItem(null, i);
 		for (int i : template.getSlots().getAutoCraftingSlots())
-			setItem(pl.getQuickCraftingItem(), i);
+			setItem(pl.getWorkspaceObjects().getQuickCraftingItem().getOriginal(), i);
 
-		addInventoryItem(new InventoryItem(this, pl.getCloseItem().getOriginal(), template.getSlots().getCloseSlot(),
-				new Clickable() {
-
-					@Override
-					public void onClick(int slot, boolean shift, InventoryAction action, boolean topInventory) {
-						if (topInventory)
-							closeAll();
-					}
-				}));
+		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCloseItem().getOriginal(),
+				template.getSlots().getCloseSlot(),
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(CraftingWorkspaceGUI::closeAll)));
 		IGUIManager.register(this, getId());
-		new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				onNoRecipeMatch();
-				autoMatch();
-				player.openInventory(getInventory());
-				player.updateInventory();
-			}
-		}.runTask(pl);
-	}
-
-	@Override
-	public IItemStack[] getIngredients() {
-		IItemStack[] ings = new IItemStack[template.getSlots().getCraftingSlots().length];
-		for (int i = 0; i < ings.length; i++) {
-			ItemStack item = getItem(template.getSlots().getCraftingSlots()[i]);
-			if (item != null && item.getType() != Material.AIR)
-				ings[i] = new IItemStack(item);
-		}
-		return ings;
-	}
-
-	@Override
-	public void onRecipeMatch() {
-		if (Bukkit.isPrimaryThread())
-			onRecipeMatch0();
-		else
-			new BukkitRunnable() {
-
-				@Override
-				public void run() {
-					onRecipeMatch0();
-				}
-			}.runTask(pl);
-	}
-
-	private void onRecipeMatch0() {
-		synchronized (lock) {
-			if (getCurrentRecipe() == null)
-				return;
-			setItem(getCurrentRecipe().getResult(), template.getSlots().getResultSlot());
-			for (int i : template.getSlots().getCraftStateSlots())
-				setItem(pl.getValidItem().getOriginal(), i);
-		}
-	}
-
-	@Override
-	public void onNoRecipeMatch() {
-		if (Bukkit.isPrimaryThread())
-			onNoRecipeMatch0();
-		else
-			new BukkitRunnable() {
-
-				@Override
-				public void run() {
-					onNoRecipeMatch0();
-				}
-			}.runTask(pl);
-	}
-
-	private void onNoRecipeMatch0() {
-		synchronized (lock) {
-			setItem(pl.getInvalidItem().getOriginal(), template.getSlots().getResultSlot());
-			for (int i : template.getSlots().getCraftStateSlots())
-				setItem(pl.getInvalidItem().getOriginal(), i);
-		}
-	}
-
-	private void onQuickCraftRecipesChange(InventoryClickEvent e) {
-		if (e.isRightClick()) {
-			if ((quickCraftingPage + 1) * template.getSlots().getAutoCraftingSlots().length < quickCraftingRecipes
-					.size())
-				quickCraftingPage++;
-		} else {
-			if (quickCraftingPage > 0)
-				quickCraftingPage--;
-		}
-		if (quickCraftingPage < quickCraftingRecipes.size()) {
-			int i;
-			for (i = quickCraftingPage * template.getSlots().getAutoCraftingSlots().length; i < (quickCraftingPage + 1)
-					* template.getSlots().getAutoCraftingSlots().length && i < quickCraftingRecipes.size(); i++)
-				addQuickCraftingItem(quickCraftingRecipes.get(i),
-						i - (quickCraftingPage * template.getSlots().getAutoCraftingSlots().length));
-
-			while (i < template.getSlots().getAutoCraftingSlots().length
-					+ (quickCraftingPage * template.getSlots().getAutoCraftingSlots().length)) {
-				removeInventoryItem(template.getSlots().getAutoCraftingSlots()[i
-						- (quickCraftingPage * template.getSlots().getAutoCraftingSlots().length)]);
-				setItem(pl.getQuickCraftingItem(), template.getSlots().getAutoCraftingSlots()[i
-						- (quickCraftingPage * template.getSlots().getAutoCraftingSlots().length)]);
-				i++;
-			}
-		}
-	}
-
-	private void addQuickCraftingItem(IRecipe recipe, int pos) {
-		addInventoryItem(new InventoryItem(this, recipe.getResult(), template.getSlots().getAutoCraftingSlots()[pos],
-				new Clickable() {
-
-					@Override
-					public void onClick(int arg0, boolean arg1, InventoryAction arg2, boolean arg3) {
-						if (arg3) {
-							onQuickCraft(recipe, arg1);
-							updateQuickCrafting();
-						}
-					}
-				}));
+		Bukkit.getScheduler().runTask(pl, () -> {
+			getRecipeMatchCompletionHandler().onNoRecipeMatch();
+			updateQuickCrafting();
+			open();
+			player.updateInventory();
+		});
 	}
 
 	@Override
 	public void onInventoryClick(InventoryClickEvent event) {
 		if (event.getClickedInventory() == null) {
 			event.setCancelled(true);
-			onQuickCraftRecipesChange(event);
+			getAutoRecipeHandler().onAutoRecipesChangePage(event);
 			return;
 		}
 		InventoryAction a = event.getAction();
@@ -186,10 +73,11 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 						IItemStack clicked = new IItemStack(
 								event.getView().getBottomInventory().getItem(event.getSlot()));
 						if (new IItemStack(getItem(template.getSlots().getResultSlot())).hashCode() == clicked
-								.hashCode() || pl.getBackgroundItem().hashCode() == clicked.hashCode()
-								|| pl.getValidItem().hashCode() == clicked.hashCode()
-								|| pl.getInvalidItem().hashCode() == clicked.hashCode()
-								|| pl.getCloseItem().hashCode() == clicked.hashCode()) {
+								.hashCode()
+								|| pl.getWorkspaceObjects().getBackgroundItem().hashCode() == clicked.hashCode()
+								|| pl.getWorkspaceObjects().getValidItem().hashCode() == clicked.hashCode()
+								|| pl.getWorkspaceObjects().getInvalidItem().hashCode() == clicked.hashCode()
+								|| pl.getWorkspaceObjects().getCloseItem().hashCode() == clicked.hashCode()) {
 							event.setCancelled(true);
 							return;
 						}
@@ -230,7 +118,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				return;
 			}
 		}
-		checkRecipeDelayed();
+		checkDelayed();
 	}
 
 	private boolean onBottomInventoryClick(InventoryClickEvent event) {
@@ -242,9 +130,10 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			return false;
 
 		IItemStack iShift = new IItemStack(shift);
-		if (iShift.hashCode() == pl.getCloseItem().hashCode() || iShift.hashCode() == pl.getBackgroundItem().hashCode()
-				|| iShift.hashCode() == pl.getValidItem().hashCode()
-				|| iShift.hashCode() == pl.getInvalidItem().hashCode()
+		if (iShift.hashCode() == pl.getWorkspaceObjects().getCloseItem().hashCode()
+				|| iShift.hashCode() == pl.getWorkspaceObjects().getBackgroundItem().hashCode()
+				|| iShift.hashCode() == pl.getWorkspaceObjects().getValidItem().hashCode()
+				|| iShift.hashCode() == pl.getWorkspaceObjects().getInvalidItem().hashCode()
 				|| quickCraftingResultHashCodes.contains(iShift.hashCode())) {
 			event.setCancelled(true);
 			return false;
@@ -291,7 +180,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	private void onTopSlotNotNullShift(InventoryClickEvent event, ItemStack slotItem) {
 		ItemStack toAdd = slotItem.clone();
 		toAdd.setAmount(1);
-		int free = InventoryUtils.getFreeSpaceExact(getInventoryContents(event.getWhoClicked().getInventory()), toAdd);
+		int free = InventoryUtils.getFreeSpaceExact(getPlayerInventoryContents(event.getWhoClicked().getInventory()),
+				toAdd);
 		int adding = free < slotItem.getAmount() ? free : slotItem.getAmount();
 		InventoryUtils.addItemAmount(adding, toAdd, player);
 		setAmount(slotItem.getAmount(), adding, event.getSlot(), event.getInventory());
@@ -352,13 +242,6 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		}
 	}
 
-	public boolean isCraftingSlot(int s) {
-		for (int i = 0; i < template.getSlots().getCraftingSlots().length; i++)
-			if (template.getSlots().getCraftingSlots()[i] == s)
-				return true;
-		return false;
-	}
-
 	@Override
 	public void onInventoryClose(InventoryCloseEvent event) {
 		IGUIManager.remove(getId());
@@ -366,18 +249,11 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			ItemStack item = getItem(i);
 			if (item == null || item.getType().equals(XMaterial.AIR.parseMaterial()))
 				continue;
-			if (InventoryUtils.getFreeSpaceExact(getInventoryContents(player.getInventory()), item) >= item.getAmount())
+			if (InventoryUtils.getFreeSpaceExact(getPlayerInventoryContents(player.getInventory()), item) >= item
+					.getAmount())
 				player.getInventory().addItem(item);
 			else
 				player.getWorld().dropItem(player.getLocation(), item);
-		}
-	}
-
-	private ItemStack[] getInventoryContents(PlayerInventory inv) {
-		try {
-			return player.getInventory().getStorageContents();
-		} catch (NoSuchMethodError e) {
-			return player.getInventory().getContents();
 		}
 	}
 
@@ -388,42 +264,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			event.setCancelled(true);
 			return;
 		}
-		checkRecipeDelayed();
-	}
-
-	@Override
-	public void onNoPermission(IRecipe recipe, Player p) {
-		onNoRecipeMatch();
-	}
-
-	public void updateAll() {
-		updateRecipe();
-		updateQuickCrafting();
-	}
-
-	public void updateRecipe() {
-		updateMatrix();
-		if (pl.checkRecipesAsync())
-			matchRecipeAsync();
-		else
-			matchRecipe();
-	}
-
-	public void updateQuickCrafting() {
-		if (pl.isQuickCraftingAsync())
-			autoMatchAsync();
-		else
-			autoMatch();
-	}
-
-	private void checkRecipeDelayed() {
-		new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				updateAll();
-			}
-		}.runTaskLater(pl, 1);
+		checkDelayed();
 	}
 
 	private void craftItem(InventoryClickEvent event, IRecipe recipe, int[] moves) {
@@ -433,32 +274,45 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		}
 		ItemStack cursor = event.getCursor();
 		if (event.getAction().equals(InventoryAction.PICKUP_ALL)) {
-			if (cursor != null && cursor.getType().equals(XMaterial.AIR.parseMaterial())) {
+			if (cursor != null && cursor.getType() == Material.AIR) {
 				collectIngredients(event.getInventory(), recipe);
-				event.getWhoClicked().setItemOnCursor(recipe.getResult());
+				event.getWhoClicked()
+						.setItemOnCursor(getRecipeMatchCompletionHandler().getSingleRecipeCraft(recipe, player));
 				updateAll();
 				return;
 			}
 		} else if (event.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
-			int i = shiftCollectIngredients(event.getInventory(), recipe);
-			InventoryUtils.addItemAmount(i * recipe.getResult().getAmount(), recipe.getResult(), player);
-			updateAll();
+			if (recipe.isShiftCollectable()) {
+				InventoryUtils.addItemAmount(
+						shiftCollectIngredients(event.getInventory(), recipe) * recipe.getResult().getAmount(),
+						recipe.getResult(), player);
+				updateAll();
+			} else {
+				ItemStack result = getRecipeMatchCompletionHandler().getSingleRecipeCraft(recipe, player);
+				if (InventoryUtils.getFreeSpaceExact(getPlayerInventoryContents(event.getWhoClicked().getInventory()),
+						result) >= result.getAmount()) {
+					collectIngredients(event.getInventory(), recipe);
+					event.getWhoClicked().getInventory().addItem(result);
+				}
+				updateAll();
+			}
 			return;
 		} else if ((event.getAction().equals(InventoryAction.PLACE_ONE)
 				|| event.getAction().equals(InventoryAction.PLACE_ALL))
 				&& new IItemStack(cursor).hashCode() == recipe.getResultAsIItemStack().hashCode()
-				&& cursor.getAmount() + recipe.getResult().getAmount() <= cursor.getMaxStackSize()) {
+				&& cursor.getAmount() + recipe.getResult().getAmount() <= cursor.getMaxStackSize()
+				&& !(recipe instanceof IRandomRecipe)) {
 			cursor.setAmount(cursor.getAmount() + recipe.getResult().getAmount());
 			collectIngredients(event.getInventory(), recipe);
 			updateAll();
 			return;
 		}
 		updateAll();
-		player.updateInventory();
 	}
 
 	private int shiftCollectIngredients(Inventory inventory, IRecipe recipe) {
-		int space = InventoryUtils.getFreeSpaceExact(getInventoryContents(player.getInventory()), recipe.getResult());
+		int space = InventoryUtils.getFreeSpaceExact(getPlayerInventoryContents(player.getInventory()),
+				recipe.getResult());
 		if (space <= 0) {
 			return 0;
 		}
@@ -500,15 +354,6 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			collectShapeless(inventory, (IShapelessRecipe) recipe, shiftSize);
 		}
 		return shiftSize;
-	}
-
-	private void setAmount(int a, int b, int slot, Inventory inventory) {
-		ItemStack is = inventory.getItem(slot);
-		if (a - b <= 0) {
-			inventory.setItem(slot, null);
-		} else {
-			is.setAmount(a - b);
-		}
 	}
 
 	private void collectShapeless(Inventory inventory, IShapelessRecipe shapeless, int multiplicator) {
@@ -553,64 +398,5 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			collectShaped(inventory, (IShapedRecipe) recipe, 1);
 		if (recipe instanceof IShapelessRecipe)
 			collectShapeless(inventory, (IShapelessRecipe) recipe, 1);
-	}
-
-	@Override
-	public void onAutoMatchFinish() {
-		if (Bukkit.isPrimaryThread())
-			onAutoMatchFinish0();
-		else
-			new BukkitRunnable() {
-
-				@Override
-				public void run() {
-					onAutoMatchFinish0();
-				}
-			}.runTask(pl);
-	}
-
-	private void onAutoMatchFinish0() {
-		quickCraftingPage = 0;
-		quickCraftingRecipes = new ArrayList<>(matcher.getMatchedRecipes());
-		Set<Integer> temp = new HashSet<>();
-		Collections.sort(quickCraftingRecipes, (a, b) -> a.getResultName().compareToIgnoreCase(b.getResultName()));
-		int i = 0;
-		for (i = 0; i < template.getSlots().getAutoCraftingSlots().length && i < quickCraftingRecipes.size(); i++) {
-			IRecipe recipe = quickCraftingRecipes.get(i);
-			temp.add(recipe.getResultAsIItemStack().hashCode());
-			addInventoryItem(new InventoryItem(this, recipe.getResult(), template.getSlots().getAutoCraftingSlots()[i],
-					new Clickable() {
-
-						@Override
-						public void onClick(int arg0, boolean arg1, InventoryAction arg2, boolean arg3) {
-							if (arg3) {
-								onQuickCraft(recipe, arg1);
-								updateQuickCrafting();
-							}
-						}
-					}));
-		}
-		while (i < template.getSlots().getAutoCraftingSlots().length) {
-			removeInventoryItem(template.getSlots().getAutoCraftingSlots()[i]);
-			setItem(pl.getQuickCraftingItem(), template.getSlots().getAutoCraftingSlots()[i]);
-			i++;
-		}
-		quickCraftingResultHashCodes = temp;
-	}
-
-	private void onQuickCraft(IRecipe recipe, boolean shift) {
-		// shift ignored, only single click
-		Map<Integer, Duplet<IItemStack, Integer>> map = new HashMap<>();
-		for (ItemStack is : recipe.getIngredients()) {
-			if (is == null || is.getType() == Material.AIR)
-				continue;
-			int amt = is.getAmount();
-			is.setAmount(1);
-			IItemStack iis = new IItemStack(is);
-			map.merge(iis.hashCode(), Tuple.of(iis, amt),
-					(a, b) -> Tuple.of(a.getFirst(), a.getSecond() + b.getSecond()));
-		}
-		map.values().forEach(d -> InventoryUtils.removeItemAmount(d.getSecond(), d.getFirst().getOriginal(), player));
-		player.getInventory().addItem(recipe.getResult());
 	}
 }
