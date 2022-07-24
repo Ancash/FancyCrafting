@@ -111,7 +111,7 @@ recipe-create-gui: #creating & editing
       - "§cRight click to delete"
       - "§eLeft click to edit probability"
    manage-ingredients:
-      id-format: "§7%id%: §f%item%"
+      id-format: "§a%id%: §f%item%"
       type: CRAFTING_TABLE
       meta:
          displayname: "§aManage ingredients and type"
@@ -145,6 +145,14 @@ recipe-create-gui: #creating & editing
          displayname: "§cDelete Recipe"
    
 recipe-view-gui:
+   size: 36
+   probability-slot: 16
+   result-slot: 13
+   close-slot: 31
+   edit-slot: 32
+   next-slot: 35
+   previous-slot: 27
+   ingredients-slot: 10
    edit-title: "Edit %recipe%"
    page-title: "Custom Recipes"
    single-title: "%recipe% Recipe"
@@ -168,3 +176,20 @@ recipe-view-gui:
          displayname: "§c§lBack"
          lore:
          - "§7Click to go back"
+   view-random-results:
+      format: "§a%prob%%§7: §f%item%"
+      type: CHEST
+      meta:
+         displayname: "§aPossible results"
+         lore:
+         - "%probability_map%"
+   view-ingredients:
+      id-format: "§a%id%: §f%item%"
+      type: CRAFTING_TABLE
+      meta:
+         displayname: "§aIngredients & recipe type"
+         lore:
+         - "§aRecipe type: §7%rtype%"
+         - "§aIngredients:"
+         - ""
+         - "%ingredients%"

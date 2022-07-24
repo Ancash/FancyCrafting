@@ -113,7 +113,19 @@ public class RecipeManager {
 		}
 		for (String key : recipeCfg.getKeys(false)) {
 			try {
-				registerRecipe(IRecipe.getRecipeFromFile(recipeFile, recipeCfg, key));
+				IRecipe recipe = IRecipe.getRecipeFromFile(recipeFile, recipeCfg, key);
+				plugin.getLogger().fine("-----------------------------------------------------");
+				plugin.getLogger().fine("Name: " + recipe.getRecipeName());
+				plugin.getLogger().fine("Result: " + recipe.getResult());
+				plugin.getLogger().fine("Width: " + recipe.getWidth());
+				plugin.getLogger().fine("Height: " + recipe.getHeight());
+				plugin.getLogger().fine("Type: " + recipe.getClass().getSimpleName());
+				plugin.getLogger().fine("Ingredients: \n" + (recipe instanceof IShapedRecipe ? String.join("\n",
+						IRecipe.ingredientsToListColorless(plugin,
+								recipe.getIngredients().toArray(new ItemStack[recipe.getIngredients().size()]),
+								recipe.getWidth(), recipe.getHeight(), plugin.getWorkspaceObjects().getViewIngredientsIdFormat())) : ((IShapelessRecipe) recipe).getIngredients()));
+				plugin.getLogger().fine("-----------------------------------------------------");
+				registerRecipe(recipe);
 				plugin.getLogger()
 						.info("Loaded custom recipe: " + recipeCfg.getString(key + ".name") + " (" + key + ")");
 			} catch (IOException | InvalidConfigurationException e) {
@@ -205,5 +217,13 @@ public class RecipeManager {
 		if (recipesByResult.get(iItemStack.hashCode()) == null)
 			return null;
 		return Collections.unmodifiableSet(recipesByResult.get(iItemStack.hashCode()));
+	}
+
+	public void clear() {
+		customRecipes.clear();
+		this.autoMatchingRecipes.clear();
+		this.customRecipesBySize.clear();
+		this.recipesByName.clear();
+		this.recipesByResult.clear();
 	}
 }

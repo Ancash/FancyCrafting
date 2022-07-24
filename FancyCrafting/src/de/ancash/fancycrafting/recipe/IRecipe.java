@@ -28,6 +28,8 @@ import de.ancash.minecraft.XMaterial;
 
 public abstract class IRecipe {
 
+	private static final char[] chars = "ABCDEFGHIJKLMNOPQRSTUVWYabcdefghijklmnopqrstuvw".toCharArray(); //$NON-NLS-1$
+
 	protected final IItemStack result;
 	protected final String recipeName;
 	protected final String resultName;
@@ -62,13 +64,13 @@ public abstract class IRecipe {
 			resultName = result.getItemMeta().getDisplayName() == null
 					|| result.getItemMeta().getDisplayName().isEmpty() ? XMaterial.matchXMaterial(result).toString()
 							: result.getItemMeta().getDisplayName();
-			this.craftPermission = new Permission("fancycrafting.craft." + this.recipeName.replace(" ", "-"),  //$NON-NLS-2$ //$NON-NLS-3$
+			this.craftPermission = new Permission("fancycrafting.craft." + this.recipeName.replace(" ", "-"), //$NON-NLS-3$
 					PermissionDefault.FALSE);
-			this.viewPermission = new Permission("fancycrafting.view." + this.recipeName.replace(" ", "-"),  //$NON-NLS-2$ //$NON-NLS-3$
+			this.viewPermission = new Permission("fancycrafting.view." + this.recipeName.replace(" ", "-"), //$NON-NLS-3$
 					PermissionDefault.FALSE);
 		} else {
-			this.recipeName = name == null ? "null" : name; 
-			this.resultName = "null"; 
+			this.recipeName = name == null ? "null" : name;
+			this.resultName = "null";
 			this.craftPermission = null;
 			this.viewPermission = null;
 		}
@@ -165,43 +167,43 @@ public abstract class IRecipe {
 			throws IOException, InvalidConfigurationException {
 		boolean save = false;
 
-		ItemStack result = ItemStackUtils.getItemStack(fc, path + ".result"); 
-		String name = fc.getString(path + ".name"); 
+		ItemStack result = ItemStackUtils.getItemStack(fc, path + ".result");
+		String name = fc.getString(path + ".name");
 
-		int width = fc.getInt(path + ".width"); 
-		int height = fc.getInt(path + ".height"); 
+		int width = fc.getInt(path + ".width");
+		int height = fc.getInt(path + ".height");
 
 		ItemStack[] ingredients = new ItemStack[width * height];
 		for (int i = 0; i < ingredients.length; i++)
-			if (fc.getItemStack(path + ".ingredients." + i) != null) 
-				ingredients[i] = ItemStackUtils.getItemStack(fc, path + ".ingredients." + i); 
+			if (fc.getItemStack(path + ".ingredients." + i) != null)
+				ingredients[i] = ItemStackUtils.getItemStack(fc, path + ".ingredients." + i);
 
-		if (!fc.contains(path + ".random")) 
-			fc.set(path + ".random", !(save = true)); 
+		if (!fc.contains(path + ".random"))
+			fc.set(path + ".random", !(save = true));
 
-		boolean random = fc.getBoolean(path + ".random"); 
-		boolean shaped = fc.getBoolean(path + ".shaped"); 
+		boolean random = fc.getBoolean(path + ".random");
+		boolean shaped = fc.getBoolean(path + ".shaped");
 
-		UUID uuid = null;
+		UUID uuid;
 
-		if (fc.contains(path + ".uuid")) 
-			uuid = UUID.fromString(fc.getString(path + ".uuid")); 
+		if (fc.contains(path + ".uuid"))
+			uuid = UUID.fromString(fc.getString(path + ".uuid"));
 		else {
 			try {
-				uuid = UUID.fromString(path.contains(".") ? path.split(".")[path.split(".").length - 1] : path);  //$NON-NLS-2$ //$NON-NLS-3$
+				uuid = UUID.fromString(path.contains(".") ? path.split(".")[path.split(".").length - 1] : path); //$NON-NLS-3$
 			} catch (IllegalArgumentException e) {
 				uuid = UUID.randomUUID();
 			}
-			fc.set(path + ".uuid", uuid.toString()); 
+			fc.set(path + ".uuid", uuid.toString());
 			save = true;
 		}
 
 		Map<ItemStack, Integer> rngMap = new HashMap<>();
 
 		if (random)
-			fc.getConfigurationSection(path + ".random-map").getKeys(false).stream() 
-					.forEach(key -> rngMap.put(ItemStackUtils.getItemStack(fc, path + ".random-map." + key + ".item"),  //$NON-NLS-2$
-							fc.getInt(path + ".random-map." + key + ".prob")));  //$NON-NLS-2$
+			fc.getConfigurationSection(path + ".random-map").getKeys(false).stream()
+					.forEach(key -> rngMap.put(ItemStackUtils.getItemStack(fc, path + ".random-map." + key + ".item"),
+							fc.getInt(path + ".random-map." + key + ".prob")));
 
 		if (save) {
 			fc.save(file);
@@ -219,6 +221,7 @@ public abstract class IRecipe {
 			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid);
 	}
 
+	@SuppressWarnings("nls")
 	public static IRecipe fromVanillaRecipe(FancyCrafting pl, Recipe v) {
 		if (v == null)
 			return null;
@@ -252,7 +255,7 @@ public abstract class IRecipe {
 				ings = ((ShapelessRecipe) v).getIngredientList();
 			}
 			pl.getLogger().warning(
-					"Could not load Bukkit recipe w/ result: " + v.getResult() + " & ingredients: " + ings + ": " + e);   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
+					"Could not load Bukkit recipe w/ result: " + v.getResult() + " & ingredients: " + ings + ": " + e); //$NON-NLS-3$
 			r = null;
 		}
 		return r;
@@ -269,14 +272,70 @@ public abstract class IRecipe {
 	private static ItemStack removeUnspecificMeta(Recipe r, ItemStack is) {
 		if (is == null)
 			return null;
-		if (is.getItemMeta().toString().toLowerCase().contains("unspecific") && is.getDurability() == 0)  //$NON-NLS-1$
+		if (is.getItemMeta().toString().toLowerCase().contains("unspecific") && is.getDurability() == 0) //$NON-NLS-1$
 			is.setItemMeta(null);
 		return is;
 	}
 
+	public static List<String> ingredientsToList(FancyCrafting pl, ItemStack[] ingredients, String format) {
+		return ingredientsToList(pl, ingredients, 8, 6, format);
+	}
+	
+	@SuppressWarnings("nls")
+	public static List<String> ingredientsToList(FancyCrafting pl, ItemStack[] ingredients, int width, int height, String format) {
+		StringBuilder builder = new StringBuilder();
+		Map<Integer, Character> mapped = new HashMap<>();
+		int cpos = 0;
+		for (int i = 0; i < ingredients.length; i++) {
+			if (ingredients[i] != null) {
+				int hash = new IItemStack(ingredients[i]).hashCode();
+				if (!mapped.containsKey(hash)) {
+					mapped.put(hash, chars[cpos++]);
+					builder.append(format
+							.replace("%id%", String.valueOf(mapped.get(hash)))
+							.replace("%item%", ItemStackUtils.getDisplayName(ingredients[i])) + "\n");
+				}
+			}
+		}
+
+		for (int col = 0; col < height; col++) {
+			for (int row = 0; row < width; row++) {
+				ItemStack ing = ingredients[col * width + row];
+				if (ing == null)
+					builder.append("§7----");
+				else
+					builder.append("§a" + mapped.get(new IItemStack(ing).hashCode()) + "§7x" + ing.getAmount()
+							+ (ing.getAmount() >= 10 ? "" : "§7-"));
+				if (row < width - 1)
+					builder.append("§7|");
+			}
+			if (col < height - 1) {
+				builder.append("\n§7");
+				for (int i = 0; i < width; i++)
+					builder.append("----" + (i % 2 == 0 ? "-" : ""));
+				builder.append("\n");
+			}
+		}
+		return Arrays.asList(builder.toString().split("\n"));
+	}
+
+	public static List<String> ingredientsToListColorless(FancyCrafting pl, ItemStack[] ingredients, String format) {
+		return ingredientsToListColorless(pl, ingredients, 8, 6, format);
+	}
+
+	@SuppressWarnings("nls")
+	public static List<String> ingredientsToListColorless(FancyCrafting pl, ItemStack[] ingredients, int width,
+			int height, String format) {
+		List<String> str = ingredientsToList(pl, ingredients, width, height, format);
+		for (int i = 0; i < str.size(); i++)
+			str.set(i, str.get(i).replaceAll("§[a-fk-rZ0-9]", ""));
+		return str;
+	}
+
+	@SuppressWarnings("nls")
 	@Override
 	public String toString() {
-		return "IRecipe{name=" + recipeName + ";result=" + result + ";ingredients=" + getIngredients() + "}";   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		return "IRecipe{name=" + recipeName + ";result=" + result + ";ingredients=" + getIngredients() + "}"; //$NON-NLS-3$ //$NON-NLS-4$
 	}
 
 	public Permission getCraftPermission() {

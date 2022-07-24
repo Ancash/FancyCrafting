@@ -2,14 +2,19 @@ package de.ancash.fancycrafting.gui;
 
 public class WorkspaceSlotsBuilder {
 
-	private int resultSlot, closeSlot, backSlot, prevSlot, nextSlot, editSlot, saveSlot, deleteSlot, recipeTypeSlot;
+	private int resultSlot, closeSlot;
 	private int[] craftingSlots, craftStateSlots, autoCraftingSlots;
+	private boolean enableQuickCrafting;
 
 	public WorkspaceSlots build() {
-		return new WorkspaceSlots(resultSlot, closeSlot, backSlot, prevSlot, nextSlot, editSlot, saveSlot, deleteSlot,
-				recipeTypeSlot, craftingSlots, craftStateSlots, autoCraftingSlots);
+		return new WorkspaceSlots(resultSlot, closeSlot, craftingSlots, craftStateSlots, autoCraftingSlots, enableQuickCrafting);
 	}
 
+	public WorkspaceSlotsBuilder setEnableQuickCrafting(boolean b) {
+		this.enableQuickCrafting = b;
+		return this;
+	}
+	
 	public WorkspaceSlotsBuilder setResultSlot(int resultSlot) {
 		this.resultSlot = resultSlot;
 		return this;
@@ -17,41 +22,6 @@ public class WorkspaceSlotsBuilder {
 
 	public WorkspaceSlotsBuilder setCloseSlot(int closeSlot) {
 		this.closeSlot = closeSlot;
-		return this;
-	}
-
-	public WorkspaceSlotsBuilder setBackSlot(int backSlot) {
-		this.backSlot = backSlot;
-		return this;
-	}
-
-	public WorkspaceSlotsBuilder setPrevSlot(int prevSlot) {
-		this.prevSlot = prevSlot;
-		return this;
-	}
-
-	public WorkspaceSlotsBuilder setNextSlot(int nextSlot) {
-		this.nextSlot = nextSlot;
-		return this;
-	}
-
-	public WorkspaceSlotsBuilder setEditSlot(int editSlot) {
-		this.editSlot = editSlot;
-		return this;
-	}
-
-	public WorkspaceSlotsBuilder setSaveSlot(int saveSlot) {
-		this.saveSlot = saveSlot;
-		return this;
-	}
-
-	public WorkspaceSlotsBuilder setDeleteSlot(int deleteSlot) {
-		this.deleteSlot = deleteSlot;
-		return this;
-	}
-
-	public WorkspaceSlotsBuilder setRecipeTypeSlot(int recipeTypeSlot) {
-		this.recipeTypeSlot = recipeTypeSlot;
 		return this;
 	}
 

@@ -1,16 +1,20 @@
 package de.ancash.fancycrafting.commands;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
@@ -19,20 +23,21 @@ import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.gui.WorkspaceTemplate;
 import de.ancash.fancycrafting.gui.normal.EditNormalRecipeGUI;
 import de.ancash.fancycrafting.gui.random.EditRandomRecipeGUI;
+import de.ancash.fancycrafting.gui.AbstractViewRecipeGUI;
 import de.ancash.fancycrafting.gui.CraftingWorkspaceGUI;
 import de.ancash.fancycrafting.gui.CreateRecipeMenuGUI;
 import de.ancash.fancycrafting.gui.PagedRecipesViewGUI;
-import de.ancash.fancycrafting.gui.RecipeViewGUI;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 
+@SuppressWarnings("nls")
 public class FancyCraftingCommand implements CommandExecutor {
 
 	private final FancyCrafting plugin;
 	private final List<String> toSend;
 	private final Map<Integer[], Permission> openPerms = new HashMap<>();
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	public FancyCraftingCommand(FancyCrafting plugin) {
 		this.plugin = plugin;
 		toSend = (List<String>) this.plugin.getDescription().getCommands().get("fc").get("usage");
@@ -47,7 +52,11 @@ public class FancyCraftingCommand implements CommandExecutor {
 
 		String command = args[0];
 
-		switch (command.toLowerCase()) {
+		switch (command.toLowerCase(Locale.ENGLISH)) {
+		case "reload":
+			if(reload(sender))
+				return true;
+			break;
 		case "open":
 			if (open(sender, args))
 				return true;
@@ -69,6 +78,19 @@ public class FancyCraftingCommand implements CommandExecutor {
 		}
 
 		toSend.forEach(str -> sender.sendMessage(str));
+		return true;
+	}
+	
+	private boolean reload(CommandSender sender) {
+		if(!sender.isOp() && !sender.hasPermission(FancyCrafting.RELOAD)) {
+			sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
+			return true;
+		}
+		try {
+			plugin.reload();
+		} catch (IOException | InvalidConfigurationException e) {
+			plugin.getLogger().log(Level.SEVERE, "Could not reload", e);
+		}
 		return true;
 	}
 
@@ -100,7 +122,7 @@ public class FancyCraftingCommand implements CommandExecutor {
 				sender.sendMessage(this.plugin.getResponse().INVALID_RECIPE.replace("%r", args[1]));
 				return true;
 			}
-			RecipeViewGUI.viewRecipe(this.plugin, recipes, (Player) sender);
+			AbstractViewRecipeGUI.viewRecipe(this.plugin, recipes, (Player) sender);
 			return true;
 		}
 		return false;

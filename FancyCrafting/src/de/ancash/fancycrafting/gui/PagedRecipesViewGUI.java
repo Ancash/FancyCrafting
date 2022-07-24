@@ -73,7 +73,7 @@ public class PagedRecipesViewGUI extends IGUI {
 					ItemStackUtils.setDisplayname(recipe.getResult(),
 							pl.sortRecipesByRecipeName() ? recipe.getRecipeName() : recipe.getResultName()),
 					i, (slot, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(
-							self -> RecipeViewGUI.viewRecipe(pl, recipes.get((page - 1) * 36 + slot), player))));
+							self -> AbstractViewRecipeGUI.viewRecipe(pl, recipes.get((page - 1) * 36 + slot), player))));
 			i++;
 		}
 	}

@@ -55,6 +55,8 @@ public class DefaultAutoRecipeMatcherHandler implements IAutoRecipeMatcherHandle
 
 	@Override
 	public void onAutoRecipesChangePage(InventoryClickEvent e) {
+		if(!workspace.enableQuickCrafting())
+			return;
 		if (e.isRightClick()) {
 			if ((quickCraftingPage + 1)
 					* workspace.getTemplate().getSlots().getAutoCraftingSlots().length < quickCraftingRecipes.size())

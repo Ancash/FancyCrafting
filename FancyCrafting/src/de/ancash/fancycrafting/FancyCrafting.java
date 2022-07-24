@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,6 +21,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
@@ -28,6 +31,7 @@ import de.ancash.libs.org.apache.commons.io.FileUtils;
 import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
 
 import de.ancash.fancycrafting.commands.FancyCraftingCommand;
+import de.ancash.fancycrafting.gui.ViewSlots;
 import de.ancash.fancycrafting.gui.WorkspaceDimension;
 import de.ancash.fancycrafting.gui.WorkspaceObjects;
 import de.ancash.fancycrafting.gui.WorkspaceSlotsBuilder;
@@ -57,9 +61,11 @@ public class FancyCrafting extends JavaPlugin {
 	public static final Permission EDIT_PERM = new Permission("fancycrafting.admin.edit", PermissionDefault.FALSE);
 	public static final Permission VIEW_ALL_PERM = new Permission("fancycrafting.admin.view", PermissionDefault.FALSE);
 	public static final Permission OPEN_DEFAULT_PERM = new Permission("fancycrafting.open", PermissionDefault.FALSE);
-	public static final Permission OPEN_OTHER_DEFAULT_PERM = new Permission("fancycrafting.open.other");
+	public static final Permission OPEN_OTHER_DEFAULT_PERM = new Permission("fancycrafting.open.other",
+			PermissionDefault.FALSE);
+	public static final Permission RELOAD = new Permission("fancycrafting.admin.reload", PermissionDefault.FALSE);
 
-	private DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+	private final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
 	private Response response;
 	private UpdateChecker updateChecker;
@@ -72,6 +78,7 @@ public class FancyCrafting extends JavaPlugin {
 	private boolean sortRecipesByRecipeName;
 	private WorkspaceDimension defaultDim;
 	private boolean debug;
+	private ViewSlots viewSlots;
 
 	private final WorkspaceObjects workspaceObjects = new WorkspaceObjects();
 
@@ -80,28 +87,48 @@ public class FancyCrafting extends JavaPlugin {
 	public void onEnable() {
 		singleton = this;
 		try {
-			getLogger().info("Loading...");
-			long now = System.nanoTime();
-			MinecraftLoggerUtil.enableDebugging(this,
-					(pl, record) -> debug ? true : record.getLevel().intValue() >= Level.INFO.intValue(),
-					(pl, record) -> format(record));
-			getLogger().info("Logger registered");
 			new Metrics(this, 14152, true);
-			checkForUpdates();
-			loadFiles();
-			recipeManager = new RecipeManager(this);
-			response = new Response(this);
-			PluginManager pm = Bukkit.getServer().getPluginManager();
-			pm.registerEvents(new WorkbenchClickListener(singleton), this);
-
-			getCommand("fc").setExecutor(new FancyCraftingCommand(this));
-
-			getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
-		} catch (Exception e) {
+			load();
+		} catch (IOException | InvalidConfigurationException e) {
+			getLogger().log(Level.SEVERE, "Could not load", e);
 			Bukkit.getPluginManager().disablePlugin(this);
-			e.printStackTrace();
 			return;
 		}
+	}
+
+	public void reload() throws IOException, InvalidConfigurationException {
+		long now = System.nanoTime();
+		getLogger().info("Reloading...");
+		HandlerList.unregisterAll(this);
+		checkForUpdates();
+		loadFiles();
+		recipeManager.clear();
+		recipeManager = new RecipeManager(this);
+		response = new Response(this);
+		PluginManager pm = Bukkit.getServer().getPluginManager();
+		pm.registerEvents(new WorkbenchClickListener(singleton), this);
+
+		getCommand("fc").setExecutor(new FancyCraftingCommand(this));
+		System.gc();
+		getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
+	}
+
+	private void load() throws IOException, InvalidConfigurationException {
+		long now = System.nanoTime();
+		getLogger().info("Loading...");
+		MinecraftLoggerUtil.enableDebugging(this,
+				(pl, record) -> debug ? true : record.getLevel().intValue() >= Level.INFO.intValue(),
+				(pl, record) -> format(record));
+		checkForUpdates();
+		loadFiles();
+		recipeManager = new RecipeManager(this);
+		response = new Response(this);
+		PluginManager pm = Bukkit.getServer().getPluginManager();
+		pm.registerEvents(new WorkbenchClickListener(singleton), this);
+
+		getCommand("fc").setExecutor(new FancyCraftingCommand(this));
+
+		getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
 	}
 
 	private void loadFiles() throws IOException, InvalidConfigurationException {
@@ -123,13 +150,11 @@ public class FancyCrafting extends JavaPlugin {
 				try {
 					File craftingTemplateFile = new File(
 							"plugins/FancyCrafting/crafting-" + width + "x" + height + ".yml");
-					if (!craftingTemplateFile.exists()) {
-						if (getResource("resources/crafting-" + width + "x" + height + ".yml") == null)
-							throw new NullPointerException();
+					if (!craftingTemplateFile.exists())
 						FileUtils.copyInputStreamToFile(
 								getResource("resources/crafting-" + width + "x" + height + ".yml"),
 								craftingTemplateFile);
-					}
+
 					checkFile(craftingTemplateFile, "resources/crafting-" + width + "x" + height + ".yml");
 
 					FileConfiguration craftingTemplateConfig = YamlConfiguration
@@ -138,19 +163,15 @@ public class FancyCrafting extends JavaPlugin {
 							new WorkspaceDimension(width, height, craftingTemplateConfig.getInt("size")),
 							new WorkspaceSlotsBuilder().setResultSlot(craftingTemplateConfig.getInt("result-slot"))
 									.setCloseSlot(craftingTemplateConfig.getInt("close-slot"))
-									.setBackSlot(craftingTemplateConfig.getInt("back-slot"))
-									.setPrevSlot(craftingTemplateConfig.getInt("prev-slot"))
-									.setNextSlot(craftingTemplateConfig.getInt("next-slot"))
-									.setEditSlot(craftingTemplateConfig.getInt("edit-slot"))
-									.setSaveSlot(craftingTemplateConfig.getInt("save-slot"))
-									.setDeleteSlot(craftingTemplateConfig.getInt("delete-slot"))
-									.setRecipeTypeSlot(craftingTemplateConfig.getInt("recipe-type-slot"))
 									.setCraftingSlots(craftingTemplateConfig.getIntegerList("crafting-slots").stream()
 											.mapToInt(Integer::intValue).toArray())
 									.setCraftStateSlots(craftingTemplateConfig.getIntegerList("craft-state-slots")
 											.stream().mapToInt(Integer::intValue).toArray())
-									.setAutoCraftingSlots(craftingTemplateConfig.getIntegerList("quick-crafting-slots")
-											.stream().mapToInt(Integer::intValue).toArray())
+									.setAutoCraftingSlots(craftingTemplateConfig.getBoolean("enable-quick-crafting")
+											? craftingTemplateConfig.getIntegerList("quick-crafting-slots").stream()
+													.mapToInt(Integer::intValue).toArray()
+											: null)
+									.setEnableQuickCrafting(craftingTemplateConfig.getBoolean("enable-quick-crafting"))
 									.build()));
 					getLogger().fine(String.format("Loaded %dx%d crafting template", width, height));
 				} catch (Exception ex) {
@@ -175,7 +196,12 @@ public class FancyCrafting extends JavaPlugin {
 	}
 
 	@SuppressWarnings("deprecation")
-	public void loadConfig() throws IOException, org.bukkit.configuration.InvalidConfigurationException {
+	private void loadConfig() throws IOException, org.bukkit.configuration.InvalidConfigurationException {
+		viewSlots = new ViewSlots(config.getInt("recipe-view-gui.size"), config.getInt("recipe-view-gui.result-slot"),
+				config.getInt("recipe-view-gui.ingredients-slot"), config.getInt("recipe-view-gui.probability-slot"),
+				config.getInt("recipe-view-gui.close-slot"), config.getInt("recipe-view-gui.back-slot"),
+				config.getInt("recipe-view-gui.previous-slot"), config.getInt("recipe-view-gui.next-slot"),
+				config.getInt("recipe-view-gui.edit-slot"));
 		workspaceObjects.setBackgroundItem(new IItemStack(ItemStackUtils.get(config, "background")))
 				.setBackItem(new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.back")))
 				.setCloseItem(new IItemStack(ItemStackUtils.get(config, "close")))
@@ -195,20 +221,28 @@ public class FancyCrafting extends JavaPlugin {
 						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.create-random")))
 				.setManageRandomResultsItem(
 						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-random-results")))
+				.setViewRandomResultsItem(
+						new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.view-random-results")))
 				.setManageIngredientsItem(
 						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-ingredients")))
+				.setManageIngredientsItem(
+						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-ingredients")))
+				.setViewIngredientsItem(new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.view-ingredients")))
 				.setManageRandomInvalidResultItem(
 						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-random-invalid-result")))
 				.setInputRecipeNameLeftItem(
 						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.input-recipe-name-left")))
 				.setInputRecipeNameRightItem(
 						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.input-recipe-name-right")))
-				.setManageRecipeNameItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-recipe-name")))
+				.setManageRecipeNameItem(
+						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-recipe-name")))
 				.setCreateRecipeTitle(config.getString("recipe-create-gui.title"))
 				.setCustomRecipesTitle(config.getString("recipe-view-gui.page-title"))
 				.setViewRecipeTitle(config.getString("recipe-view-gui.single-title"))
 				.setManageRandomResultsFormat(config.getString("recipe-create-gui.manage-random-results.format"))
-				.setManageRandomIngredientsIdFormat(config.getString("recipe-create-gui.manage-ingredients.id-format"))
+				.setViewRandomResultsFormat(config.getString("recipe-view-gui.view-random-results.format"))
+				.setManageIngredientsIdFormat(config.getString("recipe-create-gui.manage-ingredients.id-format"))
+				.setViewIngredientsIdFormat(config.getString("recipe-view-gui.view-ingredients.id-format"))
 				.setEditRecipeTitle(config.getString("recipe-view-gui.edit-title"))
 				.setBackCommands(Collections.unmodifiableList(config.getStringList("recipe-view-gui.back.commands")))
 				.setIngredientsInputTitle(config.getString("recipe-create-gui.manage-ingredients-title"))
@@ -239,19 +273,38 @@ public class FancyCrafting extends JavaPlugin {
 
 	private String format(LogRecord record) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(ANSIEscapeCodes.MOVE_CURSOR_TO_BEGINNING_OF_NEXT_LINE_N_LINES_DOWN.replace("n", "0"));
-		builder.append(ANSIEscapeCodes.ERASE_CURSOR_TO_END_OF_LINE);
-		builder.append(parseColor(record.getLevel()));
-		builder.append("[");
-		builder.append(LocalDateTime.now().format(DATE_FORMATTER));
-		builder.append("] [");
-		builder.append(Thread.currentThread().getName());
-		builder.append("/");
-		builder.append(record.getLevel().toString());
-		builder.append("] ");
-		if (Bukkit.isPrimaryThread())
-			builder.append("[FancyCrafting] ");
-		builder.append(record.getMessage());
+		List<String> test = new ArrayList<>();
+		if (record.getMessage().contains("\n"))
+			test.addAll(Arrays.asList(record.getMessage().split("\n")));
+		else
+			test.add(record.getMessage());
+
+		if (record.getThrown() != null) {
+			Throwable th = record.getThrown();
+			test.add(th.getClass().getCanonicalName() + ": " + th.getLocalizedMessage());
+			for (StackTraceElement e : th.getStackTrace())
+				test.add("        at " + e.toString());
+			th = th.getCause();
+			while (th != null) {
+				test.add("Caused by: " + th.getClass().getCanonicalName() + ": " + th.getLocalizedMessage());
+				for (StackTraceElement e : th.getStackTrace())
+					test.add("        at " + e.toString());
+				th = th.getCause();
+			}
+		}
+
+		for (int i = 0; i < test.size(); i++) {
+			builder.append(ANSIEscapeCodes.MOVE_CURSOR_TO_BEGINNING_OF_NEXT_LINE_N_LINES_DOWN.replace("n", "0"))
+					.append(ANSIEscapeCodes.ERASE_CURSOR_TO_END_OF_LINE).append(parseColor(record.getLevel()))
+					.append('[').append(LocalDateTime.now().format(DATE_FORMATTER)).append("] [")
+					.append(Thread.currentThread().getName()).append('/').append(record.getLevel().toString())
+					.append("] ");
+			if (Bukkit.isPrimaryThread())
+				builder.append("[FancyCrafting] ");
+			builder.append(test.get(i));
+			if (i < test.size() - 1)
+				builder.append("\n");
+		}
 		return builder.toString();
 	}
 
@@ -326,5 +379,9 @@ public class FancyCrafting extends JavaPlugin {
 
 	public boolean sortRecipesByRecipeName() {
 		return sortRecipesByRecipeName;
+	}
+
+	public ViewSlots getViewSlots() {
+		return viewSlots;
 	}
 }

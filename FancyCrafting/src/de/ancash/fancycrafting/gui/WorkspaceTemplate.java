@@ -31,9 +31,18 @@ public class WorkspaceTemplate {
 		return title;
 	}
 
+	@SuppressWarnings("nls")
 	public static void add(FancyCrafting pl, WorkspaceTemplate template) {
 		templates.computeIfAbsent(template.getDimension().getWidth(), k -> new HashMap<>());
 		templates.get(template.getDimension().getWidth()).put(template.getDimension().getHeight(), template);
+		pl.getLogger().fine("----------------------------------------------");
+		pl.getLogger().fine("WorkspaceTemplate: ");
+		pl.getLogger().fine("Title: " + template.getTitle());
+		pl.getLogger().fine("Width: " + template.getDimension().getWidth());
+		pl.getLogger().fine("Height: " + template.getDimension().getHeight());
+		pl.getLogger().fine("Size: " + template.getDimension().getSize());
+		pl.getLogger().fine("Slots: \n" + template.getSlots().toString());
+		pl.getLogger().fine("----------------------------------------------");
 	}
 
 	public static WorkspaceTemplate get(int width, int height) {

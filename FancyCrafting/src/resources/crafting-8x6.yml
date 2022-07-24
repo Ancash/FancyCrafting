@@ -53,13 +53,6 @@ crafting-slots:
 - 51
 - 52
 close-slot: 53
-back-slot: 44
-prev-slot: 17
-next-slot: 8
-edit-slot: 35
-save-slot: 8
-recipe-type-slot: 17
-delete-slot: 35
 # Slots in which the state of the craft will be shown (invalid recipe/valid recipe)
 craft-state-slots:
 - 8
@@ -69,3 +62,4 @@ result-slot: 26
 quick-crafting-slots:
 - 17
 - 35
+enable-quick-crafting: true

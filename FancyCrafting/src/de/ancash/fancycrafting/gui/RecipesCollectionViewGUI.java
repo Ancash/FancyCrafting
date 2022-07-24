@@ -6,15 +6,17 @@ import java.util.Optional;
 import org.bukkit.entity.Player;
 
 import de.ancash.fancycrafting.FancyCrafting;
-import de.ancash.fancycrafting.gui.normal.EditNormalRecipeGUI;
+import de.ancash.fancycrafting.gui.normal.ViewNormalRecipeGUI;
+import de.ancash.fancycrafting.gui.random.ViewRandomRecipeGUI;
+import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.inventory.InventoryItem;
 
 public class RecipesCollectionViewGUI {
 
 	protected final List<IRecipe> recipes;
+	protected IRecipe cur;
 	protected int pos;
-	protected final RecipeViewGUI gui;
 	protected final FancyCrafting pl;
 	protected final Player player;
 
@@ -22,27 +24,26 @@ public class RecipesCollectionViewGUI {
 		this.recipes = recipes;
 		this.player = player;
 		this.pl = pl;
-		this.gui = new RecipeViewGUI(pl, player, recipes.get(pos));
 		openRecipe(pos);
 	}
 
 	public void openRecipe(int i) {
-		IRecipe recipe = recipes.get(i);
-		WorkspaceTemplate template = WorkspaceTemplate.get(recipe.getWidth(), recipe.getHeight());
-		gui.openRecipe(recipe);
-		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getNextItem().getOriginal(),
-				template.getSlots().getNextSlot(),
-				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(increment()))));
-		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getPrevItem().getOriginal(),
-				template.getSlots().getPrevSlot(),
-				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(decrement()))));
-
-		if (player.hasPermission(FancyCrafting.EDIT_PERM) && !recipes.get(i).isVanilla())
-			gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getEditItem().getOriginal(),
-					template.getSlots().getEditSlot(), (a, b, c, top) -> Optional.ofNullable(top ? this : null)
-							.ifPresent(self -> new EditNormalRecipeGUI(pl, player, recipes.get(i)).open())));
+		cur = recipes.get(i);
+		AbstractViewRecipeGUI gui = cur instanceof IRandomRecipe ? new ViewRandomRecipeGUI(pl, player, cur) : new ViewNormalRecipeGUI(pl, player, cur);
+		gui.onOpen(this::addItems);
+		gui.open();
 	}
 
+	
+	protected void addItems(AbstractViewRecipeGUI gui) {
+		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getNextItem().getOriginal(),
+				pl.getViewSlots().getNextSlot(),
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(increment()))));
+		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getPrevItem().getOriginal(),
+				pl.getViewSlots().getPrevSlot(),
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(decrement()))));							
+	}
+	
 	protected int decrement() {
 		return pos = prev();
 	}

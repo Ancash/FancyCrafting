@@ -4,23 +4,28 @@ import java.lang.reflect.Field;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class WorkspaceSlots {
+public class ViewSlots {
 
+	private final int size;
 	private final int resultSlot;
+	private final int probabilitySlot;
+	private final int ingredientsSlot;
 	private final int closeSlot;
-	private final int[] craftingSlots;
-	private final int[] craftStateSlots;
-	private final int[] autoCraftingSlots;
-	private final boolean enableQuickCrafting;
+	private final int backSlot;
+	private final int prevSlot;
+	private final int nextSlot;
+	private final int editSlot;
 
-	WorkspaceSlots(int resultSlot, int closeSlot, int[] craftingSlots, int[] craftStateSlots, int[] autoCraftingSlots,
-			boolean enableQuickCrafting) {
+	public ViewSlots(int size, int resultSlot, int ingredientsSlot, int probabilitySlot, int closeSlot, int backSlot, int prevSlot, int nextSlot, int editSlot) {
+		this.size = size;
 		this.resultSlot = resultSlot;
+		this.ingredientsSlot = ingredientsSlot;
+		this.probabilitySlot = probabilitySlot;
 		this.closeSlot = closeSlot;
-		this.craftingSlots = craftingSlots;
-		this.craftStateSlots = craftStateSlots;
-		this.autoCraftingSlots = autoCraftingSlots;
-		this.enableQuickCrafting = enableQuickCrafting;
+		this.backSlot = backSlot;
+		this.prevSlot = prevSlot;
+		this.nextSlot = nextSlot;
+		this.editSlot = editSlot;
 	}
 
 	@Override
@@ -50,19 +55,32 @@ public class WorkspaceSlots {
 		return closeSlot;
 	}
 
-	public int[] getAutoCraftingSlots() {
-		return autoCraftingSlots;
+	public int getBackSlot() {
+		return backSlot;
 	}
 
-	public int[] getCraftingSlots() {
-		return craftingSlots;
+	public int getPrevSlot() {
+		return prevSlot;
 	}
 
-	public int[] getCraftStateSlots() {
-		return craftStateSlots;
+	public int getNextSlot() {
+		return nextSlot;
 	}
 
-	public boolean enableQuickCrafting() {
-		return enableQuickCrafting;
+	public int getEditSlot() {
+		return editSlot;
 	}
+
+	public int getProbabilitySlot() {
+		return probabilitySlot;
+	}
+
+	public int getSize() {
+		return size;
+	}
+
+	public int getIngredientsSlot() {
+		return ingredientsSlot;
+	}
+
 }

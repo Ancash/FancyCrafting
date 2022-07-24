@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -49,7 +50,7 @@ public class EditRandomRecipeGUI extends AbstractEditRecipeGUI {
 		while (iter.hasNext()) {
 			builder.append(iter.next());
 			if (iter.hasNext())
-				builder.append("\n"); //$NON-NLS-1$
+				builder.append('\n');
 		}
 		Map<String, String> placeholder = new HashMap<>();
 		placeholder.put("%probability_map%", builder.toString()); //$NON-NLS-1$
@@ -72,6 +73,7 @@ public class EditRandomRecipeGUI extends AbstractEditRecipeGUI {
 		addManageProbabilities();
 	}
 
+	@SuppressWarnings("nls")
 	@Override
 	protected void onRecipeSave() {
 		closeAll();
@@ -81,10 +83,12 @@ public class EditRandomRecipeGUI extends AbstractEditRecipeGUI {
 			player.sendMessage(plugin.getResponse().RECIPE_SAVED);
 			plugin.getRecipeManager().reloadRecipes();
 		} catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
+			plugin.getLogger().log(Level.SEVERE, "Could not save recipe: " + result + ";" + Arrays.asList(ingredients)
+					+ ";" + shaped + ";" + recipeName + ";" + recipe.getUUID());
 		}
 	}
 
+	@SuppressWarnings("nls")
 	@Override
 	protected void onRecipeDelete() {
 		closeAll();
@@ -92,7 +96,7 @@ public class EditRandomRecipeGUI extends AbstractEditRecipeGUI {
 			plugin.getRecipeManager().delete(recipe.getUUID().toString());
 			player.sendMessage(plugin.getResponse().RECIPE_DELETED);
 		} catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
+			plugin.getLogger().log(Level.SEVERE, "Could not delete recipe: " + recipe.getUUID(), e);
 		}
 	}
 

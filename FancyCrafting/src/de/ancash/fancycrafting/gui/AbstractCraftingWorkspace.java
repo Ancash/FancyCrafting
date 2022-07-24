@@ -76,6 +76,10 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 			is.setAmount(original - subtract);
 	}
 
+	public boolean enableQuickCrafting() {
+		return getTemplate().getSlots().enableQuickCrafting();
+	}
+	
 	public Player getPlayer() {
 		return player;
 	}
@@ -149,6 +153,8 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	}
 
 	public void updateQuickCrafting() {
+		if(!enableQuickCrafting())
+			return;
 		if (pl.isQuickCraftingAsync())
 			autoMatchAsync();
 		else

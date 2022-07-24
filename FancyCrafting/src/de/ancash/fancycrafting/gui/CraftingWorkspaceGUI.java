@@ -41,8 +41,9 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			setItem(pl.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
 		for (int i : template.getSlots().getCraftingSlots())
 			setItem(null, i);
-		for (int i : template.getSlots().getAutoCraftingSlots())
-			setItem(pl.getWorkspaceObjects().getQuickCraftingItem().getOriginal(), i);
+		if(enableQuickCrafting())
+			for (int i : template.getSlots().getAutoCraftingSlots())
+				setItem(pl.getWorkspaceObjects().getQuickCraftingItem().getOriginal(), i);
 
 		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCloseItem().getOriginal(),
 				template.getSlots().getCloseSlot(),

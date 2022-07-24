@@ -1,5 +1,5 @@
 name: FancyCrafting
-version: 4.4.3
+version: 4.5.0
 main: de.ancash.fancycrafting.FancyCrafting
 depend: [ILibrary]
 api-version: 1.13
@@ -8,6 +8,7 @@ commands:
    fc:
       usage:
       - "§aFancyCrafting Commands:"
+      - "§7/fc reload"
       - "§7/fc open (open the crafting gui)"
       - "§7/fc open <1-8> <1-6>"
       - "§7/fc open <player>"

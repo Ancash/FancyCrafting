@@ -1,6 +1,7 @@
 package de.ancash.fancycrafting.gui;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,7 +13,7 @@ import java.util.stream.IntStream;
 import org.bukkit.inventory.ItemStack;
 
 import de.ancash.fancycrafting.FancyCrafting;
-import de.ancash.minecraft.IItemStack;
+import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
@@ -21,7 +22,6 @@ import de.ancash.minecraft.inventory.input.ItemInputSlots;
 
 public class IngredientsInputGUI extends ItemInputIGUI {
 
-	private static final char[] chars = "ABCDEFGHIJKLMNOPQRSTUVWYabcdefghijklmnopqrstuvw".toCharArray(); //$NON-NLS-1$
 	private static final ItemInputSlots inputSlots = new ItemInputSlots(
 			IntStream.range(0, 54).filter(i -> (i + 1) % 9 != 0).boxed().collect(Collectors.toSet()));
 
@@ -68,40 +68,14 @@ public class IngredientsInputGUI extends ItemInputIGUI {
 		this.onInput = onInput;
 	}
 
-	public static ItemStack getManageIngredientsItem(FancyCrafting pl, ItemStack[] ingredients, boolean shaped,
+	public static ItemStack getManageIngredientsItem(FancyCrafting pl, List<ItemStack> ings, int width, int heigth, boolean shaped,
 			boolean random) {
 		ItemStack item = pl.getWorkspaceObjects().getManageIngredientsItem().getOriginal();
-		StringBuilder builder = new StringBuilder();
-		Map<Integer, Character> mapped = new HashMap<>();
-		int cpos = 0;
-		for (int i = 0; i < ingredients.length; i++) {
-			if (ingredients[i] != null) {
-				int hash = new IItemStack(ingredients[i]).hashCode();
-				if (!mapped.containsKey(hash)) {
-					mapped.put(hash, chars[cpos++]);
-					builder.append(pl.getWorkspaceObjects().getManageRandomIngredientsIdFormat()
-							.replace("%id%", String.valueOf(mapped.get(hash))) //$NON-NLS-1$
-							.replace("%item%", ItemStackUtils.getDisplayName(ingredients[i])) + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
-				}
-			}
-		}
-
-		for (int col = 0; col < 6; col++) {
-			for (int row = 0; row < 8; row++) {
-				ItemStack ing = ingredients[col * 8 + row];
-				if (ing == null)
-					builder.append("§7----"); //$NON-NLS-1$
-				else
-					builder.append("§a" + mapped.get(new IItemStack(ing).hashCode()) + "§7x" + ing.getAmount() //$NON-NLS-1$ //$NON-NLS-2$
-							+ (ing.getAmount() >= 10 ? "" : "§7-")); //$NON-NLS-1$ //$NON-NLS-2$
-				if (row < 7)
-					builder.append("§7|"); //$NON-NLS-1$
-			}
-			if (col < 5)
-				builder.append("\n§7-----------------------------------\n"); //$NON-NLS-1$
-		}
 		Map<String, String> placeholder = new HashMap<>();
-		placeholder.put("%ingredients%", builder.toString()); //$NON-NLS-1$
+		ItemStack[] ingsa = new ItemStack[width * heigth];
+		for(int i = 0; i<ings.size(); i++)
+			ingsa[i] = ings.get(i);
+		placeholder.put("%ingredients%", String.join("\n", IRecipe.ingredientsToList(pl, ingsa, width, heigth, pl.getWorkspaceObjects().getManageIngredientsIdFormat()))); //$NON-NLS-1$ //$NON-NLS-2$
 		placeholder.put("%rtype%", (shaped ? "Shaped" : "Shapeless") + (random ? " Random Recipe" : " Recipe")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		return ItemStackUtils.setLore(ItemStackUtils.replacePlaceholder(item.getItemMeta().getLore(), placeholder),
 				item);

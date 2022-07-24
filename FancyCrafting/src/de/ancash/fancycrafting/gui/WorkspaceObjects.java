@@ -22,7 +22,9 @@ public class WorkspaceObjects {
 	private IItemStack createNormalRecipeItem;
 	private IItemStack createRandomRecipeItem;
 	private IItemStack manageRandomResultsItem;
+	private IItemStack viewRandomResultsItem;
 	private IItemStack manageIngredientsItem;
+	private IItemStack viewIngredientsItem;
 	private IItemStack manageRandomInvalidResultItem;
 	private IItemStack inputRecipeNameRightItem;
 	private IItemStack inputRecipeNameLeftItem;
@@ -35,7 +37,9 @@ public class WorkspaceObjects {
 	private String editRecipeTitle;
 	private String manageProbabilitiesTitle;
 	private String manageRandomResultsFormat;
-	private String manageRandomIngredientsIdFormat;
+	private String manageIngredientsIdFormat;
+	private String viewIngredientsIdFormat;
+	private String viewRandomResultsFormat;
 	private String inputRecipeNameTitle;
 	private List<String> manageProbabilityFooter;
 	private List<String> manageProbabilityHeader;
@@ -248,12 +252,12 @@ public class WorkspaceObjects {
 		return this;
 	}
 
-	public String getManageRandomIngredientsIdFormat() {
-		return manageRandomIngredientsIdFormat;
+	public String getManageIngredientsIdFormat() {
+		return manageIngredientsIdFormat;
 	}
 
-	public WorkspaceObjects setManageRandomIngredientsIdFormat(String manageRandomIngredientsIdFormat) {
-		this.manageRandomIngredientsIdFormat = manageRandomIngredientsIdFormat;
+	public WorkspaceObjects setManageIngredientsIdFormat(String manageRandomIngredientsIdFormat) {
+		this.manageIngredientsIdFormat = manageRandomIngredientsIdFormat;
 		return this;
 	}
 
@@ -344,6 +348,42 @@ public class WorkspaceObjects {
 
 	public WorkspaceObjects setManageRecipeNameItem(IItemStack manageRecipeName) {
 		this.manageRecipeNameItem = manageRecipeName;
+		return this;
+	}
+
+	public IItemStack getViewIngredientsItem() {
+		return viewIngredientsItem;
+	}
+
+	public WorkspaceObjects setViewIngredientsItem(IItemStack viewIngredientsItem) {
+		this.viewIngredientsItem = viewIngredientsItem;
+		return this;
+	}
+
+	public String getViewIngredientsIdFormat() {
+		return viewIngredientsIdFormat;
+	}
+
+	public WorkspaceObjects setViewIngredientsIdFormat(String viewIngredientsIdFormat) {
+		this.viewIngredientsIdFormat = viewIngredientsIdFormat;
+		return this;
+	}
+
+	public IItemStack getViewRandomResultsItem() {
+		return viewRandomResultsItem;
+	}
+
+	public WorkspaceObjects setViewRandomResultsItem(IItemStack viewRandomResultsItem) {
+		this.viewRandomResultsItem = viewRandomResultsItem;
+		return this;
+	}
+
+	public String getViewRandomResultsFormat() {
+		return viewRandomResultsFormat;
+	}
+
+	public WorkspaceObjects setViewRandomResultsFormat(String viewRandomResultsFormat) {
+		this.viewRandomResultsFormat = viewRandomResultsFormat;
 		return this;
 	}
 }
