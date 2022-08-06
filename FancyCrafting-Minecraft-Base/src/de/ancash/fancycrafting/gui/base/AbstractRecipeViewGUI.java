@@ -26,25 +26,25 @@ import de.ancash.minecraft.inventory.IGUI;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
 
-public abstract class AbstractViewRecipeGUI extends IGUI {
+public abstract class AbstractRecipeViewGUI extends IGUI {
 
 	protected final IRecipe recipe;
 	protected final AbstractFancyCrafting plugin;
 	protected final ItemStack[] ingredients;
 	protected final WorkspaceTemplate template;
 	protected final Map<String, String> placeholder = new HashMap<>();
-	protected Consumer<AbstractViewRecipeGUI> on;
+	protected Consumer<AbstractRecipeViewGUI> on;
 
 	protected final String title;
 	protected final Player player;
 	protected boolean viewingIngredients;
 
-	public AbstractViewRecipeGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe) {
+	public AbstractRecipeViewGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe) {
 		this(pl, player, recipe, pl.getWorkspaceObjects().getViewRecipeTitle());
 	}
 
 	@SuppressWarnings("nls")
-	public AbstractViewRecipeGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe, String title) {
+	public AbstractRecipeViewGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe, String title) {
 		super(player.getUniqueId(), pl.getViewSlots().getSize(), title.replace("%recipe%", recipe.getRecipeName())); //$NON-NLS-1$
 		this.title = title.replace("%recipe%", recipe.getRecipeName()); //$NON-NLS-1$
 		this.recipe = recipe;
@@ -67,7 +67,7 @@ public abstract class AbstractViewRecipeGUI extends IGUI {
 
 	protected abstract void onMainMenuOpen();
 
-	public void onOpen(Consumer<AbstractViewRecipeGUI> on) {
+	public void onOpen(Consumer<AbstractRecipeViewGUI> on) {
 		this.on = on;
 	}
 
@@ -85,7 +85,7 @@ public abstract class AbstractViewRecipeGUI extends IGUI {
 
 		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getCloseItem().getOriginal(),
 				plugin.getViewSlots().getCloseSlot(),
-				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractViewRecipeGUI::closeAll)));
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractRecipeViewGUI::closeAll)));
 		setItem(recipe.getResult(), plugin.getViewSlots().getResultSlot());
 		addIngredients();
 		addEdit();

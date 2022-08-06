@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.exception.InvalidRecipeException;
 import de.ancash.fancycrafting.exception.RecipeDeleteException;
-import de.ancash.fancycrafting.gui.base.AbstractEditRecipeGUI;
+import de.ancash.fancycrafting.gui.base.AbstractRecipeEditGUI;
 import de.ancash.fancycrafting.gui.base.ManageProbabilitiesGUI;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
@@ -22,7 +22,7 @@ import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.inventory.InventoryItem;
 import de.ancash.misc.MathsUtils;
 
-public class EditRandomRecipeGUI extends AbstractEditRecipeGUI {
+public class EditRandomRecipeGUI extends AbstractRecipeEditGUI {
 
 	private final IRandomRecipe random;
 

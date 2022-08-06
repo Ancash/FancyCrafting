@@ -15,9 +15,9 @@ import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
 import de.ancash.minecraft.inventory.input.StringInputGUI;
 
-public class CreateRecipeMenuGUI extends IGUI {
+public class RecipeCreateMenuGUI extends IGUI {
 
-	public CreateRecipeMenuGUI(AbstractFancyCrafting pl, Player player, String name) {
+	public RecipeCreateMenuGUI(AbstractFancyCrafting pl, Player player, String name) {
 		super(player.getUniqueId(), 9, pl.getWorkspaceObjects().getCreateRecipeTitle());
 		for (int i = 0; i < getSize(); i++)
 			setItem(pl.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
@@ -36,7 +36,7 @@ public class CreateRecipeMenuGUI extends IGUI {
 
 	public static void open(AbstractFancyCrafting plugin, Player owner) {
 		new StringInputGUI(plugin, owner,
-				(text) -> Bukkit.getScheduler().runTaskLater(plugin, () -> new CreateRecipeMenuGUI(plugin, owner, text),
+				(text) -> Bukkit.getScheduler().runTaskLater(plugin, () -> new RecipeCreateMenuGUI(plugin, owner, text),
 						1),
 				(text) -> Tuple.of(text != null && !text.isEmpty(),
 						text == null || text.isEmpty() ? plugin.getResponse().INVALID_RECIPE_NAME : null))

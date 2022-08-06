@@ -26,7 +26,7 @@ import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
 import de.ancash.minecraft.inventory.input.StringInputGUI;
 
-public abstract class AbstractEditRecipeGUI extends IGUI {
+public abstract class AbstractRecipeEditGUI extends IGUI {
 
 	protected final IRecipe recipe;
 	protected final AbstractFancyCrafting plugin;
@@ -39,11 +39,11 @@ public abstract class AbstractEditRecipeGUI extends IGUI {
 	protected ItemStack result;
 	protected boolean shaped;
 
-	public AbstractEditRecipeGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe) {
+	public AbstractRecipeEditGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe) {
 		this(pl, player, recipe, pl.getWorkspaceObjects().getEditRecipeTitle());
 	}
 
-	public AbstractEditRecipeGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe, String title) {
+	public AbstractRecipeEditGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe, String title) {
 		super(player.getUniqueId(), 36, title.replace("%recipe%", recipe.getRecipeName())); //$NON-NLS-1$
 		this.title = title.replace("%recipe%", recipe.getRecipeName()); //$NON-NLS-1$
 		if (recipe.isVanilla())
@@ -92,12 +92,12 @@ public abstract class AbstractEditRecipeGUI extends IGUI {
 			setItem(plugin.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
 
 		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getDeleteItem().getOriginal(), 27, (a, b,
-				c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractEditRecipeGUI::onRecipeDelete)));
+				c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractRecipeEditGUI::onRecipeDelete)));
 		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getSaveItem().getOriginal(), 35,
 				(a, b, c, top) -> Optional.ofNullable(top && isRecipeValid() ? this : null)
-						.ifPresent(AbstractEditRecipeGUI::onRecipeSave)));
+						.ifPresent(AbstractRecipeEditGUI::onRecipeSave)));
 		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getCloseItem().getOriginal(), 31,
-				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractEditRecipeGUI::closeAll)));
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractRecipeEditGUI::closeAll)));
 		addManageResult();
 		addManageIngredients();
 		addManageRecipeName();
@@ -147,7 +147,7 @@ public abstract class AbstractEditRecipeGUI extends IGUI {
 				IngredientsInputGUI.getManageIngredientsItem(plugin, recipe.getIngredients(), recipe.getWidth(), recipe.getHeight(), shaped,
 						recipe instanceof IRandomRecipe),
 				10, (a, b, c, top) -> Optional.ofNullable(top ? this : null)
-						.ifPresent(AbstractEditRecipeGUI::openManageIngredients)));
+						.ifPresent(AbstractRecipeEditGUI::openManageIngredients)));
 	}
 
 	private void openManageIngredients() {

@@ -16,15 +16,15 @@ import de.ancash.minecraft.inventory.IGUI;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
 
-public class PagedRecipesViewGUI extends IGUI {
+public abstract class AbstractPagedRecipeViewGUI extends IGUI {
 
-	private final List<IRecipe> recipes;
-	private int currentPage = 1;
-	private final int maxPages;
-	private final Player player;
-	private final AbstractFancyCrafting pl;
+	protected final List<IRecipe> recipes;
+	protected int currentPage = 1;
+	protected final int maxPages;
+	protected final Player player;
+	protected final AbstractFancyCrafting pl;
 
-	public PagedRecipesViewGUI(AbstractFancyCrafting pl, Player player, List<IRecipe> recipes) {
+	public AbstractPagedRecipeViewGUI(AbstractFancyCrafting pl, Player player, List<IRecipe> recipes) {
 		super(player.getUniqueId(), 45, pl.getWorkspaceObjects().getCustomRecipesTitle());
 		Collections.sort(recipes,
 				(a, b) -> pl.sortRecipesByRecipeName() ? a.getRecipeName().compareTo(b.getRecipeName())
@@ -37,10 +37,10 @@ public class PagedRecipesViewGUI extends IGUI {
 		this.player = player;
 		this.pl = pl;
 		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getNextItem().getOriginal(), 44,
-				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(PagedRecipesViewGUI::openNextPage)));
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractPagedRecipeViewGUI::openNextPage)));
 
 		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getBackItem().getOriginal(), 36,
-				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(PagedRecipesViewGUI::openPrevPage)));
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractPagedRecipeViewGUI::openPrevPage)));
 		IGUIManager.register(this, getId());
 		open(currentPage);
 		open();
@@ -73,11 +73,13 @@ public class PagedRecipesViewGUI extends IGUI {
 					ItemStackUtils.setDisplayname(recipe.getResult(),
 							pl.sortRecipesByRecipeName() ? recipe.getRecipeName() : recipe.getResultName()),
 					i, (slot, b, c, top) -> Optional.ofNullable(top ? this : null)
-							.ifPresent(self -> pl.viewRecipe(player, recipes.get((page - 1) * 36 + slot)))));
+							.ifPresent(self -> onRecipeClick(recipes.get((page - 1) * 36 + slot)))));
 			i++;
 		}
 	}
 
+	public abstract void onRecipeClick(IRecipe recipe);
+	
 	@Override
 	public void onInventoryClick(InventoryClickEvent event) {
 		event.setCancelled(true);

@@ -15,7 +15,8 @@ import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.base.Response;
 import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.gui.CraftingWorkspaceGUI;
-import de.ancash.fancycrafting.gui.RecipesCollectionViewGUI;
+import de.ancash.fancycrafting.gui.PagedRecipeViewGUI;
+import de.ancash.fancycrafting.gui.RecipeCollectionViewGUI;
 import de.ancash.fancycrafting.base.WorkspaceTemplate;
 import de.ancash.fancycrafting.gui.normal.CreateNormalRecipeGUI;
 import de.ancash.fancycrafting.gui.normal.EditNormalRecipeGUI;
@@ -99,7 +100,7 @@ public class FancyCrafting extends AbstractFancyCrafting {
 				new ViewNormalRecipeGUI(this, player, recipe).open();
 			return;
 		} else if (recipes.size() > 1) {
-			new RecipesCollectionViewGUI(this, player, new ArrayList<>(recipes));
+			new RecipeCollectionViewGUI(this, player, new ArrayList<>(recipes));
 		}
 	}
 
@@ -124,5 +125,11 @@ public class FancyCrafting extends AbstractFancyCrafting {
 	@Override
 	public void openCraftingWorkspace(Player player, WorkspaceTemplate template) {
 		new CraftingWorkspaceGUI(this, player, template);
+	}
+
+	@Override
+	public void viewRecipesPaged(Player player, Set<IRecipe> recipes) {
+		new PagedRecipeViewGUI(this, player,
+				new ArrayList<>(getRecipeManager().getCustomRecipes()));
 	}
 }

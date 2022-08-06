@@ -1,6 +1,5 @@
 package de.ancash.fancycrafting.commands;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -16,8 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
-import de.ancash.fancycrafting.gui.base.CreateRecipeMenuGUI;
-import de.ancash.fancycrafting.gui.base.PagedRecipesViewGUI;
+import de.ancash.fancycrafting.gui.base.RecipeCreateMenuGUI;
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.base.WorkspaceTemplate;
 import de.ancash.fancycrafting.recipe.IRecipe;
@@ -94,8 +92,7 @@ public class FancyCraftingCommand implements CommandExecutor {
 			return true;
 
 		if (args.length == 1 && (sender.hasPermission(AbstractFancyCrafting.VIEW_ALL_PERM) || sender.isOp())) {
-			new PagedRecipesViewGUI(this.plugin, (Player) sender,
-					new ArrayList<>(this.plugin.getRecipeManager().getCustomRecipes()));
+			plugin.viewRecipe((Player) sender, plugin.getRecipeManager().getCustomRecipes());
 			return true;
 		}
 		if (args.length == 2) {
@@ -134,7 +131,7 @@ public class FancyCraftingCommand implements CommandExecutor {
 				return true;
 			}
 			if (recipes.size() > 1) {
-				new PagedRecipesViewGUI(this.plugin, (Player) sender, new ArrayList<>(recipes));
+				plugin.viewRecipesPaged((Player) sender, recipes);
 			} else {
 				plugin.editRecipe((Player) sender, recipes.stream().findAny().get());
 			}
@@ -151,7 +148,7 @@ public class FancyCraftingCommand implements CommandExecutor {
 			sender.sendMessage(this.plugin.getResponse().NO_PERMISSION);
 			return true;
 		}
-		CreateRecipeMenuGUI.open(this.plugin, (Player) sender);
+		RecipeCreateMenuGUI.open(this.plugin, (Player) sender);
 		return true;
 	}
 

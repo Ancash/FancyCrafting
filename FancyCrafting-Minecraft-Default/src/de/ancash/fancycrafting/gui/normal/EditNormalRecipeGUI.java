@@ -8,10 +8,10 @@ import org.bukkit.entity.Player;
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.exception.InvalidRecipeException;
 import de.ancash.fancycrafting.exception.RecipeDeleteException;
-import de.ancash.fancycrafting.gui.base.AbstractEditRecipeGUI;
+import de.ancash.fancycrafting.gui.base.AbstractRecipeEditGUI;
 import de.ancash.fancycrafting.recipe.IRecipe;
 
-public class EditNormalRecipeGUI extends AbstractEditRecipeGUI {
+public class EditNormalRecipeGUI extends AbstractRecipeEditGUI {
 
 	public EditNormalRecipeGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe) {
 		this(pl, player, recipe, pl.getWorkspaceObjects().getEditRecipeTitle());

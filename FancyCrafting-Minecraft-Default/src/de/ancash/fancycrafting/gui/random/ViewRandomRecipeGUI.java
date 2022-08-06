@@ -8,13 +8,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
-import de.ancash.fancycrafting.gui.base.AbstractViewRecipeGUI;
+import de.ancash.fancycrafting.gui.base.AbstractRecipeViewGUI;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.misc.MathsUtils;
 
-public class ViewRandomRecipeGUI extends AbstractViewRecipeGUI {
+public class ViewRandomRecipeGUI extends AbstractRecipeViewGUI {
 
 	private final IRandomRecipe random;
 

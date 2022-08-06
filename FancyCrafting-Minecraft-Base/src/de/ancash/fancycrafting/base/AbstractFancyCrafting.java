@@ -90,6 +90,8 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 	
 	public abstract void viewRecipe(Player player, Set<IRecipe> recipes);
 	
+	public abstract void viewRecipesPaged(Player player, Set<IRecipe> recipes);
+	
 	public abstract void editRecipe(Player p, IRecipe r);
 	
 	public abstract void createRandomRecipe(Player p, String name);

@@ -9,7 +9,7 @@ import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.inventory.InventoryItem;
 
-public abstract class AbstractRecipesCollectionViewGUI {
+public abstract class AbstractRecipeCollectionViewGUI {
 
 	protected final List<IRecipe> recipes;
 	protected IRecipe cur;
@@ -17,7 +17,7 @@ public abstract class AbstractRecipesCollectionViewGUI {
 	protected final AbstractFancyCrafting pl;
 	protected final Player player;
 
-	public AbstractRecipesCollectionViewGUI(AbstractFancyCrafting pl, Player player, List<IRecipe> recipes) {
+	public AbstractRecipeCollectionViewGUI(AbstractFancyCrafting pl, Player player, List<IRecipe> recipes) {
 		this.recipes = recipes;
 		this.player = player;
 		this.pl = pl;
@@ -26,14 +26,14 @@ public abstract class AbstractRecipesCollectionViewGUI {
 
 	public void openRecipe(int i) {
 		cur = recipes.get(i);
-		AbstractViewRecipeGUI gui = viewRecipe(cur);
+		AbstractRecipeViewGUI gui = viewRecipe(cur);
 		gui.onOpen(this::addItems);
 		gui.open();
 	}
 	
-	public abstract AbstractViewRecipeGUI viewRecipe(IRecipe recipe);
+	public abstract AbstractRecipeViewGUI viewRecipe(IRecipe recipe);
 	
-	protected void addItems(AbstractViewRecipeGUI gui) {
+	protected void addItems(AbstractRecipeViewGUI gui) {
 		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getNextItem().getOriginal(),
 				pl.getViewSlots().getNextSlot(),
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(increment()))));
