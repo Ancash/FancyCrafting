@@ -112,13 +112,13 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			event.setCancelled(true);
 			if (getCurrentRecipe() != null
 					&& (currentRecipe instanceof IRandomRecipe && event.isShiftClick() ? false : true)) {
-				craftItem(event, currentRecipe, new int[] { matrix.getLeftMoves(), matrix.getUpMoves() });
+				craftItem(event, currentRecipe);
 				updateLastCraftTick();
 				return;
 			}
 		}
 		if (!event.isCancelled()) {
-			if (((workbenchInv && onTopInventoryClick(event)))) {
+			if (workbenchInv && onTopInventoryClick(event)) {
 				event.setCancelled(true);
 				updateAll();
 				return;
@@ -195,7 +195,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				toAdd);
 		int adding = free < slotItem.getAmount() ? free : slotItem.getAmount();
 		InventoryUtils.addItemAmount(adding, toAdd, player);
-		setAmount(slotItem.getAmount(), adding, event.getSlot(), event.getInventory());
+		setAmount(slotItem.getAmount(), adding, event.getSlot());
 	}
 
 	private void onTopCursorNullSlotNotNull(InventoryClickEvent event, ItemStack slotItem) {
@@ -209,7 +209,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			ItemStack clone = slotItem.clone();
 			clone.setAmount(taking);
 			event.getWhoClicked().setItemOnCursor(clone);
-			setAmount(slotItem.getAmount(), taking, event.getSlot(), event.getInventory());
+			setAmount(slotItem.getAmount(), taking, event.getSlot());
 		}
 	}
 
@@ -278,7 +278,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		checkDelayed();
 	}
 
-	private void craftItem(InventoryClickEvent event, IRecipe recipe, int[] moves) {
+	private void craftItem(InventoryClickEvent event, IRecipe recipe) {
 		if (recipe == null || ILibrary.getTick() - pl.getCraftingCooldown() <= getLastCraftTick()) {
 			event.getWhoClicked().sendMessage(pl.getResponse().CRAFTING_COOLDOWN_MESSAGE);
 			updateAll();
@@ -297,7 +297,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		} else if (event.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
 			if (recipe.isShiftCollectable()) {
 				InventoryUtils.addItemAmount(
-						shiftCollectIngredients(event.getInventory(), recipe) * recipe.getResult().getAmount(),
+						shiftCollectIngredients(recipe) * recipe.getResult().getAmount(),
 						recipe.getResult(), player);
 				updateAll();
 			} else {
@@ -323,7 +323,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		updateAll();
 	}
 
-	private int shiftCollectIngredients(Inventory inventory, IRecipe recipe) {
+	private int shiftCollectIngredients(IRecipe recipe) {
 		int space = InventoryUtils.getFreeSpaceExact(getPlayerInventoryContents(player.getInventory()),
 				recipe.getResult());
 		if (space <= 0) {
@@ -362,32 +362,32 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			}
 		}
 		if (recipe instanceof IShapedRecipe) {
-			collectShaped(inventory, (IShapedRecipe) recipe, shiftSize);
+			collectShaped((IShapedRecipe) recipe, shiftSize);
 		} else if (recipe instanceof IShapelessRecipe) {
-			collectShapeless(inventory, (IShapelessRecipe) recipe, shiftSize);
+			collectShapeless((IShapelessRecipe) recipe, shiftSize);
 		}
 		return shiftSize;
 	}
 
-	private void collectShapeless(Inventory inventory, IShapelessRecipe shapeless, int multiplicator) {
+	private void collectShapeless(IShapelessRecipe shapeless, int multiplicator) {
 		Set<Integer> done = new HashSet<>();
 		for (IItemStack ingredient : shapeless.getIIngredients()) {
 			for (int craftSlot : template.getSlots().getCraftingSlots()) {
 				if (done.contains(craftSlot))
 					continue;
-				if (inventory.getItem(craftSlot) == null)
+				if (getItem(craftSlot) == null)
 					continue;
-				if (ingredient.hashCode() != new IItemStack(inventory.getItem(craftSlot)).hashCode()
+				if (ingredient.hashCode() != new IItemStack(getItem(craftSlot)).hashCode()
 						&& !shapeless.isVanilla())
 					continue;
-				setAmount(inventory.getItem(craftSlot).getAmount(),
-						ingredient.getOriginal().getAmount() * multiplicator, craftSlot, inventory);
+				setAmount(getItem(craftSlot).getAmount(),
+						ingredient.getOriginal().getAmount() * multiplicator, craftSlot);
 				done.add(craftSlot);
 			}
 		}
 	}
 
-	private void collectShaped(Inventory inventory, IShapedRecipe shaped, int multiplicator) {
+	private void collectShaped(IShapedRecipe shaped, int multiplicator) {
 		synchronized (super.lock) {
 			int base = template.getDimension().getWidth() * matrix.getUpMoves() + matrix.getLeftMoves();
 			boolean isMirrored = canBeMirrored(shaped);
@@ -442,8 +442,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	
 	private void collectIngredients(Inventory inventory, IRecipe recipe) {
 		if (recipe instanceof IShapedRecipe)
-			collectShaped(inventory, (IShapedRecipe) recipe, 1);
+			collectShaped((IShapedRecipe) recipe, 1);
 		if (recipe instanceof IShapelessRecipe)
-			collectShapeless(inventory, (IShapelessRecipe) recipe, 1);
+			collectShapeless((IShapelessRecipe) recipe, 1);
 	}
 }

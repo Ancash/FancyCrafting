@@ -15,13 +15,13 @@ public class IMatrix<E> implements Cloneable {
 	@SuppressWarnings("unchecked")
 	public IMatrix(E[] array, int width, int height) {
 		this.clazz = (Class<E>) array.getClass().getComponentType();
-		this.array = array;
+		this.array = Arrays.copyOf(array, array.length);
 		this.width = width;
 		this.height = height;
 	}
 
 	@Override
-	protected IMatrix<E> clone() {
+	public IMatrix<E> clone() {
 		IMatrix<E> clone = new IMatrix<>(array, width, height);
 		clone.leftMoves = leftMoves;
 		clone.upMoves = upMoves;

@@ -46,6 +46,8 @@ workbench:
       type: GREEN_STAINED_GLASS_PANE
       meta:
          displayname: " "
+manage-vanilla-recipes-gui:
+   title: "Manage Vanilla Recipes"
 recipe-create-gui: #creating & editing
    title: "Create Recipe"
    manage-ingredients-title: "Input Ingredients"

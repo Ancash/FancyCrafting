@@ -27,7 +27,7 @@ public class IngredientsInputGUI extends ItemInputIGUI {
 
 	private final AbstractFancyCrafting pl;
 	private boolean shaped;
-	private ItemStack[] ingredients;
+	private final ItemStack[] ingredients;
 	private BiConsumer<ItemStack[], Boolean> onInput;
 
 	public IngredientsInputGUI(AbstractFancyCrafting pl, UUID id, ItemStack[] ingredients, boolean shaped) {

@@ -2,11 +2,12 @@ package de.ancash.fancycrafting.gui.base;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -61,10 +62,10 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		this.vanillaMatcher = new VanillaRecipeMatcher(pl, player);
 	}
 
-	public void setAmount(int original, int subtract, int slot, Inventory inventory) {
-		ItemStack is = inventory.getItem(slot);
+	public void setAmount(int original, int subtract, int slot) {
+		ItemStack is = getItem(slot);
 		if (original - subtract <= 0)
-			inventory.setItem(slot, null);
+			setItem(null, slot);
 		else
 			is.setAmount(original - subtract);
 	}
@@ -220,6 +221,11 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 			IRecipe match = null;
 			if (matrix.getArray().length == 0)
 				return match;
+			
+			if(pl.getRecipeManager().isBlacklisted(Stream.of(matrix.getArray()).map(i -> i != null ? i.hashCode() : null).collect(Collectors.toList()))) {
+				matchHandler.onNoRecipeMatch();
+				return currentRecipe = null;
+			}
 			
 			if ((match = pl.getRecipeManager().matchRecipe(matrix)) != null)
 				if (permissionHandler.canCraftRecipe(match, player))

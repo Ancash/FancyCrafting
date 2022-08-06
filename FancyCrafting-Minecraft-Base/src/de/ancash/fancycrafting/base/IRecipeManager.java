@@ -1,6 +1,7 @@
 package de.ancash.fancycrafting.base;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import de.ancash.fancycrafting.exception.RecipeDeleteException;
 import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
+import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.misc.MathsUtils;
 
@@ -30,6 +32,7 @@ public abstract class IRecipeManager {
 	protected final Set<IRecipe> autoMatchingRecipes = new HashSet<>();
 	protected final Map<String, Set<IRecipe>> recipesByName = new ConcurrentHashMap<>();
 	protected final Map<Integer, Set<IRecipe>> recipesByHash = new ConcurrentHashMap<>();
+	protected final Map<List<Integer>, IRecipe> blacklistedRecipes = new HashMap<>();
 	protected final AbstractFancyCrafting plugin;
 
 	public IRecipeManager(AbstractFancyCrafting pl) {
@@ -105,6 +108,7 @@ public abstract class IRecipeManager {
 		autoMatchingRecipes.clear();
 		recipesByName.clear();
 		recipesByHash.clear();
+		blacklistedRecipes.clear();
 	}
 
 	public void reloadRecipes() {
@@ -120,6 +124,7 @@ public abstract class IRecipeManager {
 				autoMatchingRecipes.clear();
 				loadBukkitRecipes();
 				loadCustomRecipes();
+				loadDisabledRecipes();
 				plugin.getLogger()
 						.info("Reloaded! " + (MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3)) + "s"); //$NON-NLS-1$ //$NON-NLS-2$
 			}
@@ -140,6 +145,51 @@ public abstract class IRecipeManager {
 		return Collections.unmodifiableSet(recipesByName.get(name));
 	}
 
+	@SuppressWarnings("nls")
+	public void addBlacklistedRecipe(IRecipe disabled) {
+		blacklistedRecipes.put(Stream
+				.of(disabled instanceof IShapedRecipe ? ((IShapedRecipe) disabled).getIngredientsArray()
+						: ((IShapelessRecipe) disabled).getIIngredients().stream().toArray(IItemStack[]::new))
+				.map(i -> i != null ? i.hashCode() : null).collect(Collectors.toList()), disabled);
+		plugin.getLogger()
+				.info("Loaded blacklisted recipe: " + disabled.getRecipeName() + " (" + disabled.getUUID() + ")");
+	}
+
+	public Set<List<Integer>> getDisabledRecipesHashes() {
+		return blacklistedRecipes.keySet();
+	}
+
+	public Map<List<Integer>, IRecipe> getDisabledRecipes() {
+		return blacklistedRecipes;
+	}
+
+	public boolean isBlacklisted(List<Integer> hashs) {
+		if(blacklistedRecipes.containsKey(hashs))
+			return true;
+		hashs = hashs.stream().filter(i -> i != null).collect(Collectors.toList());
+		Collections.sort(hashs);
+		return blacklistedRecipes.containsKey(hashs);
+	}
+
+	@SuppressWarnings("nls")
+	public void printRecipe(IRecipe recipe) {
+		plugin.getLogger().fine("Name: " + recipe.getRecipeName());
+		plugin.getLogger().fine("Result: " + recipe.getResult());
+		plugin.getLogger().fine("Width: " + recipe.getWidth());
+		plugin.getLogger().fine("Height: " + recipe.getHeight());
+		plugin.getLogger().fine("Type: " + recipe.getClass().getSimpleName());
+		plugin.getLogger()
+				.fine("Ingredients: \n"
+						+ (recipe instanceof IShapedRecipe
+								? String.join("\n",
+										IRecipe.ingredientsToListColorless(plugin,
+												recipe.getIngredients()
+														.toArray(new ItemStack[recipe.getIngredients().size()]),
+												recipe.getWidth(), recipe.getHeight(),
+												plugin.getWorkspaceObjects().getViewIngredientsIdFormat()))
+								: ((IShapelessRecipe) recipe).getIngredients()));
+	}
+
 	public abstract void createRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id, UUID uuid,
 			int width, int height) throws InvalidRecipeException;
 
@@ -150,6 +200,8 @@ public abstract class IRecipeManager {
 			UUID uuid, int width, int height, Map<ItemStack, Integer> rngMap) throws InvalidRecipeException;
 
 	public abstract void loadCustomRecipes();
+
+	public abstract void loadDisabledRecipes();
 
 	public abstract boolean isVanillaRecipeIncluded(IRecipe vanilla);
 

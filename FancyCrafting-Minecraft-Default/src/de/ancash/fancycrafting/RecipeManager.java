@@ -27,6 +27,9 @@ public class RecipeManager extends IRecipeManager{
 	private final File recipeFile = new File("plugins/FancyCrafting/recipes.yml");
 	private final FileConfiguration recipeCfg = YamlConfiguration.loadConfiguration(recipeFile);
 
+	private final File blacklistFile = new File("plugins/FancyCrafting/blacklist.yml");
+	private final FileConfiguration blacklistCfg = YamlConfiguration.loadConfiguration(recipeFile);
+	
 	private final FancyCrafting plugin;
 
 	public RecipeManager(FancyCrafting plugin) throws IOException, InvalidConfigurationException {
@@ -34,10 +37,36 @@ public class RecipeManager extends IRecipeManager{
 		this.plugin = plugin;
 		if (!recipeFile.exists())
 			recipeFile.createNewFile();
+		if(!blacklistFile.exists())
+			blacklistFile.createNewFile();
 		loadBukkitRecipes();
 		loadCustomRecipes();
+		loadDisabledRecipes();
 	}
 
+	@Override
+	public void loadDisabledRecipes() {
+		plugin.getLogger().info("Loading blacklisted recipes...");
+		try {
+			blacklistCfg.load(blacklistFile);
+		} catch (IOException | InvalidConfigurationException e1) {
+			plugin.getLogger().log(Level.SEVERE, "Could not load blacklist file", e1);
+			return;
+		}
+		for (String key : blacklistCfg.getKeys(false)) {
+			try {
+				IRecipe recipe = IRecipe.getRecipeFromFile(blacklistFile, blacklistCfg, key);
+				plugin.getLogger().fine("-----------------------------------------------------");
+				printRecipe(recipe);
+				plugin.getLogger().fine("-----------------------------------------------------");
+				addBlacklistedRecipe(recipe);
+			} catch (IOException | InvalidConfigurationException e) {
+				plugin.getLogger().log(Level.SEVERE, "Could not load recipe with key " + key, e);
+			}
+		}
+		plugin.getLogger().info("Loaded blacklisted recipes!");
+	}
+	
 	@Override
 	public void createRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id, UUID uuid, int width,
 			int height) throws InvalidRecipeException {
@@ -90,20 +119,7 @@ public class RecipeManager extends IRecipeManager{
 			try {
 				IRecipe recipe = IRecipe.getRecipeFromFile(recipeFile, recipeCfg, key);
 				plugin.getLogger().fine("-----------------------------------------------------");
-				plugin.getLogger().fine("Name: " + recipe.getRecipeName());
-				plugin.getLogger().fine("Result: " + recipe.getResult());
-				plugin.getLogger().fine("Width: " + recipe.getWidth());
-				plugin.getLogger().fine("Height: " + recipe.getHeight());
-				plugin.getLogger().fine("Type: " + recipe.getClass().getSimpleName());
-				plugin.getLogger()
-						.fine("Ingredients: \n" + (recipe instanceof IShapedRecipe
-								? String.join("\n",
-										IRecipe.ingredientsToListColorless(plugin,
-												recipe.getIngredients()
-														.toArray(new ItemStack[recipe.getIngredients().size()]),
-												recipe.getWidth(), recipe.getHeight(),
-												plugin.getWorkspaceObjects().getViewIngredientsIdFormat()))
-								: ((IShapelessRecipe) recipe).getIngredients()));
+				printRecipe(recipe);
 				plugin.getLogger().fine("-----------------------------------------------------");
 				registerRecipe(recipe);
 				plugin.getLogger()
@@ -131,6 +147,4 @@ public class RecipeManager extends IRecipeManager{
 			throw new RecipeDeleteException(recipeName, ex);
 		}
 	}
-
-	
 }

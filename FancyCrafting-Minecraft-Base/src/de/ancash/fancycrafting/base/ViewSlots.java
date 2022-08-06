@@ -16,7 +16,8 @@ public class ViewSlots {
 	private final int nextSlot;
 	private final int editSlot;
 
-	public ViewSlots(int size, int resultSlot, int ingredientsSlot, int probabilitySlot, int closeSlot, int backSlot, int prevSlot, int nextSlot, int editSlot) {
+	public ViewSlots(int size, int resultSlot, int ingredientsSlot, int probabilitySlot, int closeSlot, int backSlot,
+			int prevSlot, int nextSlot, int editSlot) {
 		this.size = size;
 		this.resultSlot = resultSlot;
 		this.ingredientsSlot = ingredientsSlot;
@@ -36,10 +37,10 @@ public class ViewSlots {
 			try {
 				Object o = f.get(this);
 				if (o != null && o.getClass().isArray())
-					builder.append(f.getName() + ": " + IntStream.of((int[]) o).boxed().collect(Collectors.toList())) //$NON-NLS-1$
-							.append("\n"); //$NON-NLS-1$
+					builder.append(f.getName()).append(": ") //$NON-NLS-1$
+							.append(IntStream.of((int[]) o).boxed().collect(Collectors.toList())).append('\n');
 				else
-					builder.append(f.getName() + ": " + (o == null ? "null" : o)).append("\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					builder.append(f.getName()).append(": ").append(o == null ? "null" : o).append('\n'); //$NON-NLS-1$ //$NON-NLS-2$
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			}

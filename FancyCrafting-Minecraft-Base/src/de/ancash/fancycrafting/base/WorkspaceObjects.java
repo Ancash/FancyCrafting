@@ -41,6 +41,7 @@ public class WorkspaceObjects {
 	private String viewIngredientsIdFormat;
 	private String viewRandomResultsFormat;
 	private String inputRecipeNameTitle;
+	private String manageVanillaRecipesTitle;
 	private List<String> manageProbabilityFooter;
 	private List<String> manageProbabilityHeader;
 	private List<String> backCommands;
@@ -49,7 +50,7 @@ public class WorkspaceObjects {
 		return createNormalRecipeItem;
 	}
 
-	public WorkspaceObjects setCreateNormalRecipeItem(IItemStack createNormalRecipeItem) {
+	WorkspaceObjects setCreateNormalRecipeItem(IItemStack createNormalRecipeItem) {
 		this.createNormalRecipeItem = createNormalRecipeItem;
 		return this;
 	}
@@ -58,7 +59,7 @@ public class WorkspaceObjects {
 		return createRandomRecipeItem;
 	}
 
-	public WorkspaceObjects setCreateRandomRecipeItem(IItemStack createRandomRecipeItem) {
+	WorkspaceObjects setCreateRandomRecipeItem(IItemStack createRandomRecipeItem) {
 		this.createRandomRecipeItem = createRandomRecipeItem;
 		return this;
 	}
@@ -67,7 +68,7 @@ public class WorkspaceObjects {
 		return backItem;
 	}
 
-	public WorkspaceObjects setBackItem(IItemStack backItem) {
+	WorkspaceObjects setBackItem(IItemStack backItem) {
 		this.backItem = backItem;
 		return this;
 	}
@@ -76,7 +77,7 @@ public class WorkspaceObjects {
 		return closeItem;
 	}
 
-	public WorkspaceObjects setCloseItem(IItemStack closeItem) {
+	WorkspaceObjects setCloseItem(IItemStack closeItem) {
 		this.closeItem = closeItem;
 		return this;
 	}
@@ -85,7 +86,7 @@ public class WorkspaceObjects {
 		return prevItem;
 	}
 
-	public WorkspaceObjects setPrevItem(IItemStack prevItem) {
+	WorkspaceObjects setPrevItem(IItemStack prevItem) {
 		this.prevItem = prevItem;
 		return this;
 	}
@@ -94,7 +95,7 @@ public class WorkspaceObjects {
 		return nextItem;
 	}
 
-	public WorkspaceObjects setNextItem(IItemStack nextItem) {
+	WorkspaceObjects setNextItem(IItemStack nextItem) {
 		this.nextItem = nextItem;
 		return this;
 	}
@@ -103,7 +104,7 @@ public class WorkspaceObjects {
 		return invalidItem;
 	}
 
-	public WorkspaceObjects setInvalidItem(IItemStack invalidItem) {
+	WorkspaceObjects setInvalidItem(IItemStack invalidItem) {
 		this.invalidItem = invalidItem;
 		return this;
 	}
@@ -112,7 +113,7 @@ public class WorkspaceObjects {
 		return validItem;
 	}
 
-	public WorkspaceObjects setValidItem(IItemStack validItem) {
+	WorkspaceObjects setValidItem(IItemStack validItem) {
 		this.validItem = validItem;
 		return this;
 	}
@@ -121,7 +122,7 @@ public class WorkspaceObjects {
 		return backgroundItem;
 	}
 
-	public WorkspaceObjects setBackgroundItem(IItemStack backgroundItem) {
+	WorkspaceObjects setBackgroundItem(IItemStack backgroundItem) {
 		this.backgroundItem = backgroundItem;
 		return this;
 	}
@@ -130,7 +131,7 @@ public class WorkspaceObjects {
 		return shapelessItem;
 	}
 
-	public WorkspaceObjects setShapelessItem(IItemStack shapeless) {
+	WorkspaceObjects setShapelessItem(IItemStack shapeless) {
 		this.shapelessItem = shapeless;
 		return this;
 	}
@@ -139,7 +140,7 @@ public class WorkspaceObjects {
 		return shapedItem;
 	}
 
-	public WorkspaceObjects setShapedItem(IItemStack shapedItem) {
+	WorkspaceObjects setShapedItem(IItemStack shapedItem) {
 		this.shapedItem = shapedItem;
 		return this;
 	}
@@ -148,7 +149,7 @@ public class WorkspaceObjects {
 		return saveItem;
 	}
 
-	public WorkspaceObjects setSaveItem(IItemStack saveItem) {
+	WorkspaceObjects setSaveItem(IItemStack saveItem) {
 		this.saveItem = saveItem;
 		return this;
 	}
@@ -157,7 +158,7 @@ public class WorkspaceObjects {
 		return editItem;
 	}
 
-	public WorkspaceObjects setEditItem(IItemStack editItem) {
+	WorkspaceObjects setEditItem(IItemStack editItem) {
 		this.editItem = editItem;
 		return this;
 	}
@@ -166,7 +167,7 @@ public class WorkspaceObjects {
 		return deleteItem;
 	}
 
-	public WorkspaceObjects setDeleteItem(IItemStack deleteItem) {
+	WorkspaceObjects setDeleteItem(IItemStack deleteItem) {
 		this.deleteItem = deleteItem;
 		return this;
 	}
@@ -175,7 +176,7 @@ public class WorkspaceObjects {
 		return quickCraftingItem;
 	}
 
-	public WorkspaceObjects setQuickCraftingItem(IItemStack quickCraftingItem) {
+	WorkspaceObjects setQuickCraftingItem(IItemStack quickCraftingItem) {
 		this.quickCraftingItem = quickCraftingItem;
 		return this;
 	}
@@ -184,7 +185,7 @@ public class WorkspaceObjects {
 		return createRecipeTitle;
 	}
 
-	public WorkspaceObjects setCreateRecipeTitle(String createRecipeTitle) {
+	WorkspaceObjects setCreateRecipeTitle(String createRecipeTitle) {
 		this.createRecipeTitle = createRecipeTitle;
 		return this;
 	}
@@ -193,7 +194,7 @@ public class WorkspaceObjects {
 		return customRecipesTitle;
 	}
 
-	public WorkspaceObjects setCustomRecipesTitle(String customRecipesTitle) {
+	WorkspaceObjects setCustomRecipesTitle(String customRecipesTitle) {
 		this.customRecipesTitle = customRecipesTitle;
 		return this;
 	}
@@ -202,7 +203,7 @@ public class WorkspaceObjects {
 		return viewRecipeTitle;
 	}
 
-	public WorkspaceObjects setViewRecipeTitle(String viewRecipeTitle) {
+	WorkspaceObjects setViewRecipeTitle(String viewRecipeTitle) {
 		this.viewRecipeTitle = viewRecipeTitle;
 		return this;
 	}
@@ -211,7 +212,7 @@ public class WorkspaceObjects {
 		return editRecipeTitle;
 	}
 
-	public WorkspaceObjects setEditRecipeTitle(String editRecipeTitle) {
+	WorkspaceObjects setEditRecipeTitle(String editRecipeTitle) {
 		this.editRecipeTitle = editRecipeTitle;
 		return this;
 	}
@@ -220,7 +221,7 @@ public class WorkspaceObjects {
 		return backCommands;
 	}
 
-	public WorkspaceObjects setBackCommands(List<String> backCommands) {
+	WorkspaceObjects setBackCommands(List<String> backCommands) {
 		this.backCommands = backCommands;
 		return this;
 	}
@@ -229,7 +230,7 @@ public class WorkspaceObjects {
 		return manageRandomResultsItem;
 	}
 
-	public WorkspaceObjects setManageRandomResultsItem(IItemStack manageRandomResultsItem) {
+	WorkspaceObjects setManageRandomResultsItem(IItemStack manageRandomResultsItem) {
 		this.manageRandomResultsItem = manageRandomResultsItem;
 		return this;
 	}
@@ -238,7 +239,7 @@ public class WorkspaceObjects {
 		return manageRandomResultsFormat;
 	}
 
-	public WorkspaceObjects setManageRandomResultsFormat(String manageRandomResultsFormat) {
+	WorkspaceObjects setManageRandomResultsFormat(String manageRandomResultsFormat) {
 		this.manageRandomResultsFormat = manageRandomResultsFormat;
 		return this;
 	}
@@ -247,7 +248,7 @@ public class WorkspaceObjects {
 		return manageIngredientsItem;
 	}
 
-	public WorkspaceObjects setManageIngredientsItem(IItemStack manageRandomIngredientsItem) {
+	WorkspaceObjects setManageIngredientsItem(IItemStack manageRandomIngredientsItem) {
 		this.manageIngredientsItem = manageRandomIngredientsItem;
 		return this;
 	}
@@ -256,7 +257,7 @@ public class WorkspaceObjects {
 		return manageIngredientsIdFormat;
 	}
 
-	public WorkspaceObjects setManageIngredientsIdFormat(String manageRandomIngredientsIdFormat) {
+	WorkspaceObjects setManageIngredientsIdFormat(String manageRandomIngredientsIdFormat) {
 		this.manageIngredientsIdFormat = manageRandomIngredientsIdFormat;
 		return this;
 	}
@@ -265,7 +266,7 @@ public class WorkspaceObjects {
 		return ingredientsInputTitle;
 	}
 
-	public WorkspaceObjects setIngredientsInputTitle(String inputIngredientsTitle) {
+	WorkspaceObjects setIngredientsInputTitle(String inputIngredientsTitle) {
 		this.ingredientsInputTitle = inputIngredientsTitle;
 		return this;
 	}
@@ -274,7 +275,7 @@ public class WorkspaceObjects {
 		return manageResultTitle;
 	}
 
-	public WorkspaceObjects setManageResultTitle(String manageResultTitle) {
+	WorkspaceObjects setManageResultTitle(String manageResultTitle) {
 		this.manageResultTitle = manageResultTitle;
 		return this;
 	}
@@ -283,7 +284,7 @@ public class WorkspaceObjects {
 		return manageProbabilityFooter;
 	}
 
-	public WorkspaceObjects setManageProbabilityFooter(List<String> manageProbabilityFooter) {
+	WorkspaceObjects setManageProbabilityFooter(List<String> manageProbabilityFooter) {
 		this.manageProbabilityFooter = manageProbabilityFooter;
 		return this;
 	}
@@ -292,7 +293,7 @@ public class WorkspaceObjects {
 		return manageProbabilityHeader;
 	}
 
-	public WorkspaceObjects setManageProbabilityHeader(List<String> manageProbabilityHeader) {
+	WorkspaceObjects setManageProbabilityHeader(List<String> manageProbabilityHeader) {
 		this.manageProbabilityHeader = manageProbabilityHeader;
 		return this;
 	}
@@ -301,7 +302,7 @@ public class WorkspaceObjects {
 		return manageProbabilitiesTitle;
 	}
 
-	public WorkspaceObjects setManageProbabilitiesTitle(String manageProbabilitiesTitle) {
+	WorkspaceObjects setManageProbabilitiesTitle(String manageProbabilitiesTitle) {
 		this.manageProbabilitiesTitle = manageProbabilitiesTitle;
 		return this;
 	}
@@ -310,7 +311,7 @@ public class WorkspaceObjects {
 		return manageRandomInvalidResultItem;
 	}
 
-	public WorkspaceObjects setManageRandomInvalidResultItem(IItemStack manageRandomInvalidResultItem) {
+	WorkspaceObjects setManageRandomInvalidResultItem(IItemStack manageRandomInvalidResultItem) {
 		this.manageRandomInvalidResultItem = manageRandomInvalidResultItem;
 		return this;
 	}
@@ -319,7 +320,7 @@ public class WorkspaceObjects {
 		return inputRecipeNameLeftItem;
 	}
 
-	public WorkspaceObjects setInputRecipeNameLeftItem(IItemStack inputRecipeNameLeft) {
+	WorkspaceObjects setInputRecipeNameLeftItem(IItemStack inputRecipeNameLeft) {
 		this.inputRecipeNameLeftItem = inputRecipeNameLeft;
 		return this;
 	}
@@ -328,7 +329,7 @@ public class WorkspaceObjects {
 		return inputRecipeNameRightItem;
 	}
 
-	public WorkspaceObjects setInputRecipeNameRightItem(IItemStack inputRecipeNameRight) {
+	WorkspaceObjects setInputRecipeNameRightItem(IItemStack inputRecipeNameRight) {
 		this.inputRecipeNameRightItem = inputRecipeNameRight;
 		return this;
 	}
@@ -337,7 +338,7 @@ public class WorkspaceObjects {
 		return inputRecipeNameTitle;
 	}
 
-	public WorkspaceObjects setInputRecipeNameTitle(String inputRecipeNameTitle) {
+	WorkspaceObjects setInputRecipeNameTitle(String inputRecipeNameTitle) {
 		this.inputRecipeNameTitle = inputRecipeNameTitle;
 		return this;
 	}
@@ -346,7 +347,7 @@ public class WorkspaceObjects {
 		return manageRecipeNameItem;
 	}
 
-	public WorkspaceObjects setManageRecipeNameItem(IItemStack manageRecipeName) {
+	WorkspaceObjects setManageRecipeNameItem(IItemStack manageRecipeName) {
 		this.manageRecipeNameItem = manageRecipeName;
 		return this;
 	}
@@ -355,7 +356,7 @@ public class WorkspaceObjects {
 		return viewIngredientsItem;
 	}
 
-	public WorkspaceObjects setViewIngredientsItem(IItemStack viewIngredientsItem) {
+	WorkspaceObjects setViewIngredientsItem(IItemStack viewIngredientsItem) {
 		this.viewIngredientsItem = viewIngredientsItem;
 		return this;
 	}
@@ -364,7 +365,7 @@ public class WorkspaceObjects {
 		return viewIngredientsIdFormat;
 	}
 
-	public WorkspaceObjects setViewIngredientsIdFormat(String viewIngredientsIdFormat) {
+	WorkspaceObjects setViewIngredientsIdFormat(String viewIngredientsIdFormat) {
 		this.viewIngredientsIdFormat = viewIngredientsIdFormat;
 		return this;
 	}
@@ -373,7 +374,7 @@ public class WorkspaceObjects {
 		return viewRandomResultsItem;
 	}
 
-	public WorkspaceObjects setViewRandomResultsItem(IItemStack viewRandomResultsItem) {
+	WorkspaceObjects setViewRandomResultsItem(IItemStack viewRandomResultsItem) {
 		this.viewRandomResultsItem = viewRandomResultsItem;
 		return this;
 	}
@@ -382,8 +383,17 @@ public class WorkspaceObjects {
 		return viewRandomResultsFormat;
 	}
 
-	public WorkspaceObjects setViewRandomResultsFormat(String viewRandomResultsFormat) {
+	WorkspaceObjects setViewRandomResultsFormat(String viewRandomResultsFormat) {
 		this.viewRandomResultsFormat = viewRandomResultsFormat;
+		return this;
+	}
+
+	public String getManageVanillaRecipesTitle() {
+		return manageVanillaRecipesTitle;
+	}
+
+	WorkspaceObjects setManageVanillaRecipesTitle(String manageVanillaRecipesTitle) {
+		this.manageVanillaRecipesTitle = manageVanillaRecipesTitle;
 		return this;
 	}
 }

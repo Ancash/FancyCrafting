@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,7 +79,7 @@ public abstract class IRecipe {
 	}
 
 	public abstract String saveToString() throws IOException;
-	
+
 	public abstract void saveToFile(FileConfiguration file, String path);
 
 	public abstract int getHeight();
@@ -119,44 +120,6 @@ public abstract class IRecipe {
 		return suitableForAutoMatching;
 	}
 
-	public static boolean matchesShaped(IShapedRecipe recipe, IItemStack[] ings, int width, int height) {
-		if (recipe.getWidth() != width || recipe.getHeight() != height)
-			return false;
-		for (int i = 0; i < ings.length; i++) {
-			if ((recipe.asArray()[i] == null) != (ings[i] == null))
-				return false;
-			if (ings[i] == null)
-				continue;
-			if (recipe.asArray()[i].hashCode() != ings[i].hashCode()
-					|| ings[i].getOriginal().getAmount() < recipe.getIngredientsArray()[i].getOriginal().getAmount())
-				return false;
-		}
-		return true;
-	}
-
-	public static boolean matchesShapeless(IShapelessRecipe recipe, IItemStack[] ingredients) {
-		List<IItemStack> origs = recipe.getIIngredients();
-		List<IItemStack> ings = Arrays.asList(ingredients).stream().filter(i -> i != null).collect(Collectors.toList());
-
-		if (ings.size() != origs.size())
-			return false;
-
-		for (int i1 = 0; i1 < origs.size(); i1++) {
-			boolean matches = false;
-			for (int i2 = 0; i2 < ings.size(); i2++) {
-				if (origs.get(i1).hashCode() == ings.get(i2).hashCode()
-						&& origs.get(i1).getOriginal().getAmount() <= ings.get(i2).getOriginal().getAmount()) {
-					matches = true;
-					ings.remove(i2);
-					break;
-				}
-			}
-			if (!matches)
-				return false;
-		}
-		return true;
-	}
-
 	public static IRecipe getRecipeFromFile(File file, String path) throws IOException, InvalidConfigurationException {
 		FileConfiguration fc = YamlConfiguration.loadConfiguration(file);
 		fc.load(file);
@@ -164,7 +127,7 @@ public abstract class IRecipe {
 		fc.save(file);
 		return r;
 	}
-	
+
 	@SuppressWarnings("nls")
 	public static IRecipe getRecipeFromString(String string) throws IOException, InvalidConfigurationException {
 		YamlFile file = YamlFile.loadConfigurationFromString(string);
@@ -186,7 +149,7 @@ public abstract class IRecipe {
 		Map<ItemStack, Integer> rngMap = new HashMap<>();
 
 		if (random)
-			for(String key : file.getConfigurationSection("recipe.random-map").getKeys(false))
+			for (String key : file.getConfigurationSection("recipe.random-map").getKeys(false))
 				rngMap.put(ItemStackUtils.itemStackFromString(file.getString("recipe.random-map." + key + ".item")),
 						file.getInt("recipe.random-map." + key + ".prob"));
 
@@ -201,7 +164,7 @@ public abstract class IRecipe {
 			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid);
 	}
 
-	@SuppressWarnings("nls")
+	@SuppressWarnings({ "nls", "deprecation" })
 	public static IRecipe getRecipeFromFile(File file, FileConfiguration fc, String path)
 			throws IOException, InvalidConfigurationException {
 		boolean save = false;
@@ -215,7 +178,7 @@ public abstract class IRecipe {
 		ItemStack[] ingredients = new ItemStack[width * height];
 		for (int i = 0; i < ingredients.length; i++)
 			if (fc.getItemStack(path + ".ingredients." + i) != null)
-				ingredients[i] = ItemStackUtils.getItemStack(fc, path + ".ingredients." + i);
+				ingredients[i] = ItemStackUtils.get(fc, path + ".ingredients." + i);
 
 		if (!fc.contains(path + ".random"))
 			fc.set(path + ".random", !(save = true));
@@ -240,9 +203,9 @@ public abstract class IRecipe {
 		Map<ItemStack, Integer> rngMap = new HashMap<>();
 
 		if (random)
-			fc.getConfigurationSection(path + ".random-map").getKeys(false).stream()
-					.forEach(key -> rngMap.put(ItemStackUtils.getItemStack(fc, path + ".random-map." + key + ".item"),
-							fc.getInt(path + ".random-map." + key + ".prob")));
+			for (String key : fc.getConfigurationSection(path + ".random-map").getKeys(false))
+				rngMap.put(ItemStackUtils.get(fc, path + ".random-map." + key + ".item"),
+						fc.getInt(path + ".random-map." + key + ".prob"));
 
 		if (save) {
 			fc.save(file);
@@ -259,11 +222,11 @@ public abstract class IRecipe {
 		else
 			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid);
 	}
-	
+
 	public static IRecipe fromVanillaRecipe(AbstractFancyCrafting pl, Recipe v) {
 		return fromVanillaRecipe(pl, v, false);
 	}
-	
+
 	@SuppressWarnings("nls")
 	public static IRecipe fromVanillaRecipe(AbstractFancyCrafting pl, Recipe v, boolean ignoreMeta) {
 		if (v == null)
@@ -303,7 +266,7 @@ public abstract class IRecipe {
 		}
 		return r;
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	private static boolean isSuitableForAutoMatching(ItemStack i) {
 		if (i == null)
@@ -315,7 +278,8 @@ public abstract class IRecipe {
 	private static ItemStack removeUnspecificMeta(Recipe r, ItemStack is, boolean ignoreMeta) {
 		if (is == null)
 			return null;
-		if (is.getItemMeta().toString().toLowerCase().contains("unspecific") && (ignoreMeta ? true : is.getDurability() == 0)) //$NON-NLS-1$
+		if (is.getItemMeta().toString().toLowerCase(Locale.ENGLISH).contains("unspecific") //$NON-NLS-1$
+				&& (ignoreMeta ? true : is.getDurability() == 0))
 			is.setItemMeta(null);
 		return is;
 	}
@@ -323,9 +287,10 @@ public abstract class IRecipe {
 	public static List<String> ingredientsToList(AbstractFancyCrafting pl, ItemStack[] ingredients, String format) {
 		return ingredientsToList(pl, ingredients, 8, 6, format);
 	}
-	
+
 	@SuppressWarnings("nls")
-	public static List<String> ingredientsToList(AbstractFancyCrafting pl, ItemStack[] ingredients, int width, int height, String format) {
+	public static List<String> ingredientsToList(AbstractFancyCrafting pl, ItemStack[] ingredients, int width,
+			int height, String format) {
 		StringBuilder builder = new StringBuilder();
 		Map<Integer, Character> mapped = new HashMap<>();
 		int cpos = 0;
@@ -334,9 +299,8 @@ public abstract class IRecipe {
 				int hash = new IItemStack(ingredients[i]).hashCode();
 				if (!mapped.containsKey(hash)) {
 					mapped.put(hash, chars[cpos++]);
-					builder.append(format
-							.replace("%id%", String.valueOf(mapped.get(hash)))
-							.replace("%item%", ItemStackUtils.getDisplayName(ingredients[i])) + "\n");
+					builder.append(format.replace("%id%", String.valueOf(mapped.get(hash))).replace("%item%",
+							ItemStackUtils.getDisplayName(ingredients[i])) + "\n");
 				}
 			}
 		}
@@ -356,13 +320,14 @@ public abstract class IRecipe {
 				builder.append("\n§7");
 				for (int i = 0; i < width; i++)
 					builder.append("----" + (i % 2 == 0 ? "-" : ""));
-				builder.append("\n");
+				builder.append('\n');
 			}
 		}
 		return Arrays.asList(builder.toString().split("\n"));
 	}
 
-	public static List<String> ingredientsToListColorless(AbstractFancyCrafting pl, ItemStack[] ingredients, String format) {
+	public static List<String> ingredientsToListColorless(AbstractFancyCrafting pl, ItemStack[] ingredients,
+			String format) {
 		return ingredientsToListColorless(pl, ingredients, 8, 6, format);
 	}
 

@@ -53,10 +53,11 @@ public class ManageProbabilitiesGUI extends ItemInputIGUI {
 			removeInventoryItem(s);
 		}
 		Map<String, String> placeholder = new HashMap<>();
+		List<String> lore = new ArrayList<>();
 		for (Entry<ItemStack, Integer> entry : probMap.entrySet()) {
 			ItemStack item = entry.getKey().clone();
 			ItemMeta meta = item.getItemMeta();
-			List<String> lore = new ArrayList<>();
+			lore.clear();
 			if (pl.getWorkspaceObjects().getManageProbabilityHeader() != null)
 				lore.addAll(pl.getWorkspaceObjects().getManageProbabilityHeader());
 			if (meta.getLore() != null)

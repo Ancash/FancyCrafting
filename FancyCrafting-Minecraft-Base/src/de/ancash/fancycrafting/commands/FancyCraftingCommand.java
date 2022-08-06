@@ -92,7 +92,7 @@ public class FancyCraftingCommand implements CommandExecutor {
 			return true;
 
 		if (args.length == 1 && (sender.hasPermission(AbstractFancyCrafting.VIEW_ALL_PERM) || sender.isOp())) {
-			plugin.viewRecipe((Player) sender, plugin.getRecipeManager().getCustomRecipes());
+			plugin.viewRecipesPaged((Player) sender, plugin.getRecipeManager().getCustomRecipes());
 			return true;
 		}
 		if (args.length == 2) {
@@ -131,7 +131,7 @@ public class FancyCraftingCommand implements CommandExecutor {
 				return true;
 			}
 			if (recipes.size() > 1) {
-				plugin.viewRecipesPaged((Player) sender, recipes);
+				plugin.viewRecipe((Player) sender, recipes);
 			} else {
 				plugin.editRecipe((Player) sender, recipes.stream().findAny().get());
 			}

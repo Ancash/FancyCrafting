@@ -87,17 +87,17 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 	public void viewRecipe(Player p, IRecipe recipe) {
 		viewRecipe(p, new HashSet<>(Arrays.asList(recipe)));
 	}
-	
+
 	public abstract void viewRecipe(Player player, Set<IRecipe> recipes);
-	
+
 	public abstract void viewRecipesPaged(Player player, Set<IRecipe> recipes);
-	
+
 	public abstract void editRecipe(Player p, IRecipe r);
-	
+
 	public abstract void createRandomRecipe(Player p, String name);
-	
+
 	public abstract void createNormalRecipe(Player p, String name);
-	
+
 	protected void loadFiles() throws IOException, InvalidConfigurationException {
 		if (!new File("plugins/FancyCrafting/config.yml").exists())
 			FileUtils.copyInputStreamToFile(getResource("resources/config.yml"),
@@ -214,6 +214,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 				.setBackCommands(Collections.unmodifiableList(config.getStringList("recipe-view-gui.back.commands")))
 				.setIngredientsInputTitle(config.getString("recipe-create-gui.manage-ingredients-title"))
 				.setManageResultTitle(config.getString("recipe-create-gui.manage-result-title"))
+				.setManageVanillaRecipesTitle(config.getString("manage-vanilla-recipes-gui.title"))
 				.setManageProbabilityFooter(
 						config.getStringList("recipe-create-gui.manage-random-result-probability.footer"))
 				.setManageProbabilityHeader(
@@ -270,12 +271,10 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 					.append(ANSIEscapeCodes.ERASE_CURSOR_TO_END_OF_LINE).append(parseColor(record.getLevel()))
 					.append('[').append(LocalDateTime.now().format(DATE_FORMATTER)).append("] [")
 					.append(Thread.currentThread().getName()).append('/').append(record.getLevel().toString())
-					.append("] ")
-					.append("[FancyCrafting] ")
-					.append(unformatted.get(i).replace("[FancyCrafting] ", ""))
+					.append("] [FancyCrafting] ").append(unformatted.get(i).replace("[FancyCrafting] ", ""))
 					.append(ConsoleColor.RESET);
 			if (i < unformatted.size() - 1)
-				builder.append("\n");
+				builder.append('\n');
 		}
 		return builder.toString();
 	}
@@ -360,6 +359,6 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 	public int getCraftingCooldown() {
 		return craftingCooldown;
 	}
-	
+
 	public abstract void openCraftingWorkspace(Player player, WorkspaceTemplate template);
 }

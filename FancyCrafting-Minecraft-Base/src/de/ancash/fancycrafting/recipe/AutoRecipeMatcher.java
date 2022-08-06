@@ -44,6 +44,8 @@ public class AutoRecipeMatcher {
 	private boolean match(IRecipe recipe, Map<Integer, Integer> map) {
 		if(!map.keySet().containsAll(recipe.getIngredientsHashCodes().keySet()))
 			return false;
+		if(recipe.isVanilla())
+			return true;
 		for(Entry<Integer, Integer> entry : recipe.getIngredientsHashCodes().entrySet())
 			if(entry.getValue() > map.get(entry.getKey()))
 				return false;
