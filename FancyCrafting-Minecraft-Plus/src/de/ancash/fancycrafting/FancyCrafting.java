@@ -91,7 +91,7 @@ public class FancyCrafting extends AbstractFancyCrafting {
 	@Override
 	public void load() {
 		long now = System.nanoTime();
-		getLogger().info("Loading FancyCrafting+...");
+		getLogger().info("Loading...");
 		checkForUpdates();
 		try {
 			loadFiles();
