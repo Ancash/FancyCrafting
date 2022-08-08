@@ -1,5 +1,5 @@
 check-recipes-async: false
-check-quick-crafting-async: true
+check-quick-crafting-async: false
 perms-for-custom-recipes: false
 perms-for-vanilla-recipes: false
 sort-recipes-by-recipe-name: true #false = sorted by result name/material name
@@ -46,8 +46,6 @@ workbench:
       type: GREEN_STAINED_GLASS_PANE
       meta:
          displayname: " "
-manage-vanilla-recipes-gui:
-   title: "Manage Vanilla Recipes"
 recipe-create-gui: #creating & editing
    title: "Create Recipe"
    manage-ingredients-title: "Input Ingredients"

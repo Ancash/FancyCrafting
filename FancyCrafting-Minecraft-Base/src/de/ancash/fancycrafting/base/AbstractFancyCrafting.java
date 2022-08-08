@@ -27,6 +27,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import de.ancash.libs.org.apache.commons.io.FileUtils;
 import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
+import de.ancash.fancycrafting.base.gui.ViewSlots;
+import de.ancash.fancycrafting.base.gui.WorkspaceDimension;
+import de.ancash.fancycrafting.base.gui.WorkspaceObjects;
+import de.ancash.fancycrafting.base.gui.WorkspaceTemplate;
+import de.ancash.fancycrafting.commands.CreateSubCommand;
+import de.ancash.fancycrafting.commands.EditSubCommand;
+import de.ancash.fancycrafting.commands.FancyCraftingCommand;
+import de.ancash.fancycrafting.commands.OpenSubCommand;
+import de.ancash.fancycrafting.commands.ReloadSubCommand;
+import de.ancash.fancycrafting.commands.ViewSubCommand;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
@@ -78,25 +88,39 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 		singleton = this;
 		new Metrics(this, 14152, true);
 		load();
+		loadCommands();
 	}
 
+	private void loadCommands() {
+		FancyCraftingCommand cmd = new FancyCraftingCommand(this);
+		loadSubCommands(cmd);
+		cmd.addSubCommand(new ReloadSubCommand(this, "reload", "rl"));
+		cmd.addSubCommand(new CreateSubCommand(this, "create"));
+		cmd.addSubCommand(new OpenSubCommand(this, "open"));
+		cmd.addSubCommand(new EditSubCommand(this, "edit"));
+		cmd.addSubCommand(new ViewSubCommand(this, "view"));
+		getCommand("fc").setExecutor(cmd);
+	}
+	
+	public abstract void loadSubCommands(FancyCraftingCommand fc);
+	
 	public abstract void reload();
 
 	public abstract void load();
 
 	public void viewRecipe(Player p, IRecipe recipe) {
-		viewRecipe(p, new HashSet<>(Arrays.asList(recipe)));
+		viewRecipeSingle(p, new HashSet<>(Arrays.asList(recipe)));
 	}
 
-	public abstract void viewRecipe(Player player, Set<IRecipe> recipes);
+	public abstract void viewRecipeSingle(Player player, Set<IRecipe> recipes);
 
-	public abstract void viewRecipesPaged(Player player, Set<IRecipe> recipes);
+	public abstract void viewRecipeCollection(Player player, Set<IRecipe> recipes);
 
 	public abstract void editRecipe(Player p, IRecipe r);
 
-	public abstract void createRandomRecipe(Player p, String name);
+	public abstract void openCreateRandomRecipe(Player p, String name);
 
-	public abstract void createNormalRecipe(Player p, String name);
+	public abstract void openCreateNormalRecipe(Player p, String name);
 
 	protected void loadFiles() throws IOException, InvalidConfigurationException {
 		if (!new File("plugins/FancyCrafting/config.yml").exists())
@@ -163,7 +187,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 	}
 
 	@SuppressWarnings("deprecation")
-	private void loadConfig() throws IOException, org.bukkit.configuration.InvalidConfigurationException {
+	private void loadConfig() throws IOException, InvalidConfigurationException {
 		viewSlots = new ViewSlots(config.getInt("recipe-view-gui.size"), config.getInt("recipe-view-gui.result-slot"),
 				config.getInt("recipe-view-gui.ingredients-slot"), config.getInt("recipe-view-gui.probability-slot"),
 				config.getInt("recipe-view-gui.close-slot"), config.getInt("recipe-view-gui.back-slot"),
@@ -214,7 +238,6 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 				.setBackCommands(Collections.unmodifiableList(config.getStringList("recipe-view-gui.back.commands")))
 				.setIngredientsInputTitle(config.getString("recipe-create-gui.manage-ingredients-title"))
 				.setManageResultTitle(config.getString("recipe-create-gui.manage-result-title"))
-				.setManageVanillaRecipesTitle(config.getString("manage-vanilla-recipes-gui.title"))
 				.setManageProbabilityFooter(
 						config.getStringList("recipe-create-gui.manage-random-result-probability.footer"))
 				.setManageProbabilityHeader(

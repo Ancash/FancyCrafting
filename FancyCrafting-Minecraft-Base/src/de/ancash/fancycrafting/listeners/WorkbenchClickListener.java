@@ -7,7 +7,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
-import de.ancash.fancycrafting.base.WorkspaceTemplate;
+import de.ancash.fancycrafting.base.gui.WorkspaceTemplate;
 
 public class WorkbenchClickListener implements Listener {
 

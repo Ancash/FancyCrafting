@@ -1,0 +1,12 @@
+main-title: "Manage Blacklisted Recipes"
+add-recipe-to-blacklist:
+   title: "Add to blacklist"
+   item:
+      type: CHEST
+      meta:
+         displayname: "§aAdd recipe to blacklist"
+         lore:
+         - "§7Add a recipe to the blacklist to"
+         - "§7prevent players from crafting it."
+         - "§7Custom and vanilla recipes can be"
+         - "§7blacklisted."

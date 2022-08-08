@@ -21,6 +21,7 @@ public class IShapelessRecipe extends IRecipe {
 	private final List<ItemStack> ings;
 	private final List<IItemStack> iings;
 	private final Map<Integer, Integer> hashCodes = new HashMap<>();
+	private final List<Integer> hashMatrix;
 	protected final int size;
 
 	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, UUID uuid) {
@@ -42,6 +43,7 @@ public class IShapelessRecipe extends IRecipe {
 			hashCodes.put(ii.hashCode(), hashCodes.get(ii.hashCode()) + ii.getOriginal().getAmount());
 		}
 		this.size = (int) Math.ceil(Math.sqrt(this.ings.size()));
+		hashMatrix = iings.stream().map(IItemStack::hashCode).sorted().collect(Collectors.toList());
 	}
 
 	@Override
@@ -84,7 +86,8 @@ public class IShapelessRecipe extends IRecipe {
 	public void saveToFile(FileConfiguration file, String path) {
 		file.set(path, null);
 		file.set(path + ".name", recipeName);
-		ItemStackUtils.setItemStack(file, uuid + ".result", result.getOriginal());
+		if(result != null)
+			ItemStackUtils.setItemStack(file, uuid + ".result", result.getOriginal());
 		file.set(path + ".shaped", false);
 		file.set(path + ".width", size);
 		file.set(path + ".height", size);
@@ -109,5 +112,10 @@ public class IShapelessRecipe extends IRecipe {
 		for (int i = 0; i < getIIngredients().size(); i++)
 			temp.set("recipe.ingredients." + i, ItemStackUtils.itemStackToString(getIIngredients().get(i).getOriginal()));
 		return temp.saveToString();
+	}
+
+	@Override
+	public List<Integer> getHashMatrix() {
+		return hashMatrix;
 	}
 }

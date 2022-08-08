@@ -90,6 +90,8 @@ public abstract class IRecipe {
 
 	public abstract Map<Integer, Integer> getIngredientsHashCodes();
 
+	public abstract List<Integer> getHashMatrix();
+	
 	public abstract List<ItemStack> getIngredients();
 
 	public abstract List<IItemStack> getIIngredients();
@@ -169,7 +171,7 @@ public abstract class IRecipe {
 			throws IOException, InvalidConfigurationException {
 		boolean save = false;
 
-		ItemStack result = ItemStackUtils.getItemStack(fc, path + ".result");
+		ItemStack result = fc.contains(path + ".result") ? ItemStackUtils.getItemStack(fc, path + ".result") : null;
 		String name = fc.getString(path + ".name");
 
 		int width = fc.getInt(path + ".width");
@@ -300,7 +302,7 @@ public abstract class IRecipe {
 				if (!mapped.containsKey(hash)) {
 					mapped.put(hash, chars[cpos++]);
 					builder.append(format.replace("%id%", String.valueOf(mapped.get(hash))).replace("%item%",
-							ItemStackUtils.getDisplayName(ingredients[i])) + "\n");
+							ItemStackUtils.getDisplayName(ingredients[i]))).append('\n');
 				}
 			}
 		}
@@ -311,8 +313,8 @@ public abstract class IRecipe {
 				if (ing == null)
 					builder.append("§7----");
 				else
-					builder.append("§a" + mapped.get(new IItemStack(ing).hashCode()) + "§7x" + ing.getAmount()
-							+ (ing.getAmount() >= 10 ? "" : "§7-"));
+					builder.append("§a").append(mapped.get(new IItemStack(ing).hashCode())).append("§7x")
+							.append(ing.getAmount()).append(ing.getAmount() >= 10 ? "" : "§7-");
 				if (row < width - 1)
 					builder.append("§7|");
 			}

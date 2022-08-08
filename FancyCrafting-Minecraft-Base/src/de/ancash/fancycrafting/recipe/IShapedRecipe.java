@@ -1,6 +1,7 @@
 package de.ancash.fancycrafting.recipe;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,18 +22,14 @@ public class IShapedRecipe extends IRecipe {
 	private final IMatrix<IItemStack> matrix;
 	private final int size;
 	private final Map<Integer, Integer> hashCodes = new HashMap<>();
+	private final List<Integer> hashMatrix = new ArrayList<>();
 
 	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, UUID uuid) {
 		super(result, name, uuid);
 		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
 		matrix.optimize();
 		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
-		for (IItemStack ii : matrix.getArray()) {
-			if (ii == null)
-				continue;
-			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
-			hashCodes.put(ii.hashCode(), hashCodes.get(ii.hashCode()) + ii.getOriginal().getAmount());
-		}
+		addHashs();
 	}
 
 	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, boolean vanilla,
@@ -41,6 +38,12 @@ public class IShapedRecipe extends IRecipe {
 		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
 		matrix.optimize();
 		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
+		addHashs();
+	}
+
+	private void addHashs() {
+		for (int i = 0; i < matrix.getArray().length; i++)
+			hashMatrix.add(matrix.getArray()[i] == null ? null : matrix.getArray()[i].hashCode());
 		for (IItemStack ii : matrix.getArray()) {
 			if (ii == null)
 				continue;
@@ -108,7 +111,8 @@ public class IShapedRecipe extends IRecipe {
 	public void saveToFile(FileConfiguration file, String path) {
 		file.set(path, null);
 		file.set(path + ".name", recipeName);
-		ItemStackUtils.setItemStack(file, uuid + ".result", result.getOriginal());
+		if (result != null)
+			ItemStackUtils.setItemStack(file, uuid + ".result", result.getOriginal());
 		file.set(path + ".shaped", true);
 		file.set(path + ".width", matrix.getWidth());
 		file.set(path + ".height", matrix.getHeight());
@@ -132,7 +136,13 @@ public class IShapedRecipe extends IRecipe {
 		temp.set("recipe.random", false);
 		for (int i = 0; i < getIngredientsArray().length; i++)
 			if (getIngredientsArray()[i] != null)
-				temp.set("recipe.ingredients." + i, ItemStackUtils.itemStackToString(getIngredientsArray()[i].getOriginal()));
+				temp.set("recipe.ingredients." + i,
+						ItemStackUtils.itemStackToString(getIngredientsArray()[i].getOriginal()));
 		return temp.saveToString();
+	}
+
+	@Override
+	public List<Integer> getHashMatrix() {
+		return hashMatrix;
 	}
 }

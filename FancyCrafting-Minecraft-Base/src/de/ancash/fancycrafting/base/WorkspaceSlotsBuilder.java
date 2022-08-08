@@ -1,5 +1,7 @@
 package de.ancash.fancycrafting.base;
 
+import de.ancash.fancycrafting.base.gui.WorkspaceSlots;
+
 public class WorkspaceSlotsBuilder {
 
 	private int resultSlot, closeSlot;
