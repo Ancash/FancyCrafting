@@ -44,7 +44,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	}
 	
 	public CraftingWorkspaceGUI(AbstractFancyCrafting pl, Player player, WorkspaceTemplate template, boolean v) {
-		super(pl, player, template, v);
+		this(pl, player, template, v, new AutoRecipeMatcher(player, pl.getRecipeManager().getAutoMatchingRecipes()));
 	}
 	
 	public CraftingWorkspaceGUI(AbstractFancyCrafting pl, Player player, WorkspaceTemplate template, boolean v, AutoRecipeMatcher matcher) {

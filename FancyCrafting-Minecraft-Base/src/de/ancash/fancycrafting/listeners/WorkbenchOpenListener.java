@@ -9,11 +9,11 @@ import org.bukkit.event.inventory.InventoryType;
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.base.gui.WorkspaceTemplate;
 
-public class WorkbenchClickListener implements Listener {
+public class WorkbenchOpenListener implements Listener {
 
 	private final AbstractFancyCrafting plugin;
 
-	public WorkbenchClickListener(AbstractFancyCrafting plugin) {
+	public WorkbenchOpenListener(AbstractFancyCrafting plugin) {
 		this.plugin = plugin;
 	}
 

@@ -11,8 +11,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.PluginManager;
 
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.base.Response;
@@ -28,7 +26,6 @@ import de.ancash.fancycrafting.base.gui.manage.normal.ViewNormalRecipeGUI;
 import de.ancash.fancycrafting.base.gui.manage.random.CreateRandomRecipeGUI;
 import de.ancash.fancycrafting.base.gui.manage.random.EditRandomRecipeGUI;
 import de.ancash.fancycrafting.base.gui.manage.random.ViewRandomRecipeGUI;
-import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.libs.org.apache.commons.io.FileUtils;
@@ -50,7 +47,6 @@ public class FancyCrafting extends AbstractFancyCrafting {
 	public void reload() {
 		long now = System.nanoTime();
 		getLogger().info("Reloading...");
-		HandlerList.unregisterAll(this);
 		checkForUpdates();
 		try {
 			loadFiles();
@@ -60,6 +56,7 @@ public class FancyCrafting extends AbstractFancyCrafting {
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
 		}
+		loadListeners();
 		recipeManager.clear();
 		try {
 			recipeManager = new RecipeManager(this);
@@ -69,9 +66,6 @@ public class FancyCrafting extends AbstractFancyCrafting {
 			return;
 		}
 		response = new Response(this);
-		PluginManager pm = Bukkit.getServer().getPluginManager();
-		pm.registerEvents(new WorkbenchClickListener(this), this);
-
 		System.gc();
 		getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
 	}
@@ -109,8 +103,6 @@ public class FancyCrafting extends AbstractFancyCrafting {
 			return;
 		}
 		response = new Response(this);
-		PluginManager pm = Bukkit.getServer().getPluginManager();
-		pm.registerEvents(new WorkbenchClickListener(this), this);
 		
 		getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
 	}

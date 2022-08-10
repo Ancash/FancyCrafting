@@ -17,12 +17,15 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import de.ancash.libs.org.apache.commons.io.FileUtils;
@@ -37,6 +40,7 @@ import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.commands.OpenSubCommand;
 import de.ancash.fancycrafting.commands.ReloadSubCommand;
 import de.ancash.fancycrafting.commands.ViewSubCommand;
+import de.ancash.fancycrafting.listeners.WorkbenchOpenListener;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
@@ -79,7 +83,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 	protected WorkspaceDimension defaultDim;
 	protected boolean debug;
 	protected ViewSlots viewSlots;
-
+	
 	protected final WorkspaceObjects workspaceObjects = new WorkspaceObjects();
 
 	protected FileConfiguration config;
@@ -89,9 +93,10 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 		new Metrics(this, 14152, true);
 		load();
 		loadCommands();
+		loadListeners();
 	}
 
-	private void loadCommands() {
+	protected void loadCommands() {
 		FancyCraftingCommand cmd = new FancyCraftingCommand(this);
 		loadSubCommands(cmd);
 		cmd.addSubCommand(new ReloadSubCommand(this, "reload", "rl"));
@@ -100,6 +105,13 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 		cmd.addSubCommand(new EditSubCommand(this, "edit"));
 		cmd.addSubCommand(new ViewSubCommand(this, "view"));
 		getCommand("fc").setExecutor(cmd);
+	}
+	
+	protected void loadListeners() {
+		HandlerList.unregisterAll(this);
+		PluginManager pm = Bukkit.getServer().getPluginManager();
+		if(config.getBoolean("open-on-crafting-table-open"))
+			pm.registerEvents(new WorkbenchOpenListener(this), this);
 	}
 	
 	public abstract void loadSubCommands(FancyCraftingCommand fc);
@@ -265,6 +277,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 		getLogger().info("Sort recipes by recipe name: " + sortRecipesByRecipeName);
 		getLogger().info("Default crafting template: " + defaultDim.getWidth() + "x" + defaultDim.getHeight());
 		getLogger().info("Crafting cooldown in ticks: " + craftingCooldown);
+		getLogger().info("Open on crafting table open: " + config.getBoolean("open-on-crafting-table-open"));
 	}
 
 	private String format(LogRecord record) {
@@ -294,7 +307,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 					.append(ANSIEscapeCodes.ERASE_CURSOR_TO_END_OF_LINE).append(parseColor(record.getLevel()))
 					.append('[').append(LocalDateTime.now().format(DATE_FORMATTER)).append("] [")
 					.append(Thread.currentThread().getName()).append('/').append(record.getLevel().toString())
-					.append("] [FancyCrafting] ").append(unformatted.get(i).replace("[FancyCrafting] ", ""))
+					.append("] [").append(getName()).append("] ").append(unformatted.get(i).replace("[" + getName() + "] ", ""))
 					.append(ConsoleColor.RESET);
 			if (i < unformatted.size() - 1)
 				builder.append('\n');
