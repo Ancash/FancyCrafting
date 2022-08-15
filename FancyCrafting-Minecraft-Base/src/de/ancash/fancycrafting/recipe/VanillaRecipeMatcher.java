@@ -46,7 +46,7 @@ public class VanillaRecipeMatcher {
 			if (vanilla == null)
 				cache.put(key, Optional.empty());
 			else
-				cache.put(key, Optional.of(IRecipe.fromVanillaRecipe(pl, vanilla, true)));
+				cache.put(key, Optional.ofNullable(IRecipe.fromVanillaRecipe(pl, vanilla, true)));
 		}
 		return cache.get(key).orElse(null);
 	}

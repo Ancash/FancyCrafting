@@ -10,6 +10,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
+import de.ancash.fancycrafting.base.IDefaultRecipeMatcherCallable;
 import de.ancash.fancycrafting.base.Response;
 import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.base.gui.CraftingWorkspaceGUI;
@@ -126,5 +127,10 @@ public class FancyCrafting extends AbstractFancyCrafting {
 	@Override
 	public void loadSubCommands(FancyCraftingCommand fc) {
 		
+	}
+
+	@Override
+	public IDefaultRecipeMatcherCallable newDefaultRecipeMatcher(Player player) {
+		return new DefaultRecipeMatcherCallable(this, player);
 	}
 }

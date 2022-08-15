@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,8 +98,15 @@ public abstract class IRecipeManager {
 	}
 
 	public IRecipe matchRecipe(IMatrix<IItemStack> matrix) {
-		return cachedRecipes.get(
+		IRecipe match = cachedRecipes.get(
 				Stream.of(matrix.getArray()).map(i -> i != null ? i.hashCode() : null).collect(Collectors.toList()));
+		if(match == null)
+			return null;
+		Map<Integer, Integer> mappedHashs = Stream.of(matrix.getArray()).filter(i -> i != null).collect(Collectors.toMap(i -> i.hashCode(), i -> i.getOriginal().getAmount(), (a, b) -> a + b));
+		for(Entry<Integer, Integer> entry : match.getIngredientsHashCodes().entrySet())
+			if(entry.getValue() > mappedHashs.get(entry.getKey()))
+				return null;
+		return match;
 	}
 
 	public abstract void clear();

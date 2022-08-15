@@ -1,18 +1,12 @@
 package de.ancash.fancycrafting.base.gui.handler;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.base.gui.AbstractCraftingWorkspace;
-import de.ancash.fancycrafting.recipe.IShapedRecipe;
-import de.ancash.fancycrafting.recipe.IShapelessRecipe;
-import de.ancash.fancycrafting.recipe.IRecipe;
-import de.ancash.fancycrafting.recipe.IRandomRecipe;
 
-public class RecipeMatchHandler {
+public class RecipeMatchHandler extends RecipeResultSupplier{
 
 	private final AbstractCraftingWorkspace workspace;
 	private final AbstractFancyCrafting pl;
@@ -68,16 +62,5 @@ public class RecipeMatchHandler {
 				workspace.setItem(pl.getWorkspaceObjects().getInvalidItem().getOriginal(), i);
 			workspace.getPlayer().updateInventory();
 		}
-	}
-
-	public ItemStack getSingleRecipeCraft(IRecipe recipe, Player player) {
-		if (recipe instanceof IRandomRecipe) {
-			return ((IRandomRecipe) recipe).getRandom().getOriginal();
-		} else if (recipe instanceof IShapedRecipe) {
-			return ((IShapedRecipe) recipe).getResult();
-		} else if (recipe instanceof IShapelessRecipe) {
-			return ((IShapelessRecipe) recipe).getResult();
-		}
-		throw new IllegalArgumentException("Unknown recipe impl: " + recipe.getClass()); //$NON-NLS-1$
 	}
 }

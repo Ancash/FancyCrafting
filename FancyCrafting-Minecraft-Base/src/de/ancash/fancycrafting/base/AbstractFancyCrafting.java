@@ -40,6 +40,7 @@ import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.commands.OpenSubCommand;
 import de.ancash.fancycrafting.commands.ReloadSubCommand;
 import de.ancash.fancycrafting.commands.ViewSubCommand;
+import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
 import de.ancash.fancycrafting.listeners.WorkbenchOpenListener;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.IItemStack;
@@ -72,20 +73,20 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 
 	protected Response response;
 	protected UpdateChecker updateChecker;
-
+	protected WorkspaceDimension defaultDim;
+	protected ViewSlots viewSlots;
 	protected IRecipeManager recipeManager;
+	protected final WorkspaceObjects workspaceObjects = new WorkspaceObjects();
+	
 	protected boolean checkRecipesAsync;
 	protected boolean quickCraftingAsync;
 	protected boolean permsForCustomRecipes;
 	protected boolean permsForVanillaRecipes;
 	protected boolean sortRecipesByRecipeName;
 	protected int craftingCooldown;
-	protected WorkspaceDimension defaultDim;
 	protected boolean debug;
-	protected ViewSlots viewSlots;
 	
-	protected final WorkspaceObjects workspaceObjects = new WorkspaceObjects();
-
+	
 	protected FileConfiguration config;
 
 	public void onEnable() {
@@ -110,8 +111,15 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 	protected void loadListeners() {
 		HandlerList.unregisterAll(this);
 		PluginManager pm = Bukkit.getServer().getPluginManager();
-		if(config.getBoolean("open-on-crafting-table-open"))
+		if(config.getBoolean("use-custom-crafting-gui"))
 			pm.registerEvents(new WorkbenchOpenListener(this), this);
+		else
+			pm.registerEvents(new WorkbenchClickListener(this), this);
+	}
+	
+	@Override
+	public FileConfiguration getConfig() {
+		return config;
 	}
 	
 	public abstract void loadSubCommands(FancyCraftingCommand fc);
@@ -184,6 +192,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 			}
 		}
 		getLogger().info("Crafting templates loaded!");
+		response = new Response(this);
 	}
 
 	public void checkFile(File file, String src) throws IOException {
@@ -395,6 +404,8 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 	public int getCraftingCooldown() {
 		return craftingCooldown;
 	}
+	
+	public abstract IDefaultRecipeMatcherCallable newDefaultRecipeMatcher(Player player);
 
 	public abstract void openCraftingWorkspace(Player player, WorkspaceTemplate template);
 }

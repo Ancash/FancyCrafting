@@ -13,7 +13,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
-import de.ancash.fancycrafting.base.Response;
+import de.ancash.fancycrafting.base.IDefaultRecipeMatcherCallable;
 import de.ancash.fancycrafting.commands.BlacklistSubCommand;
 import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.gui.CraftingWorkspaceGUI;
@@ -65,7 +65,6 @@ public class FancyCrafting extends AbstractFancyCrafting {
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
 		}
-		response = new Response(this);
 		System.gc();
 		getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
 	}
@@ -102,7 +101,6 @@ public class FancyCrafting extends AbstractFancyCrafting {
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
 		}
-		response = new Response(this);
 		
 		getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
 	}
@@ -182,5 +180,10 @@ public class FancyCrafting extends AbstractFancyCrafting {
 	@Override
 	public void loadSubCommands(FancyCraftingCommand fc) {
 		fc.addSubCommand(new BlacklistSubCommand(this, "blacklist", "bl"));
+	}
+
+	@Override
+	public IDefaultRecipeMatcherCallable newDefaultRecipeMatcher(Player player) {
+		return new DefaultRecipeMatcherCallable(this, player);
 	}
 }

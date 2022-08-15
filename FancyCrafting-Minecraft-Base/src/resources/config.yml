@@ -10,7 +10,7 @@ player-not-found: "§cCould not find §r%player%"
 no-console-command: "§cThis is not for you!"
 crafting-cooldown: 3
 crafting-cooldown-message: "§eWoah! Slow down"
-open-on-crafting-table-open: true
+use-custom-crafting-gui: true
 
 #some messages
 no-permission: "§cYou don't have permission to do that!"
