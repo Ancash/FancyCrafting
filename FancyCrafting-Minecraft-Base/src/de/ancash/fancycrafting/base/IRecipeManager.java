@@ -100,8 +100,16 @@ public abstract class IRecipeManager {
 	public IRecipe matchRecipe(IMatrix<IItemStack> matrix) {
 		IRecipe match = cachedRecipes.get(
 				Stream.of(matrix.getArray()).map(i -> i != null ? i.hashCode() : null).collect(Collectors.toList()));
-		if(match == null)
-			return null;
+		if(match == null) {
+			List<Integer> hashs = Stream.of(matrix.getArray()).filter(i -> i != null).map(i -> i.hashCode()).collect(Collectors.toList());
+			match = cachedRecipes.get(hashs);
+			if(match == null) {
+				Collections.sort(hashs);
+				match = cachedRecipes.get(hashs);
+				if(match == null)
+					return null;
+			}
+		}
 		Map<Integer, Integer> mappedHashs = Stream.of(matrix.getArray()).filter(i -> i != null).collect(Collectors.toMap(i -> i.hashCode(), i -> i.getOriginal().getAmount(), (a, b) -> a + b));
 		for(Entry<Integer, Integer> entry : match.getIngredientsHashCodes().entrySet())
 			if(entry.getValue() > mappedHashs.get(entry.getKey()))
@@ -143,7 +151,6 @@ public abstract class IRecipeManager {
 		return Collections.unmodifiableSet(recipesByName.get(name));
 	}
 
-	@SuppressWarnings("nls")
 	public void printRecipe(IRecipe recipe) {
 		plugin.getLogger().fine("Name: " + recipe.getRecipeName());
 		plugin.getLogger().fine("Result: " + recipe.getResult());

@@ -40,7 +40,6 @@ import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.commands.OpenSubCommand;
 import de.ancash.fancycrafting.commands.ReloadSubCommand;
 import de.ancash.fancycrafting.commands.ViewSubCommand;
-import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
 import de.ancash.fancycrafting.listeners.WorkbenchOpenListener;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.IItemStack;
@@ -52,7 +51,6 @@ import de.ancash.minecraft.updatechecker.UpdateChecker;
 import de.ancash.misc.ANSIEscapeCodes;
 import de.ancash.misc.IPrintStream.ConsoleColor;
 
-@SuppressWarnings("nls")
 public abstract class AbstractFancyCrafting extends JavaPlugin {
 
 	private final ExecutorService threadPool = Executors
@@ -77,7 +75,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 	protected ViewSlots viewSlots;
 	protected IRecipeManager recipeManager;
 	protected final WorkspaceObjects workspaceObjects = new WorkspaceObjects();
-	
+
 	protected boolean checkRecipesAsync;
 	protected boolean quickCraftingAsync;
 	protected boolean permsForCustomRecipes;
@@ -85,8 +83,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 	protected boolean sortRecipesByRecipeName;
 	protected int craftingCooldown;
 	protected boolean debug;
-	
-	
+
 	protected FileConfiguration config;
 
 	public void onEnable() {
@@ -107,23 +104,21 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 		cmd.addSubCommand(new ViewSubCommand(this, "view"));
 		getCommand("fc").setExecutor(cmd);
 	}
-	
+
 	protected void loadListeners() {
 		HandlerList.unregisterAll(this);
 		PluginManager pm = Bukkit.getServer().getPluginManager();
-		if(config.getBoolean("use-custom-crafting-gui"))
+		if (config.getBoolean("use-custom-crafting-gui"))
 			pm.registerEvents(new WorkbenchOpenListener(this), this);
-		else
-			pm.registerEvents(new WorkbenchClickListener(this), this);
 	}
-	
+
 	@Override
 	public FileConfiguration getConfig() {
 		return config;
 	}
-	
+
 	public abstract void loadSubCommands(FancyCraftingCommand fc);
-	
+
 	public abstract void reload();
 
 	public abstract void load();
@@ -316,8 +311,8 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 					.append(ANSIEscapeCodes.ERASE_CURSOR_TO_END_OF_LINE).append(parseColor(record.getLevel()))
 					.append('[').append(LocalDateTime.now().format(DATE_FORMATTER)).append("] [")
 					.append(Thread.currentThread().getName()).append('/').append(record.getLevel().toString())
-					.append("] [").append(getName()).append("] ").append(unformatted.get(i).replace("[" + getName() + "] ", ""))
-					.append(ConsoleColor.RESET);
+					.append("] [").append(getName()).append("] ")
+					.append(unformatted.get(i).replace("[" + getName() + "] ", "")).append(ConsoleColor.RESET);
 			if (i < unformatted.size() - 1)
 				builder.append('\n');
 		}
@@ -404,7 +399,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 	public int getCraftingCooldown() {
 		return craftingCooldown;
 	}
-	
+
 	public abstract IDefaultRecipeMatcherCallable newDefaultRecipeMatcher(Player player);
 
 	public abstract void openCraftingWorkspace(Player player, WorkspaceTemplate template);

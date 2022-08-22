@@ -86,8 +86,6 @@ public abstract class IRecipe {
 
 	public abstract int getWidth();
 
-	public abstract int getIngredientsSize();
-
 	public abstract Map<Integer, Integer> getIngredientsHashCodes();
 
 	public abstract List<Integer> getHashMatrix();
@@ -229,7 +227,6 @@ public abstract class IRecipe {
 		return fromVanillaRecipe(pl, v, false);
 	}
 
-	@SuppressWarnings("nls")
 	public static IRecipe fromVanillaRecipe(AbstractFancyCrafting pl, Recipe v, boolean ignoreMeta) {
 		if (v == null)
 			return null;

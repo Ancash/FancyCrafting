@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
@@ -20,7 +21,6 @@ import de.ancash.minecraft.ItemStackUtils;
 public class IShapedRecipe extends IRecipe {
 
 	private final IMatrix<IItemStack> matrix;
-	private final int size;
 	private final Map<Integer, Integer> hashCodes = new HashMap<>();
 	private final List<Integer> hashMatrix = new ArrayList<>();
 
@@ -28,7 +28,6 @@ public class IShapedRecipe extends IRecipe {
 		super(result, name, uuid);
 		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
 		matrix.optimize();
-		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
 		addHashs();
 	}
 
@@ -37,7 +36,6 @@ public class IShapedRecipe extends IRecipe {
 		super(result, name, vanilla, suitableForAutoMatching);
 		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
 		matrix.optimize();
-		this.size = (int) Arrays.asList(ings).stream().filter(i -> i != null).count();
 		addHashs();
 	}
 
@@ -53,7 +51,7 @@ public class IShapedRecipe extends IRecipe {
 	}
 
 	private static IItemStack[] toIItemStackArray(ItemStack[] from) {
-		return Arrays.asList(from).stream().map(item -> item == null ? null : new IItemStack(item))
+		return Arrays.asList(from).stream().map(item -> item == null || item.getType() == Material.AIR ? null : new IItemStack(item))
 				.toArray(IItemStack[]::new);
 	}
 
@@ -71,12 +69,6 @@ public class IShapedRecipe extends IRecipe {
 		matrix.optimize();
 		return temp;
 	}
-
-	@Override
-	public int getIngredientsSize() {
-		return size;
-	}
-
 	public int getWidth() {
 		return matrix.getWidth();
 	}
@@ -106,7 +98,6 @@ public class IShapedRecipe extends IRecipe {
 		return true;
 	}
 
-	@SuppressWarnings("nls")
 	@Override
 	public void saveToFile(FileConfiguration file, String path) {
 		file.set(path, null);
@@ -123,7 +114,6 @@ public class IShapedRecipe extends IRecipe {
 				ItemStackUtils.setItemStack(file, path + ".ingredients." + i, getIngredientsArray()[i].getOriginal());
 	}
 
-	@SuppressWarnings("nls")
 	@Override
 	public String saveToString() throws IOException {
 		YamlFile temp = new YamlFile();

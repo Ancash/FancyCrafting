@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
@@ -36,7 +37,7 @@ public class IShapelessRecipe extends IRecipe {
 	IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, boolean vanilla,
 			boolean suitableForAutoMatching, UUID uuid) {
 		super(result, name, vanilla, suitableForAutoMatching, uuid);
-		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null).collect(Collectors.toList()));
+		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null && i.getType() != Material.AIR).collect(Collectors.toList()));
 		this.iings = Collections.unmodifiableList(this.ings.stream().map(IItemStack::new).collect(Collectors.toList()));
 		for (IItemStack ii : iings) {
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
@@ -54,11 +55,6 @@ public class IShapelessRecipe extends IRecipe {
 	@Override
 	public List<IItemStack> getIIngredients() {
 		return iings;
-	}
-
-	@Override
-	public int getIngredientsSize() {
-		return ings.size();
 	}
 
 	@Override
@@ -81,7 +77,6 @@ public class IShapelessRecipe extends IRecipe {
 		return true;
 	}
 
-	@SuppressWarnings("nls")
 	@Override
 	public void saveToFile(FileConfiguration file, String path) {
 		file.set(path, null);
@@ -98,7 +93,6 @@ public class IShapelessRecipe extends IRecipe {
 				ItemStackUtils.setItemStack(file, path + ".ingredients." + i, getIngredients().get(i));
 	}
 	
-	@SuppressWarnings("nls")
 	@Override
 	public String saveToString() throws IOException {
 		YamlFile temp = new YamlFile();

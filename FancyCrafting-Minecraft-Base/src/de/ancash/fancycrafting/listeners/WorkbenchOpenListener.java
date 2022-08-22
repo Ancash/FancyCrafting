@@ -17,19 +17,6 @@ public class WorkbenchOpenListener implements Listener {
 		this.plugin = plugin;
 	}
 
-	/*@EventHandler
-	public void onClick(PlayerInteractEvent event) {
-		if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
-			return;
-		if (event.getClickedBlock() == null)
-			return;
-		if (!event.getClickedBlock().getType().equals(XMaterial.CRAFTING_TABLE.parseMaterial()))
-			return;
-		event.setCancelled(true);
-		plugin.openCraftingWorkspace(event.getPlayer(), WorkspaceTemplate
-				.get(plugin.getDefaultDimension().getWidth(), plugin.getDefaultDimension().getHeight()));
-	}*/
-	
 	@EventHandler
 	public void onOpen(InventoryOpenEvent e) {
 		if(e.getInventory().getType() == InventoryType.WORKBENCH) {

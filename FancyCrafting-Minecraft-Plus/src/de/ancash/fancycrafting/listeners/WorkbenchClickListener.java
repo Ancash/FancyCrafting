@@ -38,9 +38,11 @@ public class WorkbenchClickListener implements Listener {
 	private final AbstractFancyCrafting pl;
 	private final Map<UUID, Triplet<IDefaultRecipeMatcherCallable, Integer, IRecipe>> dataByUUID = new ConcurrentHashMap<>();
 	private final RecipeResultSupplier resultSupplier = new RecipeResultSupplier();
+	private final boolean useCustom;
 
-	public WorkbenchClickListener(AbstractFancyCrafting pl) {
+	public WorkbenchClickListener(AbstractFancyCrafting pl, boolean useCustom) {
 		this.pl = pl;
+		this.useCustom = useCustom;
 	}
 
 	@EventHandler
@@ -50,6 +52,8 @@ public class WorkbenchClickListener implements Listener {
 
 	@EventHandler
 	public void onClick(InventoryClickEvent event) {
+		if (useCustom && event.getInventory().getType() == InventoryType.WORKBENCH)
+			return;
 		if (event.getInventory().getType() == InventoryType.CRAFTING
 				|| event.getInventory().getType() == InventoryType.WORKBENCH) {
 			if (!event.getInventory().equals(event.getClickedInventory()) || event.getSlot() != 0) {
@@ -67,6 +71,8 @@ public class WorkbenchClickListener implements Listener {
 
 	@EventHandler
 	public void onRecipePrepare(PrepareItemCraftEvent event) throws Exception {
+		if (useCustom && event.getInventory().getType() == InventoryType.WORKBENCH)
+			return;
 		UUID id = event.getView().getPlayer().getUniqueId();
 		dataByUUID.computeIfAbsent(id,
 				p -> Tuple.of(pl.newDefaultRecipeMatcher((Player) event.getView().getPlayer()), 0, null));
@@ -85,7 +91,8 @@ public class WorkbenchClickListener implements Listener {
 				player.getUniqueId(), k -> Triplet.of(pl.newDefaultRecipeMatcher(player), ILibrary.getTick(), null));
 		int size = inv.getType() == InventoryType.CRAFTING ? 2 : 3;
 		IMatrix<IItemStack> matrix = new IMatrix<>(
-				Stream.of(inv.getMatrix()).map(i -> i != null ? new IItemStack(i) : null).toArray(IItemStack[]::new),
+				Stream.of(inv.getMatrix()).map(i -> i != null && i.getType() != Material.AIR ? new IItemStack(i) : null)
+						.toArray(IItemStack[]::new),
 				size, size);
 		matrix.optimize();
 		triplet.getFirst().setMatrix(matrix);
@@ -94,6 +101,7 @@ public class WorkbenchClickListener implements Listener {
 		triplet.setThird(match);
 		if (match != null)
 			inv.setResult(match.getResult());
+		player.updateInventory();
 	}
 
 	private void craftItem(InventoryClickEvent event,
@@ -128,25 +136,27 @@ public class WorkbenchClickListener implements Listener {
 		}
 	}
 
-	private void craftToCursor(int size, InventoryClickEvent event, Triplet<IDefaultRecipeMatcherCallable, Integer, IRecipe> triplet) {
+	private void craftToCursor(int size, InventoryClickEvent event,
+			Triplet<IDefaultRecipeMatcherCallable, Integer, IRecipe> triplet) {
 		ItemStack cursor = event.getCursor();
 		if (cursor != null && cursor.getType() == Material.AIR) {
 			collectIngredients(size, (CraftingInventory) event.getInventory(), triplet.getFirst().getMatrix(),
 					triplet.getThird());
-			event.getWhoClicked()
-					.setItemOnCursor(resultSupplier.getSingleRecipeCraft(triplet.getThird(), (Player) event.getWhoClicked()));
+			event.getWhoClicked().setItemOnCursor(
+					resultSupplier.getSingleRecipeCraft(triplet.getThird(), (Player) event.getWhoClicked()));
 			return;
 		} else {
-			if (triplet.getThird().getResultAsIItemStack().isSimilar(cursor) && cursor.getMaxStackSize() >= cursor.getAmount() + triplet.getThird().getResult().getAmount()) {
+			if (triplet.getThird().getResultAsIItemStack().isSimilar(cursor)
+					&& cursor.getMaxStackSize() >= cursor.getAmount() + triplet.getThird().getResult().getAmount()) {
 				if (cursor.getMaxStackSize() >= cursor.getAmount() + triplet.getThird().getResult().getAmount()) {
-					collectIngredients(size, (CraftingInventory) event.getInventory(),
-							triplet.getFirst().getMatrix(), triplet.getThird());
+					collectIngredients(size, (CraftingInventory) event.getInventory(), triplet.getFirst().getMatrix(),
+							triplet.getThird());
 					cursor.setAmount(cursor.getAmount() + triplet.getThird().getResult().getAmount());
 				}
 			}
 		}
 	}
-	
+
 	private int shiftCollectIngredients(int size, CraftingInventory inv, Player player, IMatrix<IItemStack> matrix,
 			IRecipe recipe) {
 		int space = InventoryUtils.getFreeSpaceExact(player.getInventory().getContents(), recipe.getResult());

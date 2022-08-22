@@ -17,6 +17,7 @@ import de.ancash.fancycrafting.base.IDefaultRecipeMatcherCallable;
 import de.ancash.fancycrafting.commands.BlacklistSubCommand;
 import de.ancash.fancycrafting.commands.FancyCraftingCommand;
 import de.ancash.fancycrafting.gui.CraftingWorkspaceGUI;
+import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
 import de.ancash.fancycrafting.base.gui.RecipeCollectionPagedViewGUI;
 import de.ancash.fancycrafting.base.gui.SingleRecipePagedViewGUI;
 import de.ancash.fancycrafting.base.gui.WorkspaceTemplate;
@@ -33,7 +34,6 @@ import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.misc.MathsUtils;
 
-@SuppressWarnings("nls")
 public class FancyCrafting extends AbstractFancyCrafting {
 	
 	private final File blacklistFile = new File("plugins/FancyCrafting/blacklist/config.yml");
@@ -67,6 +67,12 @@ public class FancyCrafting extends AbstractFancyCrafting {
 		}
 		System.gc();
 		getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
+	}
+	
+	@Override
+	protected void loadListeners() {
+		super.loadListeners();
+		Bukkit.getPluginManager().registerEvents(new WorkbenchClickListener(this, config.getBoolean("use-custom-crafting-gui")), this);
 	}
 	
 	@SuppressWarnings("deprecation")

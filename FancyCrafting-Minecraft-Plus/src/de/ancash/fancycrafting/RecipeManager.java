@@ -26,14 +26,13 @@ import de.ancash.fancycrafting.recipe.IRandomShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.fancycrafting.recipe.IRandomShapelessRecipe;
 
-@SuppressWarnings("nls")
 public class RecipeManager extends IRecipeManager{
 
 	private final File recipeFile = new File("plugins/FancyCrafting/recipes.yml");
 	private final FileConfiguration recipeCfg = YamlConfiguration.loadConfiguration(recipeFile);
 
 	private final File blacklistFile = new File("plugins/FancyCrafting/blacklist/recipes.yml");
-	private final FileConfiguration blacklistCfg = YamlConfiguration.loadConfiguration(recipeFile);
+	private final FileConfiguration blacklistCfg = YamlConfiguration.loadConfiguration(blacklistFile);
 	
 	private final Map<List<Integer>, IRecipe> blacklistedRecipes = new HashMap<>();
 	

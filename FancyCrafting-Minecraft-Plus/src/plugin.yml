@@ -8,6 +8,8 @@ commands:
    fc:
       usage:
       - "§aFancyCrafting Commands:"
+      - "§a/fc bl (open blacklist)"
+      - "§a/fc blacklist (see above)"
       - "§7/fc reload"
       - "§7/fc open (open the crafting gui)"
       - "§7/fc open <1-8> <1-6>"

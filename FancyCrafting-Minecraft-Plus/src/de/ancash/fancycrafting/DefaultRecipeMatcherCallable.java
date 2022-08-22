@@ -38,19 +38,15 @@ public class DefaultRecipeMatcherCallable implements IDefaultRecipeMatcherCallab
 	protected IRecipe match() {
 		if (matrix.getArray().length == 0)
 			return null;
-		
 		if (pl.getRecipeManager().isBlacklisted(Stream.of(matrix.getArray())
 				.map(i -> i != null ? i.hashCode() : null).collect(Collectors.toList())))
 			return null;
-		
 		IRecipe match = pl.getRecipeManager().matchRecipe(matrix);
 
 		if (match != null)
 			if (AbstractFancyCrafting.canCraftRecipe(match, player))
 				return match;
-
 		match = vanillaMatcher.matchVanillaRecipe(matrix);
-		
 		if (match != null)
 			if (AbstractFancyCrafting.canCraftRecipe(match, player))
 				return match;
