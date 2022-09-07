@@ -49,7 +49,6 @@ public abstract class IRecipe {
 		this(result, name, vanilla, suitableForAutoMatching, null);
 	}
 
-	@SuppressWarnings("nls")
 	IRecipe(ItemStack result, String name, boolean vanilla, boolean suitableForAutoMatching, UUID uuid) {
 		this.uuid = uuid;
 		this.result = result == null ? null : new IItemStack(result);
@@ -87,7 +86,7 @@ public abstract class IRecipe {
 	public abstract int getWidth();
 
 	public abstract Map<Integer, Integer> getIngredientsHashCodes();
-
+	
 	public abstract List<Integer> getHashMatrix();
 	
 	public abstract List<ItemStack> getIngredients();
@@ -95,6 +94,8 @@ public abstract class IRecipe {
 	public abstract List<IItemStack> getIIngredients();
 
 	public abstract boolean isShiftCollectable();
+	
+	public abstract boolean matches(IMatrix<IItemStack> m);
 
 	public ItemStack getResult() {
 		return result == null ? null : result.getOriginal().clone();
@@ -128,7 +129,6 @@ public abstract class IRecipe {
 		return r;
 	}
 
-	@SuppressWarnings("nls")
 	public static IRecipe getRecipeFromString(String string) throws IOException, InvalidConfigurationException {
 		YamlFile file = YamlFile.loadConfigurationFromString(string);
 		ItemStack result = ItemStackUtils.itemStackFromString(file.getString("recipe.result"));
@@ -164,7 +164,7 @@ public abstract class IRecipe {
 			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid);
 	}
 
-	@SuppressWarnings({ "nls", "deprecation" })
+	@SuppressWarnings({ "deprecation" })
 	public static IRecipe getRecipeFromFile(File file, FileConfiguration fc, String path)
 			throws IOException, InvalidConfigurationException {
 		boolean save = false;
@@ -287,7 +287,6 @@ public abstract class IRecipe {
 		return ingredientsToList(pl, ingredients, 8, 6, format);
 	}
 
-	@SuppressWarnings("nls")
 	public static List<String> ingredientsToList(AbstractFancyCrafting pl, ItemStack[] ingredients, int width,
 			int height, String format) {
 		StringBuilder builder = new StringBuilder();
@@ -330,7 +329,6 @@ public abstract class IRecipe {
 		return ingredientsToListColorless(pl, ingredients, 8, 6, format);
 	}
 
-	@SuppressWarnings("nls")
 	public static List<String> ingredientsToListColorless(AbstractFancyCrafting pl, ItemStack[] ingredients, int width,
 			int height, String format) {
 		List<String> str = ingredientsToList(pl, ingredients, width, height, format);
@@ -339,7 +337,6 @@ public abstract class IRecipe {
 		return str;
 	}
 
-	@SuppressWarnings("nls")
 	@Override
 	public String toString() {
 		return "IRecipe{name=" + recipeName + ";result=" + result + ";ingredients=" + getIngredients() + "}"; //$NON-NLS-3$ //$NON-NLS-4$

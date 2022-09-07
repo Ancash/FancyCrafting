@@ -42,6 +42,7 @@ public class IShapedRecipe extends IRecipe {
 	private void addHashs() {
 		for (int i = 0; i < matrix.getArray().length; i++)
 			hashMatrix.add(matrix.getArray()[i] == null ? null : matrix.getArray()[i].hashCode());
+
 		for (IItemStack ii : matrix.getArray()) {
 			if (ii == null)
 				continue;
@@ -51,7 +52,8 @@ public class IShapedRecipe extends IRecipe {
 	}
 
 	private static IItemStack[] toIItemStackArray(ItemStack[] from) {
-		return Arrays.asList(from).stream().map(item -> item == null || item.getType() == Material.AIR ? null : new IItemStack(item))
+		return Arrays.asList(from).stream()
+				.map(item -> item == null || item.getType() == Material.AIR ? null : new IItemStack(item))
 				.toArray(IItemStack[]::new);
 	}
 
@@ -69,12 +71,30 @@ public class IShapedRecipe extends IRecipe {
 		matrix.optimize();
 		return temp;
 	}
+
 	public int getWidth() {
 		return matrix.getWidth();
 	}
 
 	public int getHeight() {
 		return matrix.getHeight();
+	}
+
+	@Override
+	public boolean matches(IMatrix<IItemStack> m) {
+		if (m.getHeight() != getHeight() || m.getWidth() != getWidth())
+			return false;
+		for (int i = 0; i < m.getArray().length; i++) {
+			if ((m.getArray()[i] == null) != (matrix.getArray()[i] == null))
+				return false;
+			if (m.getArray()[i] == null)
+				continue;
+			if (m.getArray()[i].hashCode() != matrix.getArray()[i].hashCode())
+				return false;
+			if (m.getArray()[i].getOriginal().getAmount() < matrix.getArray()[i].getOriginal().getAmount())
+				return false;
+		}
+		return true;
 	}
 
 	@Override

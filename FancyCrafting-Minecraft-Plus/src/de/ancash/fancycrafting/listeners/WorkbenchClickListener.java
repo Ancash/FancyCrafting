@@ -89,7 +89,7 @@ public class WorkbenchClickListener implements Listener {
 	private void matchRecipe(CraftingInventory inv, Player player) {
 		Triplet<IDefaultRecipeMatcherCallable, Integer, IRecipe> triplet = dataByUUID.computeIfAbsent(
 				player.getUniqueId(), k -> Triplet.of(pl.newDefaultRecipeMatcher(player), ILibrary.getTick(), null));
-		int size = inv.getType() == InventoryType.CRAFTING ? 2 : 3;
+		int size = (int) Math.sqrt(inv.getType().getDefaultSize() - 1);
 		IMatrix<IItemStack> matrix = new IMatrix<>(
 				Stream.of(inv.getMatrix()).map(i -> i != null && i.getType() != Material.AIR ? new IItemStack(i) : null)
 						.toArray(IItemStack[]::new),
@@ -111,7 +111,7 @@ public class WorkbenchClickListener implements Listener {
 			return;
 		}
 
-		int size = event.getInventory().getType() == InventoryType.CRAFTING ? 2 : 3;
+		int size = (int) Math.sqrt(event.getInventory().getType().getDefaultSize() - 1);
 		IRecipe recipe = triplet.getThird();
 		if (event.getAction().equals(InventoryAction.PICKUP_ALL)) {
 			craftToCursor(size, event, triplet);
@@ -132,8 +132,8 @@ public class WorkbenchClickListener implements Listener {
 					event.getWhoClicked().getInventory().addItem(result);
 				}
 			}
-			return;
 		}
+		matchRecipe((CraftingInventory) event.getInventory(), (Player) event.getWhoClicked());
 	}
 
 	private void craftToCursor(int size, InventoryClickEvent event,
@@ -220,6 +220,7 @@ public class WorkbenchClickListener implements Listener {
 				else
 					inv.getItem(craftSlot + 1).setAmount(inv.getItem(craftSlot + 1).getAmount() - amt);
 				done.add(craftSlot);
+				break;
 			}
 		}
 	}

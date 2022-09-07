@@ -35,7 +35,6 @@ import de.ancash.minecraft.inventory.InventoryItem;
 
 public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
-	protected Set<Integer> quickCraftingResultHashCodes = new HashSet<>();
 	protected int quickCraftingPage;
 	protected List<IRecipe> quickCraftingRecipes = new ArrayList<>();
 
@@ -152,9 +151,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				|| iShift.hashCode() == pl.getWorkspaceObjects().getBackgroundItem().hashCode()
 				|| iShift.hashCode() == pl.getWorkspaceObjects().getValidItem().hashCode()
 				|| iShift.hashCode() == pl.getWorkspaceObjects().getInvalidItem().hashCode()
-				|| quickCraftingResultHashCodes.contains(iShift.hashCode())) {
-			event.setCancelled(true);
-			return false;
+				|| getAutoRecipeHandler().getResutlHashCodes().contains(iShift.hashCode())) {
+			return true;
 		}
 
 		return false;
@@ -272,6 +270,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				player.getInventory().addItem(item);
 			else
 				player.getWorld().dropItem(player.getLocation(), item);
+			player.updateInventory();
 		}
 	}
 
@@ -305,7 +304,6 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			if (recipe.isShiftCollectable()) {
 				InventoryUtils.addItemAmount(shiftCollectIngredients(recipe) * recipe.getResult().getAmount(),
 						recipe.getResult(), player);
-				updateAll();
 			} else {
 				ItemStack result = getRecipeMatchCompletionHandler().getSingleRecipeCraft(recipe, player);
 				if (InventoryUtils.getFreeSpaceExact(getPlayerInventoryContents(event.getWhoClicked().getInventory()),
@@ -313,9 +311,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 					collectIngredients(event.getInventory(), recipe);
 					event.getWhoClicked().getInventory().addItem(result);
 				}
-				updateAll();
 			}
-			return;
 		} else if ((event.getAction().equals(InventoryAction.PLACE_ONE)
 				|| event.getAction().equals(InventoryAction.PLACE_ALL))
 				&& new IItemStack(cursor).hashCode() == recipe.getResultAsIItemStack().hashCode()
@@ -323,8 +319,6 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				&& !(recipe instanceof IRandomRecipe)) {
 			cursor.setAmount(cursor.getAmount() + recipe.getResult().getAmount());
 			collectIngredients(event.getInventory(), recipe);
-			updateAll();
-			return;
 		}
 		updateAll();
 	}
@@ -388,35 +382,34 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				setAmount(getItem(craftSlot).getAmount(), ingredient.getOriginal().getAmount() * multiplicator,
 						craftSlot);
 				done.add(craftSlot);
+				break;
 			}
 		}
 	}
 
 	private void collectShaped(IShapedRecipe shaped, int multiplicator) {
-		synchronized (super.lock) {
-			int base = template.getDimension().getWidth() * matrix.getUpMoves() + matrix.getLeftMoves();
-			boolean isMirrored = canBeMirrored(shaped);
-			for (int y = 0; y < shaped.getHeight(); y++) {
-				for (int x = 0; x < shaped.getWidth(); x++) {
-					int i = y * shaped.getWidth() + x;
-					int j = mirror(shaped.getWidth(), y, x, isMirrored);
-					IItemStack fromInv = matrix.getArray()[j];
-					IItemStack fromRec = shaped.getIngredientsArray()[i];
-					if (fromInv == null || fromRec == null)
-						continue;
-					int amount = fromInv.getOriginal().getAmount() - fromRec.getOriginal().getAmount() * multiplicator;
-					int slot;
-					if (isMirrored)
-						slot = template.getSlots().getCraftingSlots()[base + y * template.getDimension().getWidth()
-								+ (matrix.getWidth() - x - 1)];
-					else
-						slot = template.getSlots().getCraftingSlots()[base + y * template.getDimension().getWidth()
-								+ x];
-					if (amount > 0)
-						getItem(slot).setAmount(amount);
-					else
-						setItem(null, slot);
-				}
+		int base = template.getDimension().getWidth() * matrix.getUpMoves() + matrix.getLeftMoves();
+		boolean isMirrored = canBeMirrored(shaped);
+		for (int y = 0; y < shaped.getHeight(); y++) {
+			for (int x = 0; x < shaped.getWidth(); x++) {
+				int i = y * shaped.getWidth() + x;
+				int j = mirror(shaped.getWidth(), y, x, isMirrored);
+				IItemStack fromInv = matrix.getArray()[j];
+				IItemStack fromRec = shaped.getIngredientsArray()[i];
+				if (fromInv == null || fromRec == null)
+					continue;
+				int amount = fromInv.getOriginal().getAmount() - fromRec.getOriginal().getAmount() * multiplicator;
+				int slot;
+				if (isMirrored)
+					slot = template.getSlots().getCraftingSlots()[base + y * template.getDimension().getWidth()
+							+ (matrix.getWidth() - x - 1)];
+				else
+					slot = template.getSlots().getCraftingSlots()[base + y * template.getDimension().getWidth()
+							+ x];
+				if (amount > 0)
+					getItem(slot).setAmount(amount);
+				else
+					setItem(null, slot);
 			}
 		}
 	}

@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -70,6 +73,33 @@ public class IShapelessRecipe extends IRecipe {
 	@Override
 	public Map<Integer, Integer> getIngredientsHashCodes() {
 		return Collections.unmodifiableMap(hashCodes);
+	}
+	
+	@Override
+	public boolean matches(IMatrix<IItemStack> m) {
+		List<IItemStack> items = Stream.of(m.getArray()).filter(i -> i != null).collect(Collectors.toList());
+		List<Integer> hashMatrix = items.stream().map(IItemStack::hashCode).sorted().collect(Collectors.toList());
+		if(!hashMatrix.equals(this.hashMatrix))
+			return false;
+		if(isVanilla())
+			return true;
+		
+		Set<Integer> done = new HashSet<>();
+		
+		for(int a = 0; a<items.size(); a++) {
+			for(int b = 0; b<items.size(); b++) {
+				if(done.contains(b))
+					continue;
+				if(items.get(a).hashCode() != iings.get(b).hashCode())
+					continue;
+				if(items.get(a).getOriginal().getAmount() < iings.get(b).getOriginal().getAmount())
+					continue;
+				done.add(b);
+				break;
+			}
+		}
+		
+		return done.size() == items.size();
 	}
 
 	@Override

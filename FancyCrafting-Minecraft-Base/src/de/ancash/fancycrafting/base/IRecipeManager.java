@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,14 +50,12 @@ public abstract class IRecipeManager {
 		if (recipe.isVanilla())
 			return;
 		if (recipe instanceof IShapedRecipe)
-			cachedRecipes.put(Stream.of(((IShapedRecipe) recipe).getIngredientsArray())
-					.map(i -> i != null ? i.hashCode() : null).collect(Collectors.toList()), recipe);
+			cachedRecipes.put(recipe.getHashMatrix(), recipe);
 		else
-			cachedRecipes.put(recipe.getIIngredients().stream().filter(i -> i != null).map(IItemStack::hashCode)
-					.sorted().collect(Collectors.toList()), recipe);
+			cachedRecipes.put(recipe.getHashMatrix().stream().filter(i -> i != null).sorted().collect(Collectors.toList()), recipe);
 	}
 
-	public Set<IRecipe> getRecipeByHash(ItemStack itemStack) {
+	public Set<IRecipe> getRecipeByHashs(ItemStack itemStack) {
 		return getRecipeByHash(new IItemStack(itemStack));
 	}
 
@@ -110,11 +107,7 @@ public abstract class IRecipeManager {
 					return null;
 			}
 		}
-		Map<Integer, Integer> mappedHashs = Stream.of(matrix.getArray()).filter(i -> i != null).collect(Collectors.toMap(i -> i.hashCode(), i -> i.getOriginal().getAmount(), (a, b) -> a + b));
-		for(Entry<Integer, Integer> entry : match.getIngredientsHashCodes().entrySet())
-			if(entry.getValue() > mappedHashs.get(entry.getKey()))
-				return null;
-		return match;
+		return match.matches(matrix) ? match : null;
 	}
 
 	public abstract void clear();
