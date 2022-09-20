@@ -139,7 +139,7 @@ public abstract class IRecipe {
 
 		ItemStack[] ingredients = new ItemStack[width * height];
 		for (int i = 0; i < ingredients.length; i++)
-			if (file.getString("recipe.ingredients." + i) != null)
+			if (file.contains("recipe.ingredients." + i))
 				ingredients[i] = ItemStackUtils.itemStackFromString(file.getString("recipe.ingredients." + i));
 
 		boolean random = file.getBoolean("recipe.random");
@@ -164,7 +164,6 @@ public abstract class IRecipe {
 			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid);
 	}
 
-	@SuppressWarnings({ "deprecation" })
 	public static IRecipe getRecipeFromFile(File file, FileConfiguration fc, String path)
 			throws IOException, InvalidConfigurationException {
 		boolean save = false;
@@ -177,9 +176,8 @@ public abstract class IRecipe {
 
 		ItemStack[] ingredients = new ItemStack[width * height];
 		for (int i = 0; i < ingredients.length; i++)
-			if (fc.getItemStack(path + ".ingredients." + i) != null)
-				ingredients[i] = ItemStackUtils.get(fc, path + ".ingredients." + i);
-
+			if (fc.contains(path + ".ingredients." + i)) 
+				ingredients[i] = ItemStackUtils.getItemStack(fc, path + ".ingredients." + i);
 		if (!fc.contains(path + ".random"))
 			fc.set(path + ".random", !(save = true));
 
@@ -204,7 +202,7 @@ public abstract class IRecipe {
 
 		if (random)
 			for (String key : fc.getConfigurationSection(path + ".random-map").getKeys(false))
-				rngMap.put(ItemStackUtils.get(fc, path + ".random-map." + key + ".item"),
+				rngMap.put(ItemStackUtils.getItemStack(fc, path + ".random-map." + key + ".item"),
 						fc.getInt(path + ".random-map." + key + ".prob"));
 
 		if (save) {

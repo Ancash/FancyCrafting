@@ -22,7 +22,7 @@ import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.fancycrafting.recipe.IRandomShapelessRecipe;
 
 @SuppressWarnings("nls")
-public class RecipeManager extends IRecipeManager{
+public class RecipeManager extends IRecipeManager {
 
 	private final File recipeFile = new File("plugins/FancyCrafting/recipes.yml");
 	private final FileConfiguration recipeCfg = YamlConfiguration.loadConfiguration(recipeFile);
@@ -43,7 +43,7 @@ public class RecipeManager extends IRecipeManager{
 		loadBukkitRecipes();
 		loadCustomRecipes();
 	}
-	
+
 	@Override
 	public void createRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id, UUID uuid, int width,
 			int height) throws InvalidRecipeException {
@@ -56,19 +56,22 @@ public class RecipeManager extends IRecipeManager{
 		customRecipes.clear();
 		autoMatchingRecipes.clear();
 		recipesByName.clear();
-		recipesByHash.clear();	}
-	
+		recipesByHash.clear();
+	}
+
 	@Override
 	public void saveRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name, UUID uuid, int width,
 			int height) throws InvalidRecipeException {
 		try {
 			recipeCfg.load(recipeFile);
 			if (shaped)
-				new IShapedRecipe(ingredients, width, height, result, name, uuid).saveToFile(recipeCfg, uuid.toString());
+				new IShapedRecipe(ingredients, width, height, result, name, uuid).saveToFile(recipeCfg,
+						uuid.toString());
 			else
-				new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid).saveToFile(recipeCfg, uuid.toString());
+				new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid).saveToFile(recipeCfg,
+						uuid.toString());
 			recipeCfg.save(recipeFile);
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			throw new InvalidRecipeException(ex);
 		}
 	}
@@ -85,7 +88,7 @@ public class RecipeManager extends IRecipeManager{
 				new IRandomShapelessRecipe(Arrays.asList(ingredients), result, name, uuid, rngMap).saveToFile(recipeCfg,
 						uuid.toString());
 			recipeCfg.save(recipeFile);
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			throw new InvalidRecipeException(ex);
 		}
 	}
@@ -126,7 +129,7 @@ public class RecipeManager extends IRecipeManager{
 			recipeCfg.set(recipeName, null);
 			recipeCfg.save(recipeFile);
 			reloadRecipes();
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			throw new RecipeDeleteException(recipeName, ex);
 		}
 	}

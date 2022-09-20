@@ -75,7 +75,6 @@ public class FancyCrafting extends AbstractFancyCrafting {
 		Bukkit.getPluginManager().registerEvents(new WorkbenchClickListener(this, config.getBoolean("use-custom-crafting-gui")), this);
 	}
 	
-	@SuppressWarnings("deprecation")
 	private void loadBlacklistConfig() throws FileNotFoundException, IOException, InvalidConfigurationException {
 		if (!blacklistFile.exists())
 			FileUtils.copyInputStreamToFile(getResource("resources/blacklist-config.yml"),
@@ -83,7 +82,7 @@ public class FancyCrafting extends AbstractFancyCrafting {
 		super.checkFile(blacklistFile, "resources/blacklist-config.yml");
 		blacklistConfig.load(blacklistFile);
 		manageBlacklistTitle = blacklistConfig.getString("main-title");
-		addRecipeToBlacklistItem = new IItemStack(ItemStackUtils.get(blacklistConfig, "add-recipe-to-blacklist.item"));
+		addRecipeToBlacklistItem = new IItemStack(ItemStackUtils.getItemStack(blacklistConfig, "add-recipe-to-blacklist.item"));
 		addRecipeToBlacklistTitle = blacklistConfig.getString("add-recipe-to-blacklist.title");
 	}
 

@@ -202,47 +202,46 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 				.setChangelogLink(RESOURCE_ID).setNotifyOpsOnJoin(true).checkEveryXHours(6).checkNow();
 	}
 
-	@SuppressWarnings("deprecation")
 	private void loadConfig() throws IOException, InvalidConfigurationException {
 		viewSlots = new ViewSlots(config.getInt("recipe-view-gui.size"), config.getInt("recipe-view-gui.result-slot"),
 				config.getInt("recipe-view-gui.ingredients-slot"), config.getInt("recipe-view-gui.probability-slot"),
 				config.getInt("recipe-view-gui.close-slot"), config.getInt("recipe-view-gui.back-slot"),
 				config.getInt("recipe-view-gui.previous-slot"), config.getInt("recipe-view-gui.next-slot"),
 				config.getInt("recipe-view-gui.edit-slot"));
-		workspaceObjects.setBackgroundItem(new IItemStack(ItemStackUtils.get(config, "background")))
-				.setBackItem(new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.back")))
-				.setCloseItem(new IItemStack(ItemStackUtils.get(config, "close")))
-				.setPrevItem(new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.previous")))
-				.setNextItem(new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.next")))
-				.setValidItem(new IItemStack(ItemStackUtils.get(config, "workbench.valid_recipe")))
-				.setInvalidItem(new IItemStack(ItemStackUtils.get(config, "workbench.invalid_recipe")))
-				.setShapelessItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.shapeless")))
-				.setShapedItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.shaped")))
-				.setSaveItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.save")))
-				.setEditItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.edit")))
-				.setDeleteItem(new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.delete")))
-				.setQuickCraftingItem(new IItemStack(ItemStackUtils.get(config, "workbench.quick_crafting")))
+		workspaceObjects.setBackgroundItem(new IItemStack(ItemStackUtils.getItemStack(config, "background")))
+				.setBackItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.back")))
+				.setCloseItem(new IItemStack(ItemStackUtils.getItemStack(config, "close")))
+				.setPrevItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.previous")))
+				.setNextItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.next")))
+				.setValidItem(new IItemStack(ItemStackUtils.getItemStack(config, "workbench.valid_recipe")))
+				.setInvalidItem(new IItemStack(ItemStackUtils.getItemStack(config, "workbench.invalid_recipe")))
+				.setShapelessItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.shapeless")))
+				.setShapedItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.shaped")))
+				.setSaveItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.save")))
+				.setEditItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.edit")))
+				.setDeleteItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.delete")))
+				.setQuickCraftingItem(new IItemStack(ItemStackUtils.getItemStack(config, "workbench.quick_crafting")))
 				.setCreateNormalRecipeItem(
-						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.create-normal")))
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.create-normal")))
 				.setCreateRandomRecipeItem(
-						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.create-random")))
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.create-random")))
 				.setManageRandomResultsItem(
-						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-random-results")))
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-random-results")))
 				.setViewRandomResultsItem(
-						new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.view-random-results")))
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.view-random-results")))
 				.setManageIngredientsItem(
-						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-ingredients")))
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-ingredients")))
 				.setManageIngredientsItem(
-						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-ingredients")))
-				.setViewIngredientsItem(new IItemStack(ItemStackUtils.get(config, "recipe-view-gui.view-ingredients")))
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-ingredients")))
+				.setViewIngredientsItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.view-ingredients")))
 				.setManageRandomInvalidResultItem(
-						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-random-invalid-result")))
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-random-invalid-result")))
 				.setInputRecipeNameLeftItem(
-						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.input-recipe-name-left")))
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.input-recipe-name-left")))
 				.setInputRecipeNameRightItem(
-						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.input-recipe-name-right")))
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.input-recipe-name-right")))
 				.setManageRecipeNameItem(
-						new IItemStack(ItemStackUtils.get(config, "recipe-create-gui.manage-recipe-name")))
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-recipe-name")))
 				.setCreateRecipeTitle(config.getString("recipe-create-gui.title"))
 				.setCustomRecipesTitle(config.getString("recipe-view-gui.page-title"))
 				.setViewRecipeTitle(config.getString("recipe-view-gui.single-title"))
