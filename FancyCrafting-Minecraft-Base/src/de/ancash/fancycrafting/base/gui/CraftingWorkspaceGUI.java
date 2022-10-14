@@ -41,12 +41,13 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	public CraftingWorkspaceGUI(AbstractFancyCrafting pl, Player player, WorkspaceTemplate template) {
 		this(pl, player, template, true);
 	}
-	
+
 	public CraftingWorkspaceGUI(AbstractFancyCrafting pl, Player player, WorkspaceTemplate template, boolean v) {
 		this(pl, player, template, v, new AutoRecipeMatcher(player, pl.getRecipeManager().getAutoMatchingRecipes()));
 	}
-	
-	public CraftingWorkspaceGUI(AbstractFancyCrafting pl, Player player, WorkspaceTemplate template, boolean v, AutoRecipeMatcher matcher) {
+
+	public CraftingWorkspaceGUI(AbstractFancyCrafting pl, Player player, WorkspaceTemplate template, boolean v,
+			AutoRecipeMatcher matcher) {
 		super(pl, player, template, v, matcher);
 		setRecipeMatchCompletionHandler(new RecipeMatchHandler(pl, this));
 		setPermissionHandler(new RecipePermissionHandler(this));
@@ -196,10 +197,9 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	private void onTopSlotNotNullShift(InventoryClickEvent event, ItemStack slotItem) {
 		ItemStack toAdd = slotItem.clone();
 		toAdd.setAmount(1);
-		int free = InventoryUtils.getFreeSpaceExact(getPlayerInventoryContents(event.getWhoClicked().getInventory()),
-				toAdd);
+		int free = InventoryUtils.getFreeSpaceExact((Player) event.getWhoClicked(), toAdd);
 		int adding = free < slotItem.getAmount() ? free : slotItem.getAmount();
-		InventoryUtils.addItemAmount(adding, toAdd, player);
+		InventoryUtils.addItemStack(player, toAdd, adding);
 		setAmount(slotItem.getAmount(), adding, event.getSlot());
 	}
 
@@ -265,8 +265,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			ItemStack item = getItem(i);
 			if (item == null || item.getType().equals(XMaterial.AIR.parseMaterial()))
 				continue;
-			if (InventoryUtils.getFreeSpaceExact(getPlayerInventoryContents(player.getInventory()), item) >= item
-					.getAmount())
+			if (InventoryUtils.getFreeSpaceExact(player, item) >= item.getAmount())
 				player.getInventory().addItem(item);
 			else
 				player.getWorld().dropItem(player.getLocation(), item);
@@ -302,12 +301,11 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			}
 		} else if (event.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
 			if (recipe.isShiftCollectable()) {
-				InventoryUtils.addItemAmount(shiftCollectIngredients(recipe) * recipe.getResult().getAmount(),
-						recipe.getResult(), player);
+				InventoryUtils.addItemStack(player, recipe.getResult(),
+						shiftCollectIngredients(recipe) * recipe.getResult().getAmount());
 			} else {
 				ItemStack result = getRecipeMatchCompletionHandler().getSingleRecipeCraft(recipe, player);
-				if (InventoryUtils.getFreeSpaceExact(getPlayerInventoryContents(event.getWhoClicked().getInventory()),
-						result) >= result.getAmount()) {
+				if (InventoryUtils.getFreeSpaceExact((Player) event.getWhoClicked(), result) >= result.getAmount()) {
 					collectIngredients(event.getInventory(), recipe);
 					event.getWhoClicked().getInventory().addItem(result);
 				}
@@ -324,8 +322,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	}
 
 	private int shiftCollectIngredients(IRecipe recipe) {
-		int space = InventoryUtils.getFreeSpaceExact(getPlayerInventoryContents(player.getInventory()),
-				recipe.getResult());
+		int space = InventoryUtils.getFreeSpaceExact(player, recipe.getResult());
 		if (space <= 0) {
 			return 0;
 		}
@@ -404,8 +401,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 					slot = template.getSlots().getCraftingSlots()[base + y * template.getDimension().getWidth()
 							+ (matrix.getWidth() - x - 1)];
 				else
-					slot = template.getSlots().getCraftingSlots()[base + y * template.getDimension().getWidth()
-							+ x];
+					slot = template.getSlots().getCraftingSlots()[base + y * template.getDimension().getWidth() + x];
 				if (amount > 0)
 					getItem(slot).setAmount(amount);
 				else

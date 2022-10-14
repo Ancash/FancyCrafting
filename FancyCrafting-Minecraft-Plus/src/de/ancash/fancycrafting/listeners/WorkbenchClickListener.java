@@ -118,14 +118,14 @@ public class WorkbenchClickListener implements Listener {
 		} else if (event.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
 			if (recipe.isShiftCollectable()) {
 				InventoryUtils
-						.addItemAmount(
-								shiftCollectIngredients(size, (CraftingInventory) event.getInventory(),
+						.addItemStack(
+								(Player) event.getWhoClicked(),
+								recipe.getResult(), shiftCollectIngredients(size, (CraftingInventory) event.getInventory(),
 										(Player) event.getWhoClicked(), triplet.getFirst().getMatrix(), recipe)
-										* recipe.getResult().getAmount(),
-								recipe.getResult(), (Player) event.getWhoClicked());
+										* recipe.getResult().getAmount());
 			} else {
 				ItemStack result = resultSupplier.getSingleRecipeCraft(recipe, (Player) event.getWhoClicked());
-				if (InventoryUtils.getFreeSpaceExact(event.getWhoClicked().getInventory().getContents(),
+				if (InventoryUtils.getFreeSpaceExact((Player) event.getWhoClicked(),
 						result) >= result.getAmount()) {
 					collectIngredients(size, (CraftingInventory) event.getInventory(), triplet.getFirst().getMatrix(),
 							recipe);
@@ -159,7 +159,7 @@ public class WorkbenchClickListener implements Listener {
 
 	private int shiftCollectIngredients(int size, CraftingInventory inv, Player player, IMatrix<IItemStack> matrix,
 			IRecipe recipe) {
-		int space = InventoryUtils.getFreeSpaceExact(player.getInventory().getContents(), recipe.getResult());
+		int space = InventoryUtils.getFreeSpaceExact(player, recipe.getResult());
 		if (space <= 0) {
 			return 0;
 		}

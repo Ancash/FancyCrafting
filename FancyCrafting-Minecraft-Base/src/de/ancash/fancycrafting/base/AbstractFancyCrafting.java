@@ -49,7 +49,7 @@ import de.ancash.minecraft.MinecraftLoggerUtil;
 import de.ancash.minecraft.updatechecker.UpdateCheckSource;
 import de.ancash.minecraft.updatechecker.UpdateChecker;
 import de.ancash.misc.ANSIEscapeCodes;
-import de.ancash.misc.IPrintStream.ConsoleColor;
+import de.ancash.misc.io.IPrintStream.ConsoleColor;
 
 public abstract class AbstractFancyCrafting extends JavaPlugin {
 
@@ -192,7 +192,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 
 	public void checkFile(File file, String src) throws IOException {
 		getLogger().fine("Checking " + file.getPath() + " for completeness (comparing to " + src + ")");
-		de.ancash.misc.FileUtils.setMissingConfigurationSections(new YamlFile(file), getResource(src),
+		de.ancash.misc.io.FileUtils.setMissingConfigurationSections(new YamlFile(file), getResource(src),
 				new HashSet<>(Arrays.asList("type")));
 	}
 

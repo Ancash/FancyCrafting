@@ -137,7 +137,7 @@ public class AutoRecipeMatcherHandler {
 					(a, b) -> Tuple.of(a.getFirst(), a.getSecond() + b.getSecond()));
 		}
 		map.values().forEach(
-				d -> InventoryUtils.removeItemAmount(d.getSecond(), d.getFirst().getOriginal(), workspace.getPlayer()));
+				d -> InventoryUtils.removeItemStack(workspace.getPlayer(), d.getFirst().getOriginal(), d.getSecond()));
 		workspace.getPlayer().getInventory().addItem(
 				workspace.getRecipeMatchCompletionHandler().getSingleRecipeCraft(recipe, workspace.getPlayer()));
 		workspace.updateLastCraftTick();
