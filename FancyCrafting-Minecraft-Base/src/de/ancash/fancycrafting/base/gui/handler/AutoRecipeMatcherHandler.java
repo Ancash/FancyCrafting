@@ -45,13 +45,12 @@ public class AutoRecipeMatcherHandler {
 		onAutoMatchFinish();
 	}
 
-	
 	public Set<Integer> getResutlHashCodes() {
 		return quickCraftingResultHashCodes;
 	}
-	
+
 	public void onAutoRecipesChangePage(InventoryClickEvent e) {
-		if(!workspace.enableQuickCrafting())
+		if (!workspace.enableQuickCrafting())
 			return;
 		if (e.isRightClick()) {
 			if ((quickCraftingPage + 1)
@@ -85,7 +84,7 @@ public class AutoRecipeMatcherHandler {
 	private void addQuickCraftingItem(IRecipe recipe, int pos) {
 		workspace.addInventoryItem(new InventoryItem(workspace, recipe.getResult(),
 				workspace.getTemplate().getSlots().getAutoCraftingSlots()[pos], (a, shift, c, top) -> {
-					if(top) {
+					if (top) {
 						onQuickCraft(recipe, shift);
 						workspace.updateQuickCrafting();
 					}
@@ -121,7 +120,7 @@ public class AutoRecipeMatcherHandler {
 	}
 
 	private void onQuickCraft(IRecipe recipe, boolean shift) {
-		if(ILibrary.getTick() - pl.getCraftingCooldown() <= workspace.getLastCraftTick()) {
+		if (ILibrary.getTick() - pl.getCraftingCooldown() <= workspace.getLastCraftTick()) {
 			workspace.getPlayer().sendMessage(pl.getResponse().CRAFTING_COOLDOWN_MESSAGE);
 			return;
 		}

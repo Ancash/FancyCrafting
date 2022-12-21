@@ -40,7 +40,8 @@ public class IShapelessRecipe extends IRecipe {
 	IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, boolean vanilla,
 			boolean suitableForAutoMatching, UUID uuid) {
 		super(result, name, vanilla, suitableForAutoMatching, uuid);
-		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null && i.getType() != Material.AIR).collect(Collectors.toList()));
+		this.ings = Collections.unmodifiableList(
+				ings.stream().filter(i -> i != null && i.getType() != Material.AIR).collect(Collectors.toList()));
 		this.iings = Collections.unmodifiableList(this.ings.stream().map(IItemStack::new).collect(Collectors.toList()));
 		for (IItemStack ii : iings) {
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
@@ -74,31 +75,31 @@ public class IShapelessRecipe extends IRecipe {
 	public Map<Integer, Integer> getIngredientsHashCodes() {
 		return Collections.unmodifiableMap(hashCodes);
 	}
-	
+
 	@Override
 	public boolean matches(IMatrix<IItemStack> m) {
 		List<IItemStack> items = Stream.of(m.getArray()).filter(i -> i != null).collect(Collectors.toList());
 		List<Integer> hashMatrix = items.stream().map(IItemStack::hashCode).sorted().collect(Collectors.toList());
-		if(!hashMatrix.equals(this.hashMatrix))
+		if (!hashMatrix.equals(this.hashMatrix))
 			return false;
-		if(isVanilla())
+		if (isVanilla())
 			return true;
-		
+
 		Set<Integer> done = new HashSet<>();
-		
-		for(int a = 0; a<items.size(); a++) {
-			for(int b = 0; b<items.size(); b++) {
-				if(done.contains(b))
+
+		for (int a = 0; a < items.size(); a++) {
+			for (int b = 0; b < items.size(); b++) {
+				if (done.contains(b))
 					continue;
-				if(items.get(a).hashCode() != iings.get(b).hashCode())
+				if (items.get(a).hashCode() != iings.get(b).hashCode())
 					continue;
-				if(items.get(a).getOriginal().getAmount() < iings.get(b).getOriginal().getAmount())
+				if (items.get(a).getOriginal().getAmount() < iings.get(b).getOriginal().getAmount())
 					continue;
 				done.add(b);
 				break;
 			}
 		}
-		
+
 		return done.size() == items.size();
 	}
 
@@ -107,11 +108,12 @@ public class IShapelessRecipe extends IRecipe {
 		return true;
 	}
 
+	@SuppressWarnings("nls")
 	@Override
 	public void saveToFile(FileConfiguration file, String path) {
 		file.set(path, null);
 		file.set(path + ".name", recipeName);
-		if(result != null)
+		if (result != null)
 			ItemStackUtils.setItemStack(file, uuid + ".result", result.getOriginal());
 		file.set(path + ".shaped", false);
 		file.set(path + ".width", size);
@@ -122,7 +124,8 @@ public class IShapelessRecipe extends IRecipe {
 			if (getIngredients().get(i) != null)
 				ItemStackUtils.setItemStack(file, path + ".ingredients." + i, getIngredients().get(i));
 	}
-	
+
+	@SuppressWarnings("nls")
 	@Override
 	public String saveToString() throws IOException {
 		YamlFile temp = new YamlFile();
@@ -134,7 +137,8 @@ public class IShapelessRecipe extends IRecipe {
 		temp.set("recipe.uuid", uuid.toString());
 		temp.set("recipe.random", false);
 		for (int i = 0; i < getIIngredients().size(); i++)
-			temp.set("recipe.ingredients." + i, ItemStackUtils.itemStackToString(getIIngredients().get(i).getOriginal()));
+			temp.set("recipe.ingredients." + i,
+					ItemStackUtils.itemStackToString(getIIngredients().get(i).getOriginal()));
 		return temp.saveToString();
 	}
 

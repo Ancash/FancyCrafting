@@ -57,7 +57,7 @@ public class IRandomShapelessRecipe extends IShapelessRecipe implements IRandomR
 		file.set(path + ".random-map", null); //$NON-NLS-1$
 		for (int i = 0; i < probList.size(); i++) {
 			Duplet<IItemStack, Integer> d = probList.get(i);
-			ItemStackUtils.setItemStack(file, path + ".random-map." + i + ".item", d.getFirst().getOriginal());  //$NON-NLS-1$//$NON-NLS-2$
+			ItemStackUtils.setItemStack(file, path + ".random-map." + i + ".item", d.getFirst().getOriginal()); //$NON-NLS-1$//$NON-NLS-2$
 			file.set(path + ".random-map." + i + ".prob", d.getSecond()); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
@@ -74,15 +74,16 @@ public class IRandomShapelessRecipe extends IShapelessRecipe implements IRandomR
 		temp.set("recipe.uuid", uuid.toString());
 		temp.set("recipe.random", true);
 		for (int i = 0; i < getIIngredients().size(); i++)
-			temp.set("recipe.ingredients." + i, ItemStackUtils.itemStackToString(getIIngredients().get(i).getOriginal()));
+			temp.set("recipe.ingredients." + i,
+					ItemStackUtils.itemStackToString(getIIngredients().get(i).getOriginal()));
 		for (int i = 0; i < probList.size(); i++) {
 			Duplet<IItemStack, Integer> d = probList.get(i);
 			temp.set("recipe.random-map." + i + ".item", ItemStackUtils.itemStackToString(d.getFirst().getOriginal())); //$NON-NLS-1$ //$NON-NLS-2$
-			temp.set("recipe.random-map." + i + ".prob", d.getSecond());  //$NON-NLS-1$//$NON-NLS-2$
+			temp.set("recipe.random-map." + i + ".prob", d.getSecond()); //$NON-NLS-1$//$NON-NLS-2$
 		}
 		return temp.saveToString();
 	}
-	
+
 	@Override
 	public IItemStack getRandom() {
 		int r = random.nextInt(probSum) + 1;

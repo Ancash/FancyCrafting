@@ -12,11 +12,11 @@ import org.bukkit.permissions.PermissionDefault;
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.base.gui.WorkspaceTemplate;
 
-public class OpenSubCommand extends FancyCraftingSubCommand{
+public class OpenSubCommand extends FancyCraftingSubCommand {
 
 	private final Map<Integer[], Permission> openPerms = new HashMap<>();
-	
-	public OpenSubCommand(AbstractFancyCrafting pl, String...str) {
+
+	public OpenSubCommand(AbstractFancyCrafting pl, String... str) {
 		super(pl, str);
 	}
 
@@ -39,13 +39,13 @@ public class OpenSubCommand extends FancyCraftingSubCommand{
 				width = Integer.valueOf(args[2]);
 				height = Integer.valueOf(args[3]);
 			} catch (NumberFormatException nfe) {
-				sender.sendMessage(this.pl.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[2])
-						.replace("%h", args[3]));
+				sender.sendMessage(
+						this.pl.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[2]).replace("%h", args[3]));
 				return true;
 			}
 			if (width < 1 || width > 8 || height < 1 || height > 6) {
-				sender.sendMessage(this.pl.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[2])
-						.replace("%h", args[3]));
+				sender.sendMessage(
+						this.pl.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[2]).replace("%h", args[3]));
 				return true;
 			}
 			if (!sender.isOp() && !sender.hasPermission(getOpenOtherCustomPerm(width, height))) {
@@ -68,13 +68,13 @@ public class OpenSubCommand extends FancyCraftingSubCommand{
 				width = Integer.valueOf(args[1]);
 				height = Integer.valueOf(args[2]);
 			} catch (NumberFormatException nfe) {
-				player.sendMessage(this.pl.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1])
-						.replace("%h", args[2]));
+				player.sendMessage(
+						this.pl.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1]).replace("%h", args[2]));
 				return true;
 			}
 			if (width < 1 || width > 8 || height < 1 || height > 6) {
-				player.sendMessage(this.pl.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1])
-						.replace("%h", args[2]));
+				player.sendMessage(
+						this.pl.getResponse().INVALID_CRAFTING_DIMENSION.replace("%w", args[1]).replace("%h", args[2]));
 				return true;
 			}
 			if (!player.isOp() && !player.hasPermission(getOpenCustomPerm(width, height))) {
@@ -112,7 +112,7 @@ public class OpenSubCommand extends FancyCraftingSubCommand{
 	private void openCraftingWorkspace(Player player, WorkspaceTemplate template) {
 		pl.openCraftingWorkspace(player, template);
 	}
-	
+
 	@SuppressWarnings("nls")
 	private Permission getOpenCustomPerm(int width, int height) {
 		if (width == 3 && height == 3)

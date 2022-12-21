@@ -23,10 +23,16 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
+import de.ancash.fancycrafting.recipe.complex.ArmorDyeRecipe;
+import de.ancash.fancycrafting.recipe.complex.BannerDuplicateRecipe;
+import de.ancash.fancycrafting.recipe.complex.BookDuplicateRecipe;
+import de.ancash.fancycrafting.recipe.complex.FireworkRecipe;
+import de.ancash.fancycrafting.recipe.complex.ShulkerDyeRecipe;
 import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
-import de.ancash.minecraft.XMaterial;
+import de.ancash.minecraft.crafting.recipe.ComplexRecipeWrapper;
+import de.ancash.minecraft.crafting.recipe.WrappedRecipe;
 
 public abstract class IRecipe {
 
@@ -49,6 +55,7 @@ public abstract class IRecipe {
 		this(result, name, vanilla, suitableForAutoMatching, null);
 	}
 
+	@SuppressWarnings("nls")
 	IRecipe(ItemStack result, String name, boolean vanilla, boolean suitableForAutoMatching, UUID uuid) {
 		this.uuid = uuid;
 		this.result = result == null ? null : new IItemStack(result);
@@ -59,11 +66,11 @@ public abstract class IRecipe {
 			this.suitableForAutoMatching = true;
 		if (result != null) {
 			if (vanilla)
-				this.recipeName = XMaterial.matchXMaterial(result).toString();
+				this.recipeName = ItemStackUtils.getDisplayName(result);
 			else
 				this.recipeName = name;
 			resultName = result.getItemMeta().getDisplayName() == null
-					|| result.getItemMeta().getDisplayName().isEmpty() ? XMaterial.matchXMaterial(result).toString()
+					|| result.getItemMeta().getDisplayName().isEmpty() ? ItemStackUtils.getDisplayName(result)
 							: result.getItemMeta().getDisplayName();
 			this.craftPermission = new Permission("fancycrafting.craft." + this.recipeName.replace(" ", "-"), //$NON-NLS-3$
 					PermissionDefault.FALSE);
@@ -86,15 +93,15 @@ public abstract class IRecipe {
 	public abstract int getWidth();
 
 	public abstract Map<Integer, Integer> getIngredientsHashCodes();
-	
+
 	public abstract List<Integer> getHashMatrix();
-	
+
 	public abstract List<ItemStack> getIngredients();
 
 	public abstract List<IItemStack> getIIngredients();
 
 	public abstract boolean isShiftCollectable();
-	
+
 	public abstract boolean matches(IMatrix<IItemStack> m);
 
 	public ItemStack getResult() {
@@ -129,6 +136,7 @@ public abstract class IRecipe {
 		return r;
 	}
 
+	@SuppressWarnings("nls")
 	public static IRecipe getRecipeFromString(String string) throws IOException, InvalidConfigurationException {
 		YamlFile file = YamlFile.loadConfigurationFromString(string);
 		ItemStack result = ItemStackUtils.itemStackFromString(file.getString("recipe.result"));
@@ -164,6 +172,7 @@ public abstract class IRecipe {
 			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid);
 	}
 
+	@SuppressWarnings("nls")
 	public static IRecipe getRecipeFromFile(File file, FileConfiguration fc, String path)
 			throws IOException, InvalidConfigurationException {
 		boolean save = false;
@@ -176,7 +185,7 @@ public abstract class IRecipe {
 
 		ItemStack[] ingredients = new ItemStack[width * height];
 		for (int i = 0; i < ingredients.length; i++)
-			if (fc.contains(path + ".ingredients." + i)) 
+			if (fc.contains(path + ".ingredients." + i))
 				ingredients[i] = ItemStackUtils.getItemStack(fc, path + ".ingredients." + i);
 		if (!fc.contains(path + ".random"))
 			fc.set(path + ".random", !(save = true));
@@ -225,10 +234,42 @@ public abstract class IRecipe {
 		return fromVanillaRecipe(pl, v, false);
 	}
 
+	@SuppressWarnings("nls")
 	public static IRecipe fromVanillaRecipe(AbstractFancyCrafting pl, Recipe v, boolean ignoreMeta) {
 		if (v == null)
 			return null;
 		IRecipe r = null;
+
+		if (v instanceof WrappedRecipe) {
+			WrappedRecipe wrapped = (WrappedRecipe) v;
+
+			if (wrapped instanceof ComplexRecipeWrapper) {
+				ComplexRecipeWrapper complex = (ComplexRecipeWrapper) wrapped;
+				ItemStack[] ings = new ItemStack[9];
+				for (int a = 0; a < complex.getShape().length; a++) {
+					String str = complex.getShape()[a];
+					for (int b = 0; b < str.length(); b++) {
+						ings[a * 3 + b] = removeUnspecificMeta(complex, complex.getIngredientMap().get(str.charAt(b)),
+								ignoreMeta);
+					}
+				}
+				switch (complex.getType()) {
+				case BOOK_DUPLICATE:
+					return new BookDuplicateRecipe(Arrays.asList(ings), v.getResult());
+				case BANNER_DUPLICATE:
+					return new BannerDuplicateRecipe(Arrays.asList(ings), v.getResult());
+				case ARMOR_DYE:
+					return new ArmorDyeRecipe(Arrays.asList(ings), v.getResult());
+				case SHULKER_DYE:
+					return new ShulkerDyeRecipe(Arrays.asList(ings), v.getResult());
+				case FIREWORK:
+					return new FireworkRecipe(Arrays.asList(ings), v.getResult());
+				default:
+					throw new IllegalArgumentException(complex.getType().name());
+				}
+			}
+		}
+
 		try {
 			AtomicBoolean suitableForAutoMatching = new AtomicBoolean(true);
 			if (v instanceof ShapedRecipe) {
@@ -275,7 +316,7 @@ public abstract class IRecipe {
 	private static ItemStack removeUnspecificMeta(Recipe r, ItemStack is, boolean ignoreMeta) {
 		if (is == null)
 			return null;
-		if (is.getItemMeta().toString().toLowerCase(Locale.ENGLISH).contains("unspecific") //$NON-NLS-1$
+		if (is.hasItemMeta() && is.getItemMeta().toString().toLowerCase(Locale.ENGLISH).contains("unspecific") //$NON-NLS-1$
 				&& (ignoreMeta ? true : is.getDurability() == 0))
 			is.setItemMeta(null);
 		return is;
@@ -285,6 +326,7 @@ public abstract class IRecipe {
 		return ingredientsToList(pl, ingredients, 8, 6, format);
 	}
 
+	@SuppressWarnings("nls")
 	public static List<String> ingredientsToList(AbstractFancyCrafting pl, ItemStack[] ingredients, int width,
 			int height, String format) {
 		StringBuilder builder = new StringBuilder();
@@ -327,6 +369,7 @@ public abstract class IRecipe {
 		return ingredientsToListColorless(pl, ingredients, 8, 6, format);
 	}
 
+	@SuppressWarnings("nls")
 	public static List<String> ingredientsToListColorless(AbstractFancyCrafting pl, ItemStack[] ingredients, int width,
 			int height, String format) {
 		List<String> str = ingredientsToList(pl, ingredients, width, height, format);
@@ -335,6 +378,7 @@ public abstract class IRecipe {
 		return str;
 	}
 
+	@SuppressWarnings("nls")
 	@Override
 	public String toString() {
 		return "IRecipe{name=" + recipeName + ";result=" + result + ";ingredients=" + getIngredients() + "}"; //$NON-NLS-3$ //$NON-NLS-4$

@@ -38,7 +38,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	private RecipePermissionHandler permissionHandler;
 	private AutoRecipeMatcherHandler autoRecipeHandler;
 	private RecipeMatcherCallable recipeMatcherCallable = new RecipeMatcherCallable(this);
-	
+
 	public AbstractCraftingWorkspace(AbstractFancyCrafting pl, Player player, WorkspaceTemplate template) {
 		this(pl, player, template, true);
 	}
@@ -48,7 +48,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		this(pl, player, template, includeVanillaRecipes,
 				new AutoRecipeMatcher(player, pl.getRecipeManager().getAutoMatchingRecipes()));
 	}
-	
+
 	public AbstractCraftingWorkspace(AbstractFancyCrafting pl, Player player, WorkspaceTemplate template,
 			boolean includeVanillaRecipes, AutoRecipeMatcher matcher) {
 		super(player.getUniqueId(), template.getDimension().getSize(), template.getTitle());
@@ -58,17 +58,18 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		this.includeVanillaRecipes = includeVanillaRecipes;
 		this.player = player;
 		this.vanillaMatcher = new VanillaRecipeMatcher(pl, player);
-		this.recipeMatcherCallable = recipeMatcherCallable == null ? new RecipeMatcherCallable(this) : recipeMatcherCallable;
+		this.recipeMatcherCallable = recipeMatcherCallable == null ? new RecipeMatcherCallable(this)
+				: recipeMatcherCallable;
 	}
-	
+
 	public void setAutoRecipeMatcher(AutoRecipeMatcher a) {
 		this.matcher = a;
 	}
-	
+
 	public void setRecipeMatcherCallable(RecipeMatcherCallable r) {
 		this.recipeMatcherCallable = r;
 	}
-	
+
 	public IMatrix<IItemStack> getMatrix() {
 		return matrix;
 	}
@@ -84,7 +85,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	public void setCurrentRecipe(IRecipe r) {
 		this.currentRecipe = r;
 	}
-	
+
 	public boolean enableQuickCrafting() {
 		return getTemplate().getSlots().enableQuickCrafting();
 	}
@@ -219,11 +220,11 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	public static class RecipeMatcherCallable implements Callable<IRecipe> {
 
 		protected final AbstractCraftingWorkspace workspace;
-		
+
 		public RecipeMatcherCallable(AbstractCraftingWorkspace workspace) {
 			this.workspace = workspace;
 		}
-		
+
 		@Override
 		public synchronized IRecipe call() {
 
@@ -233,7 +234,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 				workspace.matchHandler.onNoRecipeMatch();
 			else
 				workspace.matchHandler.onRecipeMatch();
-			
+
 			return workspace.currentRecipe;
 		}
 
@@ -248,7 +249,8 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 				else
 					workspace.permissionHandler.onNoPermission(match, workspace.player);
 
-			if (workspace.includeVanillaRecipes && (match = workspace.vanillaMatcher.matchVanillaRecipe(workspace.matrix)) != null)
+			if (workspace.includeVanillaRecipes
+					&& (match = workspace.vanillaMatcher.matchVanillaRecipe(workspace.matrix)) != null)
 				if (workspace.permissionHandler.canCraftRecipe(match, workspace.player))
 					return workspace.currentRecipe = match;
 				else

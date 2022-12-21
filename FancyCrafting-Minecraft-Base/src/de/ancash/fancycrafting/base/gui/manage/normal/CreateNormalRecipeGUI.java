@@ -14,12 +14,11 @@ public class CreateNormalRecipeGUI extends EditNormalRecipeGUI {
 		super(pl, player, new IShapedRecipe(new ItemStack[1], 1, 1, null, name, UUID.randomUUID()),
 				pl.getWorkspaceObjects().getCreateRecipeTitle());
 	}
-	
+
 	public CreateNormalRecipeGUI(AbstractFancyCrafting pl, Player player, String name, String title) {
-		super(pl, player, new IShapedRecipe(new ItemStack[1], 1, 1, null, name, UUID.randomUUID()),
-				title);
+		super(pl, player, new IShapedRecipe(new ItemStack[1], 1, 1, null, name, UUID.randomUUID()), title);
 	}
-	
+
 	@Override
 	protected void onRecipeDelete() {
 		closeAll();

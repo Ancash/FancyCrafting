@@ -68,14 +68,15 @@ public class IngredientsInputGUI extends ItemInputIGUI {
 		this.onInput = onInput;
 	}
 
-	public static ItemStack getManageIngredientsItem(AbstractFancyCrafting pl, List<ItemStack> ings, int width, int heigth, boolean shaped,
-			boolean random) {
+	public static ItemStack getManageIngredientsItem(AbstractFancyCrafting pl, List<ItemStack> ings, int width,
+			int heigth, boolean shaped, boolean random) {
 		ItemStack item = pl.getWorkspaceObjects().getManageIngredientsItem().getOriginal();
 		Map<String, String> placeholder = new HashMap<>();
 		ItemStack[] ingsa = new ItemStack[width * heigth];
-		for(int i = 0; i<ings.size(); i++)
+		for (int i = 0; i < ings.size(); i++)
 			ingsa[i] = ings.get(i);
-		placeholder.put("%ingredients%", String.join("\n", IRecipe.ingredientsToList(pl, ingsa, width, heigth, pl.getWorkspaceObjects().getManageIngredientsIdFormat()))); //$NON-NLS-1$ //$NON-NLS-2$
+		placeholder.put("%ingredients%", String.join("\n", IRecipe.ingredientsToList(pl, ingsa, width, heigth, //$NON-NLS-1$ //$NON-NLS-2$
+				pl.getWorkspaceObjects().getManageIngredientsIdFormat())));
 		placeholder.put("%rtype%", (shaped ? "Shaped" : "Shapeless") + (random ? " Random Recipe" : " Recipe")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		return ItemStackUtils.setLore(ItemStackUtils.replacePlaceholder(item.getItemMeta().getLore(), placeholder),
 				item);

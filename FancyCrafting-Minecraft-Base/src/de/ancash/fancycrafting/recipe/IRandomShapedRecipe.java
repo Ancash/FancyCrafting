@@ -57,10 +57,10 @@ public class IRandomShapedRecipe extends IShapedRecipe implements IRandomRecipe 
 		for (int i = 0; i < probList.size(); i++) {
 			Duplet<IItemStack, Integer> d = probList.get(i);
 			ItemStackUtils.setItemStack(file, path + ".random-map." + i + ".item", d.getFirst().getOriginal()); //$NON-NLS-1$ //$NON-NLS-2$
-			file.set(path + ".random-map." + i + ".prob", d.getSecond());  //$NON-NLS-1$//$NON-NLS-2$
+			file.set(path + ".random-map." + i + ".prob", d.getSecond()); //$NON-NLS-1$//$NON-NLS-2$
 		}
 	}
-	
+
 	@SuppressWarnings("nls")
 	@Override
 	public String saveToString() throws IOException {
@@ -74,11 +74,12 @@ public class IRandomShapedRecipe extends IShapedRecipe implements IRandomRecipe 
 		temp.set("recipe.random", true);
 		for (int i = 0; i < getIngredientsArray().length; i++)
 			if (getIngredientsArray()[i] != null)
-				temp.set("recipe.ingredients." + i, ItemStackUtils.itemStackToString(getIngredientsArray()[i].getOriginal()));
+				temp.set("recipe.ingredients." + i,
+						ItemStackUtils.itemStackToString(getIngredientsArray()[i].getOriginal()));
 		for (int i = 0; i < probList.size(); i++) {
 			Duplet<IItemStack, Integer> d = probList.get(i);
 			temp.set("recipe.random-map." + i + ".item", ItemStackUtils.itemStackToString(d.getFirst().getOriginal())); //$NON-NLS-1$ //$NON-NLS-2$
-			temp.set("recipe.random-map." + i + ".prob", d.getSecond());  //$NON-NLS-1$//$NON-NLS-2$
+			temp.set("recipe.random-map." + i + ".prob", d.getSecond()); //$NON-NLS-1$//$NON-NLS-2$
 		}
 		return temp.saveToString();
 	}

@@ -8,14 +8,14 @@ public class ReloadSubCommand extends FancyCraftingSubCommand {
 
 	private final AbstractFancyCrafting pl;
 
-	public ReloadSubCommand(AbstractFancyCrafting pl, String...str) {
+	public ReloadSubCommand(AbstractFancyCrafting pl, String... str) {
 		super(pl, str);
 		this.pl = pl;
 	}
 
 	@Override
 	public Boolean apply(CommandSender sender, String[] arg1) {
-		if(!sender.isOp() && !sender.hasPermission(AbstractFancyCrafting.RELOAD)) {
+		if (!sender.isOp() && !sender.hasPermission(AbstractFancyCrafting.RELOAD)) {
 			sender.sendMessage(this.pl.getResponse().NO_PERMISSION);
 			return true;
 		}

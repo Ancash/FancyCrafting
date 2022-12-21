@@ -143,9 +143,9 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 
 	private void addManageIngredients() {
 		addInventoryItem(new InventoryItem(this,
-				
-				IngredientsInputGUI.getManageIngredientsItem(plugin, recipe.getIngredients(), recipe.getWidth(), recipe.getHeight(), shaped,
-						recipe instanceof IRandomRecipe),
+
+				IngredientsInputGUI.getManageIngredientsItem(plugin, recipe.getIngredients(), recipe.getWidth(),
+						recipe.getHeight(), shaped, recipe instanceof IRandomRecipe),
 				10, (a, b, c, top) -> Optional.ofNullable(top ? this : null)
 						.ifPresent(AbstractRecipeEditGUI::openManageIngredients)));
 	}

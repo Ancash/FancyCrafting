@@ -22,8 +22,7 @@ public class AutoRecipeMatcher {
 
 	public AutoRecipeMatcher(Player player, Set<IRecipe> recipes) {
 		this.player = player;
-		this.possibleRecipes = recipes.stream()
-				.filter(r -> AbstractFancyCrafting.canCraftRecipe(r, player))
+		this.possibleRecipes = recipes.stream().filter(r -> AbstractFancyCrafting.canCraftRecipe(r, player))
 				.collect(Collectors.toSet());
 	}
 
@@ -35,17 +34,17 @@ public class AutoRecipeMatcher {
 		ingredients = getInventoryContentsAsIItemStack();
 		Map<Integer, Integer> mappedIngredientHashCodes = mapHashCodes(ingredients);
 		matchedRecipes.clear();
-		for(IRecipe possible : possibleRecipes) {
-			if(match(possible, mappedIngredientHashCodes))
+		for (IRecipe possible : possibleRecipes) {
+			if (match(possible, mappedIngredientHashCodes))
 				matchedRecipes.add(possible);
 		}
 	}
 
 	public boolean match(IRecipe recipe, Map<Integer, Integer> map) {
-		if(!map.keySet().containsAll(recipe.getIngredientsHashCodes().keySet()))
+		if (!map.keySet().containsAll(recipe.getIngredientsHashCodes().keySet()))
 			return false;
-		for(Entry<Integer, Integer> entry : recipe.getIngredientsHashCodes().entrySet())
-			if(entry.getValue() > map.get(entry.getKey()))
+		for (Entry<Integer, Integer> entry : recipe.getIngredientsHashCodes().entrySet())
+			if (entry.getValue() > map.get(entry.getKey()))
 				return false;
 		return true;
 	}

@@ -9,7 +9,7 @@ import de.ancash.fancycrafting.recipe.IRecipe;
 public class RecipePermissionHandler {
 
 	private final AbstractCraftingWorkspace workspace;
-	
+
 	public RecipePermissionHandler(AbstractCraftingWorkspace workspace) {
 		this.workspace = workspace;
 	}

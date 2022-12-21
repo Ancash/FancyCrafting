@@ -9,9 +9,9 @@ import org.bukkit.entity.Player;
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 
-public class EditSubCommand extends FancyCraftingSubCommand{
+public class EditSubCommand extends FancyCraftingSubCommand {
 
-	public EditSubCommand(AbstractFancyCrafting pl, String...str) {
+	public EditSubCommand(AbstractFancyCrafting pl, String... str) {
 		super(pl, str);
 	}
 

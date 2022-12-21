@@ -11,7 +11,7 @@ public final class Response {
 	public final String RECIPE_SAVED;
 	public final String RECIPE_DELETED;
 	public final String CRAFTING_COOLDOWN_MESSAGE;
-	
+
 	@SuppressWarnings("nls")
 	public Response(AbstractFancyCrafting fc) {
 		CRAFTING_COOLDOWN_MESSAGE = fc.getConfig().getString("crafting-cooldown-message");

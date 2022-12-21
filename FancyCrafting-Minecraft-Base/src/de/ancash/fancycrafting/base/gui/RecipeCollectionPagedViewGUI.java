@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 
-public class RecipeCollectionPagedViewGUI extends AbstractRecipeCollectionPagedViewGUI{
+public class RecipeCollectionPagedViewGUI extends AbstractRecipeCollectionPagedViewGUI {
 
 	public RecipeCollectionPagedViewGUI(AbstractFancyCrafting pl, Player player, List<IRecipe> recipes) {
 		super(pl, player, recipes);

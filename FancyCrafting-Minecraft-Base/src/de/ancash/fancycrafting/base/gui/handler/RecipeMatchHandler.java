@@ -6,7 +6,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.base.gui.AbstractCraftingWorkspace;
 
-public class RecipeMatchHandler extends RecipeResultSupplier{
+public class RecipeMatchHandler extends RecipeResultSupplier {
 
 	private final AbstractCraftingWorkspace workspace;
 	private final AbstractFancyCrafting pl;

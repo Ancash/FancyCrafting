@@ -123,17 +123,17 @@ public abstract class AbstractRecipeViewGUI extends IGUI {
 	@Override
 	public void onInventoryClick(InventoryClickEvent event) {
 		event.setCancelled(true);
-		if(event.getClickedInventory() == null || event.getClickedInventory().equals(event.getInventory()))
+		if (event.getClickedInventory() == null || event.getClickedInventory().equals(event.getInventory()))
 			return;
 		ItemStack clicked = event.getClickedInventory().getItem(event.getSlot());
-		if(clicked == null)
+		if (clicked == null)
 			return;
 		IItemStack ii = new IItemStack(clicked);
 		Set<IRecipe> r = plugin.getRecipeManager().getRecipeByHash(ii);
-		if(r == null)
+		if (r == null)
 			return;
 		r = r.stream().filter(i -> AbstractFancyCrafting.canCraftRecipe(i, player)).collect(Collectors.toSet());
-		if(r.isEmpty())
+		if (r.isEmpty())
 			return;
 		plugin.viewRecipeSingle(player, r);
 	}

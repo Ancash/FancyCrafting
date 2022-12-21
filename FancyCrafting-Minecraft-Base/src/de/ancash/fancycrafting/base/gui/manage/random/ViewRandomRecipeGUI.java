@@ -47,7 +47,8 @@ public class ViewRandomRecipeGUI extends AbstractRecipeViewGUI {
 		}
 		Map<String, String> placeholder = new HashMap<>();
 		placeholder.put("%probability_map%", builder.toString()); //$NON-NLS-1$
-		setItem(ItemStackUtils.setLore(ItemStackUtils.replacePlaceholder(item.getItemMeta().getLore(), placeholder), item), plugin.getViewSlots().getProbabilitySlot());
+		setItem(ItemStackUtils.setLore(ItemStackUtils.replacePlaceholder(item.getItemMeta().getLore(), placeholder),
+				item), plugin.getViewSlots().getProbabilitySlot());
 	}
 
 	@Override

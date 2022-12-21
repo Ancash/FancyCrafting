@@ -9,20 +9,20 @@ import org.bukkit.entity.Player;
 
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 
-public abstract class FancyCraftingSubCommand implements BiFunction<CommandSender, String[], Boolean>{
+public abstract class FancyCraftingSubCommand implements BiFunction<CommandSender, String[], Boolean> {
 
 	private final String[] subCmd;
 	protected final AbstractFancyCrafting pl;
-	
-	public FancyCraftingSubCommand(AbstractFancyCrafting pl, String...str) {
+
+	public FancyCraftingSubCommand(AbstractFancyCrafting pl, String... str) {
 		this.subCmd = Stream.of(str).map(s -> s.toLowerCase(Locale.ENGLISH)).toArray(String[]::new);
 		this.pl = pl;
 	}
-	
+
 	public String[] getSubCommand() {
 		return subCmd;
 	}
-	
+
 	public boolean isPlayer(CommandSender sender) {
 		if (sender instanceof Player)
 			return true;

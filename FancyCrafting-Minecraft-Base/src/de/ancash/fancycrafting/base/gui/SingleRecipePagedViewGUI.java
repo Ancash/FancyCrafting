@@ -29,20 +29,21 @@ public class SingleRecipePagedViewGUI {
 
 	public void openRecipe(int i) {
 		cur = recipes.get(i);
-		AbstractRecipeViewGUI gui = cur instanceof IRandomRecipe ? new ViewRandomRecipeGUI(pl, player, cur) : new ViewNormalRecipeGUI(pl, player, cur);
+		AbstractRecipeViewGUI gui = cur instanceof IRandomRecipe ? new ViewRandomRecipeGUI(pl, player, cur)
+				: new ViewNormalRecipeGUI(pl, player, cur);
 		gui.onOpen(this::addItems);
 		gui.open();
 	}
-		
+
 	public void addItems(AbstractRecipeViewGUI gui) {
 		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getNextItem().getOriginal(),
 				pl.getViewSlots().getNextSlot(),
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(increment()))));
 		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getPrevItem().getOriginal(),
 				pl.getViewSlots().getPrevSlot(),
-				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(decrement()))));							
+				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(decrement()))));
 	}
-	
+
 	public int decrement() {
 		return pos = prev();
 	}

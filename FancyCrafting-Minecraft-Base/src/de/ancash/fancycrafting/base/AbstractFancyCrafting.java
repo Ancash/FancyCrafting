@@ -233,13 +233,14 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-ingredients")))
 				.setManageIngredientsItem(
 						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-ingredients")))
-				.setViewIngredientsItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.view-ingredients")))
-				.setManageRandomInvalidResultItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-random-invalid-result")))
+				.setViewIngredientsItem(
+						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.view-ingredients")))
+				.setManageRandomInvalidResultItem(new IItemStack(
+						ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-random-invalid-result")))
 				.setInputRecipeNameLeftItem(
 						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.input-recipe-name-left")))
-				.setInputRecipeNameRightItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.input-recipe-name-right")))
+				.setInputRecipeNameRightItem(new IItemStack(
+						ItemStackUtils.getItemStack(config, "recipe-create-gui.input-recipe-name-right")))
 				.setManageRecipeNameItem(
 						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-recipe-name")))
 				.setCreateRecipeTitle(config.getString("recipe-create-gui.title"))
@@ -259,7 +260,7 @@ public abstract class AbstractFancyCrafting extends JavaPlugin {
 						config.getStringList("recipe-create-gui.manage-random-result-probability.header"))
 				.setManageProbabilitiesTitle(config.getString("recipe-create-gui.manage-probabilities-title"))
 				.setInputRecipeNameTitle(config.getString("recipe-create-gui.input-recipe-name-title"));
-
+		System.out.println(workspaceObjects.getBackgroundItem().getOriginal());
 		defaultDim = new WorkspaceDimension(config.getInt("default-template-width"),
 				config.getInt("default-template-height"));
 		permsForCustomRecipes = config.getBoolean("perms-for-custom-recipes");

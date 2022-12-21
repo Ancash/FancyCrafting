@@ -13,8 +13,8 @@ public class WorkspaceSlots {
 	private final int[] autoCraftingSlots;
 	private final boolean enableQuickCrafting;
 
-	public WorkspaceSlots(int resultSlot, int closeSlot, int[] craftingSlots, int[] craftStateSlots, int[] autoCraftingSlots,
-			boolean enableQuickCrafting) {
+	public WorkspaceSlots(int resultSlot, int closeSlot, int[] craftingSlots, int[] craftStateSlots,
+			int[] autoCraftingSlots, boolean enableQuickCrafting) {
 		this.resultSlot = resultSlot;
 		this.closeSlot = closeSlot;
 		this.craftingSlots = craftingSlots;

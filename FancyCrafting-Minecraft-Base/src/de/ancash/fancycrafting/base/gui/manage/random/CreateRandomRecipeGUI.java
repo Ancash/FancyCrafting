@@ -16,7 +16,7 @@ public class CreateRandomRecipeGUI extends EditRandomRecipeGUI {
 				new IRandomShapedRecipe(new ItemStack[1], 1, 1, null, name, UUID.randomUUID(), new HashMap<>()),
 				pl.getWorkspaceObjects().getCreateRecipeTitle());
 	}
-	
+
 	@Override
 	protected void onRecipeDelete() {
 		closeAll();

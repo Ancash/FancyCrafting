@@ -27,9 +27,11 @@ import de.ancash.fancycrafting.recipe.AutoRecipeMatcher;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
+import de.ancash.fancycrafting.recipe.complex.BookDuplicateRecipe;
+import de.ancash.fancycrafting.recipe.complex.IComplexRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.InventoryUtils;
-import de.ancash.minecraft.XMaterial;
+import de.ancash.minecraft.cryptomorin.xseries.XMaterial;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
 
@@ -263,7 +265,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		IGUIManager.remove(getId());
 		for (int i : template.getSlots().getCraftingSlots()) {
 			ItemStack item = getItem(i);
-			if (item == null || item.getType().equals(XMaterial.AIR.parseMaterial()))
+			if (item == null || item.getType().equals(Material.AIR))
 				continue;
 			if (InventoryUtils.getFreeSpaceExact(player, item) >= item.getAmount())
 				player.getInventory().addItem(item);
@@ -368,6 +370,11 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 	private void collectShapeless(IShapelessRecipe shapeless, int multiplicator) {
 		Set<Integer> done = new HashSet<>();
+		Set<XMaterial> ignoredMaterials = new HashSet<>();
+
+		if (shapeless instanceof BookDuplicateRecipe)
+			ignoredMaterials = ((IComplexRecipe) shapeless).getIgnoredMaterials();
+
 		for (IItemStack ingredient : shapeless.getIIngredients()) {
 			for (int craftSlot : template.getSlots().getCraftingSlots()) {
 				if (done.contains(craftSlot))
@@ -376,8 +383,9 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 					continue;
 				if (ingredient.hashCode() != new IItemStack(getItem(craftSlot)).hashCode() && !shapeless.isVanilla())
 					continue;
-				setAmount(getItem(craftSlot).getAmount(), ingredient.getOriginal().getAmount() * multiplicator,
-						craftSlot);
+				if (!ignoredMaterials.contains(XMaterial.matchXMaterial(getItem(craftSlot))))
+					setAmount(getItem(craftSlot).getAmount(), ingredient.getOriginal().getAmount() * multiplicator,
+							craftSlot);
 				done.add(craftSlot);
 				break;
 			}

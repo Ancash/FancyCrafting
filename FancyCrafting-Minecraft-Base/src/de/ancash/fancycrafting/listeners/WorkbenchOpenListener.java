@@ -19,7 +19,7 @@ public class WorkbenchOpenListener implements Listener {
 
 	@EventHandler
 	public void onOpen(InventoryOpenEvent e) {
-		if(e.getInventory().getType() == InventoryType.WORKBENCH) {
+		if (e.getInventory().getType() == InventoryType.WORKBENCH) {
 			e.setCancelled(true);
 			plugin.openCraftingWorkspace((Player) e.getPlayer(), WorkspaceTemplate
 					.get(plugin.getDefaultDimension().getWidth(), plugin.getDefaultDimension().getHeight()));

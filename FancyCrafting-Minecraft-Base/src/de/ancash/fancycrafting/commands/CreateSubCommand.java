@@ -6,9 +6,9 @@ import org.bukkit.entity.Player;
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.base.gui.manage.RecipeCreateMenuGUI;
 
-public class CreateSubCommand extends FancyCraftingSubCommand{
+public class CreateSubCommand extends FancyCraftingSubCommand {
 
-	public CreateSubCommand(AbstractFancyCrafting pl, String...str) {
+	public CreateSubCommand(AbstractFancyCrafting pl, String... str) {
 		super(pl, str);
 	}
 

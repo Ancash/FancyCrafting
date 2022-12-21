@@ -118,6 +118,7 @@ public class IShapedRecipe extends IRecipe {
 		return true;
 	}
 
+	@SuppressWarnings("nls")
 	@Override
 	public void saveToFile(FileConfiguration file, String path) {
 		file.set(path, null);
@@ -134,6 +135,7 @@ public class IShapedRecipe extends IRecipe {
 				ItemStackUtils.setItemStack(file, path + ".ingredients." + i, getIngredientsArray()[i].getOriginal());
 	}
 
+	@SuppressWarnings("nls")
 	@Override
 	public String saveToString() throws IOException {
 		YamlFile temp = new YamlFile();

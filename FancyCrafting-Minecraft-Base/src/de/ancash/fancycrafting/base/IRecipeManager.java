@@ -45,14 +45,16 @@ public abstract class IRecipeManager {
 			registerRecipe(recipe);
 		});
 	}
-	
+
 	public void cacheRecipe(IRecipe recipe) {
 		if (recipe.isVanilla())
 			return;
 		if (recipe instanceof IShapedRecipe)
 			cachedRecipes.put(recipe.getHashMatrix(), recipe);
 		else
-			cachedRecipes.put(recipe.getHashMatrix().stream().filter(i -> i != null).sorted().collect(Collectors.toList()), recipe);
+			cachedRecipes.put(
+					recipe.getHashMatrix().stream().filter(i -> i != null).sorted().collect(Collectors.toList()),
+					recipe);
 	}
 
 	public Set<IRecipe> getRecipeByHashs(ItemStack itemStack) {
@@ -97,13 +99,14 @@ public abstract class IRecipeManager {
 	public IRecipe matchRecipe(IMatrix<IItemStack> matrix) {
 		IRecipe match = cachedRecipes.get(
 				Stream.of(matrix.getArray()).map(i -> i != null ? i.hashCode() : null).collect(Collectors.toList()));
-		if(match == null) {
-			List<Integer> hashs = Stream.of(matrix.getArray()).filter(i -> i != null).map(i -> i.hashCode()).collect(Collectors.toList());
+		if (match == null) {
+			List<Integer> hashs = Stream.of(matrix.getArray()).filter(i -> i != null).map(i -> i.hashCode())
+					.collect(Collectors.toList());
 			match = cachedRecipes.get(hashs);
-			if(match == null) {
+			if (match == null) {
 				Collections.sort(hashs);
 				match = cachedRecipes.get(hashs);
-				if(match == null)
+				if (match == null)
 					return null;
 			}
 		}
@@ -171,9 +174,8 @@ public abstract class IRecipeManager {
 	public abstract void saveRandomRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name,
 			UUID uuid, int width, int height, Map<ItemStack, Integer> rngMap) throws InvalidRecipeException;
 
-	
 	public abstract void loadRecipes();
-	
+
 	public abstract boolean isVanillaRecipeIncluded(IRecipe vanilla);
 
 	public abstract void delete(String recipeName) throws RecipeDeleteException;

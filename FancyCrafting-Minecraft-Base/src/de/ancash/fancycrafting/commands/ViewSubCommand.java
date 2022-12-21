@@ -11,9 +11,9 @@ import org.bukkit.permissions.PermissionDefault;
 import de.ancash.fancycrafting.base.AbstractFancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 
-public class ViewSubCommand extends FancyCraftingSubCommand{
+public class ViewSubCommand extends FancyCraftingSubCommand {
 
-	public ViewSubCommand(AbstractFancyCrafting pl, String...str) {
+	public ViewSubCommand(AbstractFancyCrafting pl, String... str) {
 		super(pl, str);
 	}
 
@@ -28,8 +28,9 @@ public class ViewSubCommand extends FancyCraftingSubCommand{
 			return true;
 		}
 		if (args.length == 2) {
-			if (!sender.isOp() && !sender.hasPermission(
-					new Permission("fancycrafting.view." + args[1].toLowerCase(Locale.ENGLISH), PermissionDefault.FALSE))) {
+			if (!sender.isOp()
+					&& !sender.hasPermission(new Permission("fancycrafting.view." + args[1].toLowerCase(Locale.ENGLISH),
+							PermissionDefault.FALSE))) {
 				sender.sendMessage(this.pl.getResponse().NO_PERMISSION);
 				return true;
 			}

@@ -16,7 +16,7 @@ public class EditNormalRecipeGUI extends AbstractRecipeEditGUI {
 	public EditNormalRecipeGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe) {
 		this(pl, player, recipe, pl.getWorkspaceObjects().getEditRecipeTitle());
 	}
-	
+
 	public EditNormalRecipeGUI(AbstractFancyCrafting pl, Player player, IRecipe recipe, String title) {
 		super(pl, player, recipe, title);
 	}
@@ -52,6 +52,7 @@ public class EditNormalRecipeGUI extends AbstractRecipeEditGUI {
 
 	@Override
 	protected boolean isRecipeValid() {
-		return !plugin.getWorkspaceObjects().getManageRandomInvalidResultItem().isSimilar(result) && Arrays.asList(ingredients).stream().filter(i -> i != null).findAny().isPresent();
+		return !plugin.getWorkspaceObjects().getManageRandomInvalidResultItem().isSimilar(result)
+				&& Arrays.asList(ingredients).stream().filter(i -> i != null).findAny().isPresent();
 	}
 }

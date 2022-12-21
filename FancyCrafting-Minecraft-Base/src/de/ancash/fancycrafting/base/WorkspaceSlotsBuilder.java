@@ -9,14 +9,15 @@ public class WorkspaceSlotsBuilder {
 	private boolean enableQuickCrafting;
 
 	public WorkspaceSlots build() {
-		return new WorkspaceSlots(resultSlot, closeSlot, craftingSlots, craftStateSlots, autoCraftingSlots, enableQuickCrafting);
+		return new WorkspaceSlots(resultSlot, closeSlot, craftingSlots, craftStateSlots, autoCraftingSlots,
+				enableQuickCrafting);
 	}
 
 	public WorkspaceSlotsBuilder setEnableQuickCrafting(boolean b) {
 		this.enableQuickCrafting = b;
 		return this;
 	}
-	
+
 	public WorkspaceSlotsBuilder setResultSlot(int resultSlot) {
 		this.resultSlot = resultSlot;
 		return this;

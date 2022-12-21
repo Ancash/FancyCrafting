@@ -149,15 +149,15 @@ public class IMatrix<E> implements Cloneable {
 
 	public E[] mirror() {
 		E[] clone = Arrays.copyOf(array, array.length);
-		for(int y = 0; y<height; y++)
-			for(int x = 0; x<width; x++) {
+		for (int y = 0; y < height; y++)
+			for (int x = 0; x < width; x++) {
 				E temp = clone[y * width + x];
-				clone[y * width + x] = clone[y * width + (width - x - 1)]; 
+				clone[y * width + x] = clone[y * width + (width - x - 1)];
 				clone[y * width + (width - x - 1)] = temp;
 			}
 		return clone;
 	}
-	
+
 	public E[] getArray() {
 		return array;
 	}
