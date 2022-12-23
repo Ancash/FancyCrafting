@@ -9,17 +9,17 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import de.ancash.fancycrafting.base.AbstractFancyCrafting;
+import de.ancash.fancycrafting.FancyCrafting;
 
 @SuppressWarnings("nls")
 public class FancyCraftingCommand implements CommandExecutor {
 
-	private final AbstractFancyCrafting plugin;
+	private final FancyCrafting plugin;
 	private final List<String> toSend;
 	private final Map<String, FancyCraftingSubCommand> subCmds = new HashMap<>();
 
 	@SuppressWarnings({ "unchecked" })
-	public FancyCraftingCommand(AbstractFancyCrafting plugin) {
+	public FancyCraftingCommand(FancyCrafting plugin) {
 		this.plugin = plugin;
 		toSend = (List<String>) this.plugin.getDescription().getCommands().get("fc").get("usage");
 	}

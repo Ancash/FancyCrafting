@@ -8,12 +8,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
-import de.ancash.fancycrafting.base.AbstractFancyCrafting;
+import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 
 public class ViewSubCommand extends FancyCraftingSubCommand {
 
-	public ViewSubCommand(AbstractFancyCrafting pl, String... str) {
+	public ViewSubCommand(FancyCrafting pl, String... str) {
 		super(pl, str);
 	}
 
@@ -23,7 +23,7 @@ public class ViewSubCommand extends FancyCraftingSubCommand {
 		if (!isPlayer(sender))
 			return true;
 
-		if (args.length == 1 && (sender.hasPermission(AbstractFancyCrafting.VIEW_ALL_PERM) || sender.isOp())) {
+		if (args.length == 1 && (sender.hasPermission(FancyCrafting.VIEW_ALL_PERM) || sender.isOp())) {
 			pl.viewRecipeCollection((Player) sender, pl.getRecipeManager().getCustomRecipes());
 			return true;
 		}

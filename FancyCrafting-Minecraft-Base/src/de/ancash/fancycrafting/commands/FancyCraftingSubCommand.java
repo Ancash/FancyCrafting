@@ -7,14 +7,14 @@ import java.util.stream.Stream;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import de.ancash.fancycrafting.base.AbstractFancyCrafting;
+import de.ancash.fancycrafting.FancyCrafting;
 
 public abstract class FancyCraftingSubCommand implements BiFunction<CommandSender, String[], Boolean> {
 
 	private final String[] subCmd;
-	protected final AbstractFancyCrafting pl;
+	protected final FancyCrafting pl;
 
-	public FancyCraftingSubCommand(AbstractFancyCrafting pl, String... str) {
+	public FancyCraftingSubCommand(FancyCrafting pl, String... str) {
 		this.subCmd = Stream.of(str).map(s -> s.toLowerCase(Locale.ENGLISH)).toArray(String[]::new);
 		this.pl = pl;
 	}

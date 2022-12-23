@@ -2,20 +2,20 @@ package de.ancash.fancycrafting.commands;
 
 import org.bukkit.command.CommandSender;
 
-import de.ancash.fancycrafting.base.AbstractFancyCrafting;
+import de.ancash.fancycrafting.FancyCrafting;
 
 public class ReloadSubCommand extends FancyCraftingSubCommand {
 
-	private final AbstractFancyCrafting pl;
+	private final FancyCrafting pl;
 
-	public ReloadSubCommand(AbstractFancyCrafting pl, String... str) {
+	public ReloadSubCommand(FancyCrafting pl, String... str) {
 		super(pl, str);
 		this.pl = pl;
 	}
 
 	@Override
 	public Boolean apply(CommandSender sender, String[] arg1) {
-		if (!sender.isOp() && !sender.hasPermission(AbstractFancyCrafting.RELOAD)) {
+		if (!sender.isOp() && !sender.hasPermission(FancyCrafting.RELOAD)) {
 			sender.sendMessage(this.pl.getResponse().NO_PERMISSION);
 			return true;
 		}

@@ -6,14 +6,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 
-import de.ancash.fancycrafting.base.AbstractFancyCrafting;
-import de.ancash.fancycrafting.base.gui.WorkspaceTemplate;
+import de.ancash.fancycrafting.FancyCrafting;
+import de.ancash.fancycrafting.gui.WorkspaceTemplate;
 
 public class WorkbenchOpenListener implements Listener {
 
-	private final AbstractFancyCrafting plugin;
+	private final FancyCrafting plugin;
 
-	public WorkbenchOpenListener(AbstractFancyCrafting plugin) {
+	public WorkbenchOpenListener(FancyCrafting plugin) {
 		this.plugin = plugin;
 	}
 

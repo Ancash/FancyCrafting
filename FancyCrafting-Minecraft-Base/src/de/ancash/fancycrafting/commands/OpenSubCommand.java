@@ -9,14 +9,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
-import de.ancash.fancycrafting.base.AbstractFancyCrafting;
-import de.ancash.fancycrafting.base.gui.WorkspaceTemplate;
+import de.ancash.fancycrafting.FancyCrafting;
+import de.ancash.fancycrafting.gui.WorkspaceTemplate;
 
 public class OpenSubCommand extends FancyCraftingSubCommand {
 
 	private final Map<Integer[], Permission> openPerms = new HashMap<>();
 
-	public OpenSubCommand(AbstractFancyCrafting pl, String... str) {
+	public OpenSubCommand(FancyCrafting pl, String... str) {
 		super(pl, str);
 	}
 
@@ -84,7 +84,7 @@ public class OpenSubCommand extends FancyCraftingSubCommand {
 			openCraftingWorkspace(player, WorkspaceTemplate.get(width, height));
 			return true;
 		} else if (args.length == 2) {
-			if (!sender.isOp() && !sender.hasPermission(AbstractFancyCrafting.OPEN_OTHER_DEFAULT_PERM)) {
+			if (!sender.isOp() && !sender.hasPermission(FancyCrafting.OPEN_OTHER_DEFAULT_PERM)) {
 				sender.sendMessage(this.pl.getResponse().NO_PERMISSION);
 				return true;
 			}
@@ -96,7 +96,7 @@ public class OpenSubCommand extends FancyCraftingSubCommand {
 			openCraftingWorkspace(target);
 			return true;
 		}
-		if (!player.isOp() && !player.hasPermission(AbstractFancyCrafting.OPEN_DEFAULT_PERM)) {
+		if (!player.isOp() && !player.hasPermission(FancyCrafting.OPEN_DEFAULT_PERM)) {
 			sender.sendMessage(this.pl.getResponse().NO_PERMISSION);
 			return true;
 		}
@@ -116,7 +116,7 @@ public class OpenSubCommand extends FancyCraftingSubCommand {
 	@SuppressWarnings("nls")
 	private Permission getOpenCustomPerm(int width, int height) {
 		if (width == 3 && height == 3)
-			return AbstractFancyCrafting.OPEN_DEFAULT_PERM;
+			return FancyCrafting.OPEN_DEFAULT_PERM;
 		return openPerms.computeIfAbsent(new Integer[] { width, height },
 				key -> new Permission("fancycrafting.open." + width + "x" + height, PermissionDefault.FALSE));
 	}
@@ -124,7 +124,7 @@ public class OpenSubCommand extends FancyCraftingSubCommand {
 	@SuppressWarnings("nls")
 	private Permission getOpenOtherCustomPerm(int width, int height) {
 		if (width == 3 && height == 3)
-			return AbstractFancyCrafting.OPEN_OTHER_DEFAULT_PERM;
+			return FancyCrafting.OPEN_OTHER_DEFAULT_PERM;
 		return openPerms.computeIfAbsent(new Integer[] { width, height },
 				key -> new Permission("fancycrafting.open.other." + width + "x" + height, PermissionDefault.FALSE));
 	}

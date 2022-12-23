@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import org.bukkit.entity.Player;
 
-import de.ancash.fancycrafting.base.AbstractFancyCrafting;
+import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.minecraft.IItemStack;
 
 public class AutoRecipeMatcher {
@@ -19,11 +19,13 @@ public class AutoRecipeMatcher {
 	private Set<IRecipe> matchedRecipes = new HashSet<>();
 	private final Set<IRecipe> possibleRecipes;
 	private List<IItemStack> ingredients;
-
-	public AutoRecipeMatcher(Player player, Set<IRecipe> recipes) {
+	private final FancyCrafting pl;
+	
+	public AutoRecipeMatcher(FancyCrafting pl, Player player, Set<IRecipe> recipes) {
 		this.player = player;
-		this.possibleRecipes = recipes.stream().filter(r -> AbstractFancyCrafting.canCraftRecipe(r, player))
+		this.possibleRecipes = recipes.stream().filter(r -> FancyCrafting.canCraftRecipe(r, player))
 				.collect(Collectors.toSet());
+		this.pl = pl;
 	}
 
 	public Set<IRecipe> getMatchedRecipes() {
@@ -41,6 +43,10 @@ public class AutoRecipeMatcher {
 	}
 
 	public boolean match(IRecipe recipe, Map<Integer, Integer> map) {
+		return !match0(recipe, map) ? false : !pl.getRecipeManager().isBlacklisted(recipe.getHashMatrix());
+	}
+	
+	protected boolean match0(IRecipe recipe, Map<Integer, Integer> map) {
 		if (!map.keySet().containsAll(recipe.getIngredientsHashCodes().keySet()))
 			return false;
 		for (Entry<Integer, Integer> entry : recipe.getIngredientsHashCodes().entrySet())

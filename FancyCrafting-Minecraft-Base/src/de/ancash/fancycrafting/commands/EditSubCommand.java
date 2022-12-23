@@ -6,12 +6,12 @@ import java.util.stream.Collectors;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import de.ancash.fancycrafting.base.AbstractFancyCrafting;
+import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.IRecipe;
 
 public class EditSubCommand extends FancyCraftingSubCommand {
 
-	public EditSubCommand(AbstractFancyCrafting pl, String... str) {
+	public EditSubCommand(FancyCrafting pl, String... str) {
 		super(pl, str);
 	}
 
@@ -21,7 +21,7 @@ public class EditSubCommand extends FancyCraftingSubCommand {
 		if (!isPlayer(sender))
 			return true;
 
-		if (!sender.isOp() && !sender.hasPermission(AbstractFancyCrafting.EDIT_PERM)) {
+		if (!sender.isOp() && !sender.hasPermission(FancyCrafting.EDIT_PERM)) {
 			sender.sendMessage(this.pl.getResponse().NO_PERMISSION);
 			return true;
 		}

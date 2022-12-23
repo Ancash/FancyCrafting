@@ -14,7 +14,7 @@ import de.ancash.fancycrafting.sockets.listeners.FancyCraftingConnectionListener
 import de.ancash.fancycrafting.sockets.listeners.FancyCraftingPacketListener;
 import de.ancash.libs.org.bukkit.event.EventManager;
 import de.ancash.loki.impl.SimpleLokiPluginImpl;
-import de.ancash.misc.IPrintStream.ConsoleColor;
+import de.ancash.misc.io.IPrintStream.ConsoleColor;
 import de.ancash.sockets.async.client.AbstractAsyncClient;
 
 @SuppressWarnings("nls")

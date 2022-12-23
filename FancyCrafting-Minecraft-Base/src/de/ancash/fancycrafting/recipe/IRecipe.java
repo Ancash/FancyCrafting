@@ -22,7 +22,7 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
-import de.ancash.fancycrafting.base.AbstractFancyCrafting;
+import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.complex.ArmorDyeRecipe;
 import de.ancash.fancycrafting.recipe.complex.BannerDuplicateRecipe;
 import de.ancash.fancycrafting.recipe.complex.BookDuplicateRecipe;
@@ -230,12 +230,12 @@ public abstract class IRecipe {
 			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid);
 	}
 
-	public static IRecipe fromVanillaRecipe(AbstractFancyCrafting pl, Recipe v) {
+	public static IRecipe fromVanillaRecipe(FancyCrafting pl, Recipe v) {
 		return fromVanillaRecipe(pl, v, false);
 	}
 
 	@SuppressWarnings("nls")
-	public static IRecipe fromVanillaRecipe(AbstractFancyCrafting pl, Recipe v, boolean ignoreMeta) {
+	public static IRecipe fromVanillaRecipe(FancyCrafting pl, Recipe v, boolean ignoreMeta) {
 		if (v == null)
 			return null;
 		IRecipe r = null;
@@ -322,12 +322,12 @@ public abstract class IRecipe {
 		return is;
 	}
 
-	public static List<String> ingredientsToList(AbstractFancyCrafting pl, ItemStack[] ingredients, String format) {
+	public static List<String> ingredientsToList(FancyCrafting pl, ItemStack[] ingredients, String format) {
 		return ingredientsToList(pl, ingredients, 8, 6, format);
 	}
 
 	@SuppressWarnings("nls")
-	public static List<String> ingredientsToList(AbstractFancyCrafting pl, ItemStack[] ingredients, int width,
+	public static List<String> ingredientsToList(FancyCrafting pl, ItemStack[] ingredients, int width,
 			int height, String format) {
 		StringBuilder builder = new StringBuilder();
 		Map<Integer, Character> mapped = new HashMap<>();
@@ -364,13 +364,13 @@ public abstract class IRecipe {
 		return Arrays.asList(builder.toString().split("\n"));
 	}
 
-	public static List<String> ingredientsToListColorless(AbstractFancyCrafting pl, ItemStack[] ingredients,
+	public static List<String> ingredientsToListColorless(FancyCrafting pl, ItemStack[] ingredients,
 			String format) {
 		return ingredientsToListColorless(pl, ingredients, 8, 6, format);
 	}
 
 	@SuppressWarnings("nls")
-	public static List<String> ingredientsToListColorless(AbstractFancyCrafting pl, ItemStack[] ingredients, int width,
+	public static List<String> ingredientsToListColorless(FancyCrafting pl, ItemStack[] ingredients, int width,
 			int height, String format) {
 		List<String> str = ingredientsToList(pl, ingredients, width, height, format);
 		for (int i = 0; i < str.size(); i++)

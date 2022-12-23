@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Recipe;
 
-import de.ancash.fancycrafting.base.AbstractFancyCrafting;
+import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.crafting.IContainerWorkbench;
 import de.ancash.minecraft.crafting.ICraftingManager;
@@ -19,9 +19,9 @@ public class VanillaRecipeMatcher {
 	private static final ConcurrentHashMap<List<Integer>, Optional<IRecipe>> cache = new ConcurrentHashMap<>();
 
 	private final IContainerWorkbench icw;
-	private final AbstractFancyCrafting pl;
+	private final FancyCrafting pl;
 
-	public VanillaRecipeMatcher(AbstractFancyCrafting pl, Player player) {
+	public VanillaRecipeMatcher(FancyCrafting pl, Player player) {
 		icw = ICraftingManager.getSingleton().newInstance(player);
 		this.pl = pl;
 	}
