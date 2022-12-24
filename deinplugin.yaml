@@ -12,7 +12,7 @@ download:
 supportedPlatforms:
   - spigot
   - paper
-supportedGameVersions: 1.8 - 1.19
+supportedGameVersions: ^1.8
 category: game
 dependencies:
   - url: https://www.spigotmc.org/resources/89796/
