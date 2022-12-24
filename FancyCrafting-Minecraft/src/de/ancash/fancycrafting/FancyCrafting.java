@@ -347,7 +347,6 @@ public class FancyCrafting extends JavaPlugin {
 						config.getStringList("recipe-create-gui.manage-random-result-probability.header"))
 				.setManageProbabilitiesTitle(config.getString("recipe-create-gui.manage-probabilities-title"))
 				.setInputRecipeNameTitle(config.getString("recipe-create-gui.input-recipe-name-title"));
-		System.out.println(workspaceObjects.getBackgroundItem().getOriginal());
 		defaultDim = new WorkspaceDimension(config.getInt("default-template-width"),
 				config.getInt("default-template-height"));
 		permsForCustomRecipes = config.getBoolean("perms-for-custom-recipes");

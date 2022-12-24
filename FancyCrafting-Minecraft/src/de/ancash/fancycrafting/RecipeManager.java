@@ -42,10 +42,10 @@ public class RecipeManager {
 	protected final Map<String, Set<IRecipe>> recipesByName = new ConcurrentHashMap<>();
 	protected final Map<Integer, Set<IRecipe>> recipesByHash = new ConcurrentHashMap<>();
 	
-	private final File recipeFile = new File("plugins/FancyCrafting/recipes.yml");
+	private final File recipeFile = new File("plugins/FancyCrafting/recipes.yml"); //$NON-NLS-1$
 	private final FileConfiguration recipeCfg = YamlConfiguration.loadConfiguration(recipeFile);
 
-	private final File blacklistFile = new File("plugins/FancyCrafting/blacklist/recipes.yml");
+	private final File blacklistFile = new File("plugins/FancyCrafting/blacklist/recipes.yml"); //$NON-NLS-1$
 	private final FileConfiguration blacklistCfg = YamlConfiguration.loadConfiguration(blacklistFile);
 	
 	private final Map<List<Integer>, IRecipe> blacklistedRecipes = new HashMap<>();
@@ -216,30 +216,30 @@ public class RecipeManager {
 	public void addBlacklistedRecipe(IRecipe disabled) {
 		blacklistedRecipes.put(disabled.getHashMatrix(), disabled);
 		plugin.getLogger()
-				.info("Loaded blacklisted recipe: " + disabled.getRecipeName() + " (" + disabled.getUUID() + ")");
+				.info("Loaded blacklisted recipe: " + disabled.getRecipeName() + " (" + disabled.getUUID() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 	
 	public void loadBlacklistedRecipes() {
-		plugin.getLogger().info("Loading blacklisted recipes...");
+		plugin.getLogger().info("Loading blacklisted recipes..."); //$NON-NLS-1$
 		try {
 			blacklistCfg.load(blacklistFile);
 		} catch (IOException | InvalidConfigurationException e1) {
-			plugin.getLogger().log(Level.SEVERE, "Could not load blacklist file", e1);
+			plugin.getLogger().log(Level.SEVERE, "Could not load blacklist file", e1); //$NON-NLS-1$
 			return;
 		}
 		blacklistedRecipes.clear();
 		for (String key : blacklistCfg.getKeys(false)) {
 			try {
 				IRecipe recipe = IRecipe.getRecipeFromFile(blacklistFile, blacklistCfg, key);
-				plugin.getLogger().fine("-----------------------------------------------------");
+				plugin.getLogger().fine("-----------------------------------------------------"); //$NON-NLS-1$
 				printRecipe(recipe);
-				plugin.getLogger().fine("-----------------------------------------------------");
+				plugin.getLogger().fine("-----------------------------------------------------"); //$NON-NLS-1$
 				addBlacklistedRecipe(recipe);
 			} catch (IOException | InvalidConfigurationException e) {
-				plugin.getLogger().log(Level.SEVERE, "Could not load recipe with key " + key, e);
+				plugin.getLogger().log(Level.SEVERE, "Could not load recipe with key " + key, e); //$NON-NLS-1$
 			}
 		}
-		plugin.getLogger().info("Loaded blacklisted recipes!");
+		plugin.getLogger().info("Loaded blacklisted recipes!"); //$NON-NLS-1$
 	}
 	
 	public void createRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id, UUID uuid, int width,
@@ -292,27 +292,27 @@ public class RecipeManager {
 	}
 	
 	public void loadCustomRecipes() {
-		plugin.getLogger().info("Loading custom recipes...");
+		plugin.getLogger().info("Loading custom recipes..."); //$NON-NLS-1$
 		try {
 			recipeCfg.load(recipeFile);
 		} catch (IOException | InvalidConfigurationException e1) {
-			plugin.getLogger().log(Level.SEVERE, "Could not load recipes file", e1);
+			plugin.getLogger().log(Level.SEVERE, "Could not load recipes file", e1); //$NON-NLS-1$
 			return;
 		}
 		for (String key : recipeCfg.getKeys(false)) {
 			try {
 				IRecipe recipe = IRecipe.getRecipeFromFile(recipeFile, recipeCfg, key);
-				plugin.getLogger().fine("-----------------------------------------------------");
+				plugin.getLogger().fine("-----------------------------------------------------"); //$NON-NLS-1$
 				printRecipe(recipe);
-				plugin.getLogger().fine("-----------------------------------------------------");
+				plugin.getLogger().fine("-----------------------------------------------------"); //$NON-NLS-1$
 				registerRecipe(recipe);
 				plugin.getLogger()
-						.info("Loaded custom recipe: " + recipeCfg.getString(key + ".name") + " (" + key + ")");
+						.info("Loaded custom recipe: " + recipeCfg.getString(key + ".name") + " (" + key + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 			} catch (IOException | InvalidConfigurationException e) {
-				plugin.getLogger().log(Level.SEVERE, "Could not load recipe with key " + key, e);
+				plugin.getLogger().log(Level.SEVERE, "Could not load recipe with key " + key, e); //$NON-NLS-1$
 			}
 		}
-		plugin.getLogger().info("Loaded custom recipes!");
+		plugin.getLogger().info("Loaded custom recipes!"); //$NON-NLS-1$
 	}
 
 	public void delete(String recipeName) throws RecipeDeleteException {
