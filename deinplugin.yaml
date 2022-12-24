@@ -9,9 +9,6 @@ authors:
 download:
   url: https://www.spigotmc.org/resources/87300/
   name: Spigot
-supportedPlatforms:
-  - spigot
-  - paper
 supportedGameVersions: ^1.8
 category: game
 dependencies:
