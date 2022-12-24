@@ -14,6 +14,7 @@ category: game
 dependencies:
   - url: https://www.spigotmc.org/resources/89796/
     name: ILibrary
+    versionRange: 3.7.1
     required: true
 introduction:
   de: Eigene Shaped/Shapeless/Random Rezepte in eigener GUI oder vanilla crafting table (3x3 & 2x2)
