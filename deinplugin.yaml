@@ -80,10 +80,7 @@ installation:
     - Download the plugin- and dependency-file
     - Put the files into your plugins-folder
     - Restart your server
-tags:
-  - api
-  - crafting
-  - recipe
+tags: [crafting, recipe]
 icon: https://cdn-icons-png.flaticon.com/512/9262/9262158.png
 videoSources:
   - https://www.youtube.com/watch?v=CH3JKhNvSzI
