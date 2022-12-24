@@ -18,56 +18,29 @@ dependencies:
 introduction:
   - de: Eigene Shaped/Shapeless/Random Rezepte in eigener GUI oder vanilla crafting table (3x3 & 2x2)
   - en: Custom Shaped/Shapeless/Random recipes in custom GUI or vanilla crafting table (3x3 & 2x2)
-description:
-  - de: |
-      [Vollständige Beschreibung](https://www.spigotmc.org/resources/87300/)
-
-      # Überblick
-      Das Plugin ermöglicht es eigene Shaped, Shapeless und Random recipes zu erstellen. Die Vanilla Crafting Tables (3x3 & 2x2) und eine custom GUI sind unterstützt.
-      
-      # Vanilla Crafting Table
-      Beide Crafting Tables sind unterstützt, 3x3 und 2x2. Es ist nicht möglich deren Dimensionen zu ändern. Eigene Rezepte sind ebenfalls unterstützt. [Hier](https://www.youtube.com/watch?v=aCxqO2lk4yw) gibt es ein kurzes Tutorial dazu.
-      
-      # Custom GUI
-      Die custom GUI unterstützt alle Dimensionen von 1x1 bis 8x6. Es ist außerdem möglich quick crafting slots zu benutzen. D.h., dass ein Rezept automatisch gecraftet wird, ohne das man die Items in das Crafting Grid legen muss. [Hier](https://www.youtube.com/watch?v=VaXG0Ll3RD0) gibt es ein kurzes Tutorial dazu.
-      
-      # Shaped/Shapeless Recipes
-      Das sind die normalen Rezepte, wie sie in Minecraft vorkommen. **Shaped Recipes** haben eine bestimmte Anordnung der Zutaten die eingehalten werden muss. **Shapeless Recipes** haben, wie der Name schon sagt, keine Form, sie sind formlos.
-      Es ist möglich als Zutat ein Item mit einer Anzahl > 1 zu definieren. Wenn sich Rezepte bis auf die Anzahl der Zutaten identisch sind, kann es zu Konflikten kommen. [Hier](https://www.youtube.com/watch?v=zkSA5_uTIq0) gibt es ein kurzes Tutorial dazu.
-      
-      # Random Recipe
-      Ein Random Recipe, oder Zufälliges Rezept, ist eine Erweiterung eines Shaped oder Shapeless Recipes. Dieses Rezept kann mehrere *Ergebnisse* haben. Das heißt, dass bei einem Rezept z.B. ein Diamond oder eine Kohle rauskommen können. Die Wahrscheinlichkeit für ein Ergebnis kann eingestellt werden. [Hier](https://www.youtube.com/watch?v=h92XrcFPgaw) gibt es ein kurzes Tutorial dazu.
-      
-      
-      # Recipe Blacklisting
-      Es ist möglich bestimmte Rezepte zu blockieren. Um das zu tun, muss der Command */fc blacklist* oder */fc bl* benutzt und ein neues Rezept erstellt werden. Nach dem Speichern ist es nicht mehr möglich dieses Rezept zu craften.
-      **Wichtig**: Es werden nur die Zutaten gecheckt, die Anzahl der Zutaten nicht.
-      [Hier](https://www.youtube.com/watch?v=V3avV4Ys3pk) gibt es ein kurzes Tutorial dazu.
-  - en: |
-      [Full Description](https://www.spigotmc.org/resources/87300/)
-      
-      # Overview
-      The plugin allows you to create your own Shaped, Shapeless and Random recipes. The Vanilla Crafting Tables (3x3 & 2x2) and a custom GUI are supported.
-      
-      # Vanilla Crafting Table
-      Both crafting tables are supported, 3x3 and 2x2. It is not possible to change their dimensions. Custom recipes are also supported. [Here](https://www.youtube.com/watch?v=aCxqO2lk4yw) is a short tutorial about it.
-      
-      # Custom GUI
-      The custom GUI supports all dimensions from 1x1 to 8x6. It is also possible to use quick crafting slots. This means that a recipe is automatically crafted without having to put the items into the crafting grid. [Here](https://www.youtube.com/watch?v=VaXG0Ll3RD0) is a short tutorial about this.
-      
-      # Shaped/Shapeless Recipes
-      These are the normal recipes as they appear in Minecraft. **Shaped Recipes** have a specific arrangement of ingredients that must be followed. **Shapeless Recipes** have, as the name suggests, no shape, they are shapeless.
-      It is possible to define an ingredient as an item with a count > 1. If recipes are identical except for the number of ingredients, conflicts can occur. [Here](https://www.youtube.com/watch?v=zkSA5_uTIq0) there is a short tutorial about this.
-      
-      # Random Recipe
-      A Random Recipe is an extension of a Shaped or Shapeless Recipe. This recipe can have multiple *results*. This means that a recipe can produce, for example, a Diamond or a Coal. The probability of a result can be set. [Here](https://www.youtube.com/watch?v=h92XrcFPgaw) there is a short tutorial about this.
-      
-      
-      # Recipe Blacklisting
-      It is possible to block certain recipes. To do this, the command */fc blacklist* or */fc bl* must be used and a new recipe must be created. After saving it is no longer possible to craft this recipe.
-      **Important**: Only the ingredients are checked, the number of ingredients is not.
-      [Here](https://www.youtube.com/watch?v=V3avV4Ys3pk) there is a short tutorial about this.
-
+description: |
+  [Vollständige Beschreibung](https://www.spigotmc.org/resources/87300/)
+  
+  # Überblick
+  Das Plugin ermöglicht es eigene Shaped, Shapeless und Random recipes zu erstellen. Die Vanilla Crafting Tables (3x3 & 2x2) und eine custom GUI sind unterstützt.
+  
+  # Vanilla Crafting Table
+  Beide Crafting Tables sind unterstützt, 3x3 und 2x2. Es ist nicht möglich deren Dimensionen zu ändern. Eigene Rezepte sind ebenfalls unterstützt. [Hier](https://www.youtube.com/watch?v=aCxqO2lk4yw) gibt es ein kurzes Tutorial dazu.
+  
+  # Custom GUI
+  Die custom GUI unterstützt alle Dimensionen von 1x1 bis 8x6. Es ist außerdem möglich quick crafting slots zu benutzen. D.h., dass ein Rezept automatisch gecraftet wird, ohne das man die Items in das Crafting Grid legen muss. [Hier](https://www.youtube.com/watch?v=VaXG0Ll3RD0) gibt es ein kurzes Tutorial dazu.
+  
+  # Shaped/Shapeless Recipes
+  Das sind die normalen Rezepte, wie sie in Minecraft vorkommen. **Shaped Recipes** haben eine bestimmte Anordnung der Zutaten die eingehalten werden muss. **Shapeless Recipes** haben, wie der Name schon sagt, keine Form, sie sind formlos.
+  Es ist möglich als Zutat ein Item mit einer Anzahl > 1 zu definieren. Wenn sich Rezepte bis auf die Anzahl der Zutaten identisch sind, kann es zu Konflikten kommen. [Hier](https://www.youtube.com/watch?v=zkSA5_uTIq0) gibt es ein kurzes Tutorial dazu.
+  
+  # Random Recipe
+  Ein Random Recipe, oder Zufälliges Rezept, ist eine Erweiterung eines Shaped oder Shapeless Recipes. Dieses Rezept kann mehrere *Ergebnisse* haben. Das heißt, dass bei einem Rezept z.B. ein Diamond oder eine Kohle rauskommen können. Die Wahrscheinlichkeit für ein Ergebnis kann eingestellt werden. [Hier](https://www.youtube.com/watch?v=h92XrcFPgaw) gibt es ein kurzes Tutorial dazu.
+  
+  # Recipe Blacklisting
+  Es ist möglich bestimmte Rezepte zu blockieren. Um das zu tun, muss der Command */fc blacklist* oder */fc bl* benutzt und ein neues Rezept erstellt werden. Nach dem Speichern ist es nicht mehr möglich dieses Rezept zu craften.
+  **Wichtig**: Es werden nur die Zutaten gecheckt, die Anzahl der Zutaten nicht.
+  [Hier](https://www.youtube.com/watch?v=V3avV4Ys3pk) gibt es ein kurzes Tutorial dazu.
 installation:
   de: |
     - Herunterladen der Plugin- und Dependency-Datei
