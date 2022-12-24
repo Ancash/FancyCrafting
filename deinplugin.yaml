@@ -23,7 +23,7 @@ introduction:
   - en: Custom Shaped/Shapeless/Random recipes in custom GUI or vanilla crafting table (3x3 & 2x2)
 description:
   - de: |
-      [Vollständige Beschreibung] (https://www.spigotmc.org/resources/87300/)
+      [Vollständige Beschreibung](https://www.spigotmc.org/resources/87300/)
 
       # Überblick
       Das Plugin ermöglicht es eigene Shaped, Shapeless und Random recipes zu erstellen. Die Vanilla Crafting Tables (3x3 & 2x2) und eine custom GUI sind unterstützt.
@@ -47,7 +47,7 @@ description:
       **Wichtig**: Es werden nur die Zutaten gecheckt, die Anzahl der Zutaten nicht.
       [Hier](https://www.youtube.com/watch?v=V3avV4Ys3pk) gibt es ein kurzes Tutorial dazu.
   - en: |
-      [Full Description] (https://www.spigotmc.org/resources/87300/)
+      [Full Description](https://www.spigotmc.org/resources/87300/)
       
       # Overview
       The plugin allows you to create your own Shaped, Shapeless and Random recipes. The Vanilla Crafting Tables (3x3 & 2x2) and a custom GUI are supported.
