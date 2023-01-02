@@ -45,11 +45,12 @@ public class WorkspaceTemplate {
 		pl.getLogger().fine("----------------------------------------------");
 	}
 
+	@SuppressWarnings("nls")
 	public static WorkspaceTemplate get(int width, int height) {
 		if (!templates.containsKey(width))
-			return null;
+			throw new IllegalArgumentException("no template w/ width: " + width);
 		if (!templates.get(width).containsKey(height))
-			return null;
+			throw new IllegalArgumentException("no template w/ height: " + height);
 		return templates.get(width).get(height);
 	}
 }

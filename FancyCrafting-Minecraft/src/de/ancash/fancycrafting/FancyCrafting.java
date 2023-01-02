@@ -94,7 +94,7 @@ public class FancyCrafting extends JavaPlugin {
 	protected final WorkspaceObjects workspaceObjects = new WorkspaceObjects();
 	private final File blacklistFile = new File("plugins/FancyCrafting/blacklist/config.yml");
 	private final YamlConfiguration blacklistConfig = YamlConfiguration.loadConfiguration(blacklistFile);
-	
+
 	private String manageBlacklistTitle;
 	private IItemStack addRecipeToBlacklistItem;
 	private String addRecipeToBlacklistTitle;
@@ -104,10 +104,13 @@ public class FancyCrafting extends JavaPlugin {
 	protected boolean permsForCustomRecipes;
 	protected boolean permsForVanillaRecipes;
 	protected boolean sortRecipesByRecipeName;
+	protected boolean supportVanilla3x3;
+	protected boolean supportVanilla2x2;
 	protected int craftingCooldown;
 	protected boolean debug;
 
 	protected FileConfiguration config;
+	private final File configFile = new File("plugins/FancyCrafting/config.yml");
 
 	public void onEnable() {
 		singleton = this;
@@ -131,9 +134,13 @@ public class FancyCrafting extends JavaPlugin {
 	protected void loadListeners() {
 		HandlerList.unregisterAll(this);
 		PluginManager pm = Bukkit.getServer().getPluginManager();
-		if (config.getBoolean("use-custom-crafting-gui"))
+		if (config.getBoolean("crafting.use-custom-gui"))
 			pm.registerEvents(new WorkbenchOpenListener(this), this);
-		Bukkit.getPluginManager().registerEvents(new WorkbenchClickListener(this, config.getBoolean("use-custom-crafting-gui")), this);
+
+		Bukkit.getPluginManager()
+				.registerEvents(new WorkbenchClickListener(this, config.getBoolean("crafting.use-custom-gui"),
+						config.getBoolean("crafting.support-vanilla-3x3"),
+						config.getBoolean("crafting.support-vanilla-2x2")), this);
 	}
 
 	@Override
@@ -165,15 +172,15 @@ public class FancyCrafting extends JavaPlugin {
 		System.gc();
 		getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
 	}
-	
+
 	private void loadBlacklistConfig() throws FileNotFoundException, IOException, InvalidConfigurationException {
 		if (!blacklistFile.exists())
-			FileUtils.copyInputStreamToFile(getResource("resources/blacklist-config.yml"),
-					blacklistFile);
+			FileUtils.copyInputStreamToFile(getResource("resources/blacklist-config.yml"), blacklistFile);
 		checkFile(blacklistFile, "resources/blacklist-config.yml");
 		blacklistConfig.load(blacklistFile);
 		manageBlacklistTitle = blacklistConfig.getString("main-title");
-		addRecipeToBlacklistItem = new IItemStack(ItemStackUtils.getItemStack(blacklistConfig, "add-recipe-to-blacklist.item"));
+		addRecipeToBlacklistItem = new IItemStack(
+				ItemStackUtils.getItemStack(blacklistConfig, "add-recipe-to-blacklist.item"));
 		addRecipeToBlacklistTitle = blacklistConfig.getString("add-recipe-to-blacklist.title");
 	}
 
@@ -196,14 +203,14 @@ public class FancyCrafting extends JavaPlugin {
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
 		}
-		
+
 		getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
 	}
 
 	public void viewRecipe(Player p, IRecipe recipe) {
 		viewRecipeSingle(p, new HashSet<>(Arrays.asList(recipe)));
 	}
-	
+
 	public String getManageBlacklistTitle() {
 		return manageBlacklistTitle;
 	}
@@ -224,17 +231,16 @@ public class FancyCrafting extends JavaPlugin {
 		return new RecipeMatcherCallable(this, player);
 	}
 
-	protected void loadFiles() throws IOException, InvalidConfigurationException {
-		if (!new File("plugins/FancyCrafting/config.yml").exists())
-			FileUtils.copyInputStreamToFile(getResource("resources/config.yml"),
-					new File("plugins/FancyCrafting/config.yml"));
-
-		checkFile(new File("plugins/FancyCrafting/config.yml"), "resources/config.yml");
+	private void loadFiles() throws IOException, InvalidConfigurationException {
+		if (!configFile.exists())
+			FileUtils.copyInputStreamToFile(getResource("resources/config.yml"), configFile);
+		applyConfigPatches();
+		checkFile(configFile, "resources/config.yml");
 
 		if (!new File("plugins/FancyCrafting/recipes.yml").exists())
 			new File("plugins/FancyCrafting/recipes.yml").createNewFile();
 
-		config = YamlConfiguration.loadConfiguration(new File("plugins/FancyCrafting/config.yml"));
+		config = YamlConfiguration.loadConfiguration(configFile);
 		loadConfig();
 
 		getLogger().info("Loading crafting templates...");
@@ -275,6 +281,22 @@ public class FancyCrafting extends JavaPlugin {
 		}
 		getLogger().info("Crafting templates loaded!");
 		response = new Response(this);
+	}
+
+	private void applyConfigPatches()
+			throws de.ancash.libs.org.simpleyaml.exceptions.InvalidConfigurationException, IOException {
+		YamlFile yamlCfg = new YamlFile(configFile);
+		yamlCfg.load();
+		de.ancash.misc.io.FileUtils.move(yamlCfg, "use-custom-crafting-gui", "crafting.use-custom-gui");
+		de.ancash.misc.io.FileUtils.move(yamlCfg, "crafting-cooldown-message", "crafting.cooldown-message");
+		de.ancash.misc.io.FileUtils.move(yamlCfg, "crafting-cooldown", "crafting.cooldown");
+		de.ancash.misc.io.FileUtils.move(yamlCfg, "check-recipes-async", "crafting.check-recipes-async");
+		de.ancash.misc.io.FileUtils.move(yamlCfg, "check-quick-crafting-async", "crafting.check-quick-crafting-async");
+		de.ancash.misc.io.FileUtils.move(yamlCfg, "perms-for-custom-recipes", "crafting.perms-for-custom-recipes");
+		de.ancash.misc.io.FileUtils.move(yamlCfg, "perms-for-vanilla-recipes", "crafting.perms-for-vanilla-recipes");
+		de.ancash.misc.io.FileUtils.move(yamlCfg, "default-template-width", "crafting.default-template-width");
+		de.ancash.misc.io.FileUtils.move(yamlCfg, "default-template-height", "crafting.default-template-height");
+		yamlCfg.save();
 	}
 
 	public void checkFile(File file, String src) throws IOException {
@@ -347,15 +369,17 @@ public class FancyCrafting extends JavaPlugin {
 						config.getStringList("recipe-create-gui.manage-random-result-probability.header"))
 				.setManageProbabilitiesTitle(config.getString("recipe-create-gui.manage-probabilities-title"))
 				.setInputRecipeNameTitle(config.getString("recipe-create-gui.input-recipe-name-title"));
-		defaultDim = new WorkspaceDimension(config.getInt("default-template-width"),
-				config.getInt("default-template-height"));
-		permsForCustomRecipes = config.getBoolean("perms-for-custom-recipes");
-		permsForVanillaRecipes = config.getBoolean("perms-for-vanilla-recipes");
-		checkRecipesAsync = config.getBoolean("check-recipes-async");
-		quickCraftingAsync = config.getBoolean("check-quick-crafting-async");
+		defaultDim = new WorkspaceDimension(config.getInt("crafting.default-template-width"),
+				config.getInt("crafting.default-template-height"));
+		permsForCustomRecipes = config.getBoolean("crafting.perms-for-custom-recipes");
+		permsForVanillaRecipes = config.getBoolean("crafting.perms-for-vanilla-recipes");
+		checkRecipesAsync = config.getBoolean("crafting.check-recipes-async");
+		quickCraftingAsync = config.getBoolean("crafting.check-quick-crafting-async");
 		sortRecipesByRecipeName = config.getBoolean("sort-recipes-by-recipe-name");
+		supportVanilla2x2 = config.getBoolean("crafting.support-vanilla-2x2");
+		supportVanilla3x3 = config.getBoolean("crafting.support-vanilla-3x3");
 		debug = config.getBoolean("debug");
-		craftingCooldown = config.getInt("crafting-cooldown");
+		craftingCooldown = config.getInt("crafting.cooldown");
 		getLogger().info("Debug: " + debug);
 		MinecraftLoggerUtil.enableDebugging(this,
 				(pl, record) -> debug ? true : record.getLevel().intValue() >= Level.INFO.intValue(),
@@ -368,6 +392,8 @@ public class FancyCrafting extends JavaPlugin {
 		getLogger().info("Default crafting template: " + defaultDim.getWidth() + "x" + defaultDim.getHeight());
 		getLogger().info("Crafting cooldown in ticks: " + craftingCooldown);
 		getLogger().info("Open on crafting table open: " + config.getBoolean("open-on-crafting-table-open"));
+		getLogger().info("Support vanilla 3x3: " + supportVanilla3x3);
+		getLogger().info("Support vanilla 2x2: " + supportVanilla2x2);
 	}
 
 	private String format(LogRecord record) {
@@ -419,6 +445,7 @@ public class FancyCrafting extends JavaPlugin {
 	public void onDisable() {
 		updateChecker.stop();
 		threadPool.shutdownNow();
+		HandlerList.unregisterAll(this);
 		MinecraftLoggerUtil.disableDebugging(singleton);
 	}
 
@@ -485,19 +512,19 @@ public class FancyCrafting extends JavaPlugin {
 	public int getCraftingCooldown() {
 		return craftingCooldown;
 	}
-	
+
 	public void addRecipeToBlacklist(IRecipe recipe) throws IOException {
 		recipe.saveToFile(getRecipeManager().getBlacklistRecipeFileCfg(), recipe.getUUID().toString());
 		getRecipeManager().getBlacklistRecipeFileCfg().save(getRecipeManager().getBlacklistRecipeFile());
 		getRecipeManager().loadBlacklistedRecipes();
 	}
-	
+
 	public void removeBlacklistedRecipe(IRecipe recipe) throws IOException {
 		getRecipeManager().getBlacklistRecipeFileCfg().set(recipe.getUUID().toString(), null);
 		getRecipeManager().getBlacklistRecipeFileCfg().save(getRecipeManager().getBlacklistRecipeFile());
 		getRecipeManager().loadBlacklistedRecipes();
 	}
-	
+
 	public void viewRecipeSingle(Player player, Set<IRecipe> recipes) {
 		if (recipes.size() == 1) {
 			IRecipe recipe = recipes.stream().findFirst().get();
@@ -531,7 +558,6 @@ public class FancyCrafting extends JavaPlugin {
 	}
 
 	public void viewRecipeCollection(Player player, Set<IRecipe> recipes) {
-		new RecipeCollectionPagedViewGUI(this, player,
-				new ArrayList<>(getRecipeManager().getCustomRecipes()));
+		new RecipeCollectionPagedViewGUI(this, player, new ArrayList<>(getRecipeManager().getCustomRecipes()));
 	}
 }

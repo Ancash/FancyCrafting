@@ -1,13 +1,13 @@
 package de.ancash.fancycrafting.gui.manage.blacklist;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.bukkit.entity.Player;
 
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.gui.AbstractRecipeCollectionPagedViewGUI;
 import de.ancash.fancycrafting.recipe.IRecipe;
+import de.ancash.lambda.Lambda;
 import de.ancash.minecraft.inventory.InventoryItem;
 
 public class ManageBlacklistCollectionGUI extends AbstractRecipeCollectionPagedViewGUI {
@@ -22,14 +22,13 @@ public class ManageBlacklistCollectionGUI extends AbstractRecipeCollectionPagedV
 	@Override
 	public void onRecipeClick(IRecipe recipe) {
 		new ManageBlacklistedRecipeGUI(pl, player, recipe).open();
-		;
 	}
 
 	@Override
 	public void open() {
 		super.open();
-		addInventoryItem(new InventoryItem(this, ((FancyCrafting) super.pl).getAddRecipeToBlacklistItem().getOriginal(),
-				49, (a, b, c, top) -> Optional.ofNullable(top ? this : null)
-						.ifPresent(self -> CreateBlacklistedRecipeGUI.open(((FancyCrafting) super.pl), player))));
+		Lambda.of(null);
+		addInventoryItem(new InventoryItem(this, super.pl.getAddRecipeToBlacklistItem().getOriginal(),
+				49, (a, b, c, top) -> Lambda.execIf(top, () -> CreateBlacklistedRecipeGUI.open(super.pl, player))));
 	}
 }

@@ -1,17 +1,20 @@
-check-recipes-async: false
-check-quick-crafting-async: false
-perms-for-custom-recipes: false
-perms-for-vanilla-recipes: false
 sort-recipes-by-recipe-name: true #false = sorted by result name/material name
-default-template-width: 3
-default-template-height: 3
 debug: true
 player-not-found: "§cCould not find §r%player%"
 no-console-command: "§cThis is not for you!"
-crafting-cooldown: 3
-crafting-cooldown-message: "§eWoah! Slow down"
-use-custom-crafting-gui: true
 
+crafting:
+   support-vanilla-3x3: true
+   support-vanilla-2x2: true
+   default-template-width: 3
+   default-template-height: 3
+   check-recipes-async: false
+   check-quick-crafting-async: false
+   perms-for-custom-recipes: false
+   perms-for-vanilla-recipes: false
+   use-custom-gui: true
+   cooldown: 3
+   cooldown-message: "§eWoah! Slow down"
 #some messages
 no-permission: "§cYou don't have permission to do that!"
 invalid-recipe: "§cThat recipe does not exist: %recipe%"

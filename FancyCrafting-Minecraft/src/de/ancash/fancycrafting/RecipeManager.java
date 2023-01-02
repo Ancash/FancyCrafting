@@ -41,13 +41,13 @@ public class RecipeManager {
 	protected final Set<IRecipe> autoMatchingRecipes = new HashSet<>();
 	protected final Map<String, Set<IRecipe>> recipesByName = new ConcurrentHashMap<>();
 	protected final Map<Integer, Set<IRecipe>> recipesByHash = new ConcurrentHashMap<>();
-	
+
 	private final File recipeFile = new File("plugins/FancyCrafting/recipes.yml"); //$NON-NLS-1$
 	private final FileConfiguration recipeCfg = YamlConfiguration.loadConfiguration(recipeFile);
 
 	private final File blacklistFile = new File("plugins/FancyCrafting/blacklist/recipes.yml"); //$NON-NLS-1$
 	private final FileConfiguration blacklistCfg = YamlConfiguration.loadConfiguration(blacklistFile);
-	
+
 	private final Map<List<Integer>, IRecipe> blacklistedRecipes = new HashMap<>();
 	protected final FancyCrafting plugin;
 
@@ -55,7 +55,7 @@ public class RecipeManager {
 		this.plugin = pl;
 		if (!recipeFile.exists())
 			recipeFile.createNewFile();
-		if(!blacklistFile.exists())
+		if (!blacklistFile.exists())
 			blacklistFile.createNewFile();
 		loadBukkitRecipes();
 		loadCustomRecipes();
@@ -70,11 +70,11 @@ public class RecipeManager {
 			registerRecipe(recipe);
 		});
 	}
-	
+
 	public FileConfiguration getBlacklistRecipeFileCfg() {
 		return blacklistCfg;
 	}
-	
+
 	public File getBlacklistRecipeFile() {
 		return blacklistFile;
 	}
@@ -196,15 +196,15 @@ public class RecipeManager {
 												plugin.getWorkspaceObjects().getViewIngredientsIdFormat()))
 								: ((IShapelessRecipe) recipe).getIngredients()));
 	}
-	
+
 	public boolean isBlacklisted(List<Integer> hashs) {
-		if(blacklistedRecipes.containsKey(hashs))
+		if (blacklistedRecipes.containsKey(hashs))
 			return true;
 		hashs = hashs.stream().filter(i -> i != null).collect(Collectors.toList());
 		Collections.sort(hashs);
 		return blacklistedRecipes.containsKey(hashs);
 	}
-	
+
 	public Set<List<Integer>> getBlacklistedRecipesHashes() {
 		return blacklistedRecipes.keySet();
 	}
@@ -212,13 +212,13 @@ public class RecipeManager {
 	public Map<List<Integer>, IRecipe> getBlacklistedRecipes() {
 		return blacklistedRecipes;
 	}
-	
+
 	public void addBlacklistedRecipe(IRecipe disabled) {
 		blacklistedRecipes.put(disabled.getHashMatrix(), disabled);
 		plugin.getLogger()
 				.info("Loaded blacklisted recipe: " + disabled.getRecipeName() + " (" + disabled.getUUID() + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
-	
+
 	public void loadBlacklistedRecipes() {
 		plugin.getLogger().info("Loading blacklisted recipes..."); //$NON-NLS-1$
 		try {
@@ -241,7 +241,7 @@ public class RecipeManager {
 		}
 		plugin.getLogger().info("Loaded blacklisted recipes!"); //$NON-NLS-1$
 	}
-	
+
 	public void createRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id, UUID uuid, int width,
 			int height) throws InvalidRecipeException {
 		saveRecipe(result, ingredients, shaped, id, uuid, width, height);
@@ -253,11 +253,13 @@ public class RecipeManager {
 		try {
 			recipeCfg.load(recipeFile);
 			if (shaped)
-				new IShapedRecipe(ingredients, width, height, result, name, uuid).saveToFile(recipeCfg, uuid.toString());
+				new IShapedRecipe(ingredients, width, height, result, name, uuid).saveToFile(recipeCfg,
+						uuid.toString());
 			else
-				new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid).saveToFile(recipeCfg, uuid.toString());
+				new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid).saveToFile(recipeCfg,
+						uuid.toString());
 			recipeCfg.save(recipeFile);
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			throw new InvalidRecipeException(ex);
 		}
 	}
@@ -273,7 +275,7 @@ public class RecipeManager {
 				new IRandomShapelessRecipe(Arrays.asList(ingredients), result, name, uuid, rngMap).saveToFile(recipeCfg,
 						uuid.toString());
 			recipeCfg.save(recipeFile);
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			throw new InvalidRecipeException(ex);
 		}
 	}
@@ -283,14 +285,14 @@ public class RecipeManager {
 		loadCustomRecipes();
 		loadBlacklistedRecipes();
 	}
-	
+
 	public void clear() {
 		customRecipes.clear();
 		autoMatchingRecipes.clear();
 		recipesByName.clear();
 		recipesByHash.clear();
 	}
-	
+
 	public void loadCustomRecipes() {
 		plugin.getLogger().info("Loading custom recipes..."); //$NON-NLS-1$
 		try {
@@ -321,7 +323,7 @@ public class RecipeManager {
 			recipeCfg.set(recipeName, null);
 			recipeCfg.save(recipeFile);
 			reloadRecipes();
-		} catch(Exception ex) {
+		} catch (Exception ex) {
 			throw new RecipeDeleteException(recipeName, ex);
 		}
 	}

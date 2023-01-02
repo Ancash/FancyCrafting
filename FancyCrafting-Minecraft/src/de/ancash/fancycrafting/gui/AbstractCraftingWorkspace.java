@@ -190,7 +190,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		for (int i = 0; i < ings.length; i++) {
 			ItemStack item = getItem(template.getSlots().getCraftingSlots()[i]);
 			if (item != null && item.getType() != Material.AIR)
-				ings[i] = new IItemStack(item);
+				ings[i] = new IItemStack(item.clone());
 		}
 		return ings;
 	}

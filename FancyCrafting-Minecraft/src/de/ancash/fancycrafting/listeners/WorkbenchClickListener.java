@@ -39,10 +39,14 @@ public class WorkbenchClickListener implements Listener {
 	private final Map<UUID, Triplet<RecipeMatcherCallable, Integer, IRecipe>> dataByUUID = new ConcurrentHashMap<>();
 	private final RecipeResultSupplier resultSupplier = new RecipeResultSupplier();
 	private final boolean useCustom;
+	private final boolean support3x3;
+	private final boolean support2x2;
 
-	public WorkbenchClickListener(FancyCrafting pl, boolean useCustom) {
+	public WorkbenchClickListener(FancyCrafting pl, boolean useCustom, boolean support3x3, boolean support2x2) {
 		this.pl = pl;
 		this.useCustom = useCustom;
+		this.support2x2 = support2x2;
+		this.support3x3 = support3x3;
 	}
 
 	@EventHandler
@@ -52,34 +56,50 @@ public class WorkbenchClickListener implements Listener {
 
 	@EventHandler
 	public void onClick(InventoryClickEvent event) {
-		if (useCustom && event.getInventory().getType() == InventoryType.WORKBENCH)
+		InventoryType type = event.getInventory().getType();
+		if (useCustom && type == InventoryType.WORKBENCH)
 			return;
-		if (event.getInventory().getType() == InventoryType.CRAFTING
-				|| event.getInventory().getType() == InventoryType.WORKBENCH) {
-			if (!event.getInventory().equals(event.getClickedInventory()) || event.getSlot() != 0) {
-				return;
-			}
-			event.setCancelled(true);
-			Triplet<RecipeMatcherCallable, Integer, IRecipe> triplet = dataByUUID
-					.get(event.getWhoClicked().getUniqueId());
-			if (triplet == null || triplet.getThird() == null)
-				matchRecipe((CraftingInventory) event.getInventory(), (Player) event.getWhoClicked());
-			else
-				craftItem(event, triplet);
-		}
+
+		if (type != InventoryType.CRAFTING && type != InventoryType.WORKBENCH)
+			return;
+
+		if (type == InventoryType.CRAFTING && !support2x2)
+			return;
+
+		if (type == InventoryType.WORKBENCH && !support3x3)
+			return;
+
+		if (!event.getInventory().equals(event.getClickedInventory()) || event.getSlot() != 0)
+			return;
+
+		event.setCancelled(true);
+		Triplet<RecipeMatcherCallable, Integer, IRecipe> triplet = dataByUUID.get(event.getWhoClicked().getUniqueId());
+		if (triplet == null || triplet.getThird() == null)
+			matchRecipe((CraftingInventory) event.getInventory(), (Player) event.getWhoClicked());
+		else
+			craftItem(event, triplet);
 	}
 
 	@EventHandler
 	public void onRecipePrepare(PrepareItemCraftEvent event) throws Exception {
-		if (useCustom && event.getInventory().getType() == InventoryType.WORKBENCH)
+		InventoryType type = event.getInventory().getType();
+		if (useCustom && type == InventoryType.WORKBENCH)
 			return;
+		
+		if (type == InventoryType.CRAFTING && !support2x2)
+			return;
+
+		if (type == InventoryType.WORKBENCH && !support3x3)
+			return;
+		
 		UUID id = event.getView().getPlayer().getUniqueId();
 		dataByUUID.computeIfAbsent(id,
 				p -> Tuple.of(pl.newDefaultRecipeMatcher((Player) event.getView().getPlayer()), 0, null));
 		Triplet<RecipeMatcherCallable, Integer, IRecipe> triplet = dataByUUID.get(id);
-		if (ILibrary.getTick() <= triplet.getSecond() + 1) {
+
+		if (ILibrary.getTick() <= triplet.getSecond() + 1)
 			return;
-		}
+
 		event.getInventory().setResult(null);
 		triplet.setSecond(ILibrary.getTick());
 		Bukkit.getScheduler().runTaskLater(pl,
@@ -87,8 +107,8 @@ public class WorkbenchClickListener implements Listener {
 	}
 
 	private void matchRecipe(CraftingInventory inv, Player player) {
-		Triplet<RecipeMatcherCallable, Integer, IRecipe> triplet = dataByUUID.computeIfAbsent(
-				player.getUniqueId(), k -> Triplet.of(pl.newDefaultRecipeMatcher(player), ILibrary.getTick(), null));
+		Triplet<RecipeMatcherCallable, Integer, IRecipe> triplet = dataByUUID.computeIfAbsent(player.getUniqueId(),
+				k -> Triplet.of(pl.newDefaultRecipeMatcher(player), ILibrary.getTick(), null));
 		int size = (int) Math.sqrt(inv.getType().getDefaultSize() - 1);
 		IMatrix<IItemStack> matrix = new IMatrix<>(
 				Stream.of(inv.getMatrix()).map(i -> i != null && i.getType() != Material.AIR ? new IItemStack(i) : null)
@@ -101,11 +121,12 @@ public class WorkbenchClickListener implements Listener {
 		triplet.setThird(match);
 		if (match != null)
 			inv.setResult(match.getResult());
+		else
+			inv.setResult(null);
 		player.updateInventory();
 	}
 
-	private void craftItem(InventoryClickEvent event,
-			Triplet<RecipeMatcherCallable, Integer, IRecipe> triplet) {
+	private void craftItem(InventoryClickEvent event, Triplet<RecipeMatcherCallable, Integer, IRecipe> triplet) {
 		if (triplet.getThird() == null || ILibrary.getTick() - pl.getCraftingCooldown() <= triplet.getSecond()) {
 			event.getWhoClicked().sendMessage(pl.getResponse().CRAFTING_COOLDOWN_MESSAGE);
 			return;
@@ -117,16 +138,13 @@ public class WorkbenchClickListener implements Listener {
 			craftToCursor(size, event, triplet);
 		} else if (event.getAction().equals(InventoryAction.MOVE_TO_OTHER_INVENTORY)) {
 			if (recipe.isShiftCollectable()) {
-				InventoryUtils
-						.addItemStack(
-								(Player) event.getWhoClicked(),
-								recipe.getResult(), shiftCollectIngredients(size, (CraftingInventory) event.getInventory(),
-										(Player) event.getWhoClicked(), triplet.getFirst().getMatrix(), recipe)
-										* recipe.getResult().getAmount());
+				InventoryUtils.addItemStack((Player) event.getWhoClicked(), recipe.getResult(),
+						shiftCollectIngredients(size, (CraftingInventory) event.getInventory(),
+								(Player) event.getWhoClicked(), triplet.getFirst().getMatrix(), recipe)
+								* recipe.getResult().getAmount());
 			} else {
 				ItemStack result = resultSupplier.getSingleRecipeCraft(recipe, (Player) event.getWhoClicked());
-				if (InventoryUtils.getFreeSpaceExact((Player) event.getWhoClicked(),
-						result) >= result.getAmount()) {
+				if (InventoryUtils.getFreeSpaceExact((Player) event.getWhoClicked(), result) >= result.getAmount()) {
 					collectIngredients(size, (CraftingInventory) event.getInventory(), triplet.getFirst().getMatrix(),
 							recipe);
 					event.getWhoClicked().getInventory().addItem(result);

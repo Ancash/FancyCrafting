@@ -28,7 +28,6 @@ import de.ancash.fancycrafting.recipe.complex.BannerDuplicateRecipe;
 import de.ancash.fancycrafting.recipe.complex.BookDuplicateRecipe;
 import de.ancash.fancycrafting.recipe.complex.FireworkRecipe;
 import de.ancash.fancycrafting.recipe.complex.ShulkerDyeRecipe;
-import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.crafting.recipe.ComplexRecipeWrapper;
@@ -136,41 +135,41 @@ public abstract class IRecipe {
 		return r;
 	}
 
-	@SuppressWarnings("nls")
-	public static IRecipe getRecipeFromString(String string) throws IOException, InvalidConfigurationException {
-		YamlFile file = YamlFile.loadConfigurationFromString(string);
-		ItemStack result = ItemStackUtils.itemStackFromString(file.getString("recipe.result"));
-		String name = file.getString("recipe.name");
-
-		int width = file.getInt("recipe.width");
-		int height = file.getInt("recipe.height");
-
-		ItemStack[] ingredients = new ItemStack[width * height];
-		for (int i = 0; i < ingredients.length; i++)
-			if (file.contains("recipe.ingredients." + i))
-				ingredients[i] = ItemStackUtils.itemStackFromString(file.getString("recipe.ingredients." + i));
-
-		boolean random = file.getBoolean("recipe.random");
-
-		UUID uuid = UUID.fromString(file.getString("recipe.uuid"));
-
-		Map<ItemStack, Integer> rngMap = new HashMap<>();
-
-		if (random)
-			for (String key : file.getConfigurationSection("recipe.random-map").getKeys(false))
-				rngMap.put(ItemStackUtils.itemStackFromString(file.getString("recipe.random-map." + key + ".item")),
-						file.getInt("recipe.random-map." + key + ".prob"));
-
-		if (file.getBoolean("recipe.shaped"))
-			if (random)
-				return new IRandomShapedRecipe(ingredients, width, height, result, name, uuid, rngMap);
-			else
-				return new IShapedRecipe(ingredients, width, height, result, name, uuid);
-		else if (random)
-			return new IRandomShapelessRecipe(Arrays.asList(ingredients), result, name, uuid, rngMap);
-		else
-			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid);
-	}
+//	@SuppressWarnings("nls")
+//	public static IRecipe getRecipeFromStrings(String string) throws IOException, InvalidConfigurationException {
+//		YamlFile file = YamlFile.loadConfigurationFromString(string);
+//		ItemStack result = ItemStackUtils.itemStackFromString(file.getString("recipe.result"));
+//		String name = file.getString("recipe.name");
+//
+//		int width = file.getInt("recipe.width");
+//		int height = file.getInt("recipe.height");
+//
+//		ItemStack[] ingredients = new ItemStack[width * height];
+//		for (int i = 0; i < ingredients.length; i++)
+//			if (file.contains("recipe.ingredients." + i))
+//				ingredients[i] = ItemStackUtils.itemStackFromString(file.getString("recipe.ingredients." + i));
+//
+//		boolean random = file.getBoolean("recipe.random");
+//
+//		UUID uuid = UUID.fromString(file.getString("recipe.uuid"));
+//
+//		Map<ItemStack, Integer> rngMap = new HashMap<>();
+//
+//		if (random)
+//			for (String key : file.getConfigurationSection("recipe.random-map").getKeys(false))
+//				rngMap.put(ItemStackUtils.itemStackFromString(file.getString("recipe.random-map." + key + ".item")),
+//						file.getInt("recipe.random-map." + key + ".prob"));
+//
+//		if (file.getBoolean("recipe.shaped"))
+//			if (random)
+//				return new IRandomShapedRecipe(ingredients, width, height, result, name, uuid, rngMap);
+//			else
+//				return new IShapedRecipe(ingredients, width, height, result, name, uuid);
+//		else if (random)
+//			return new IRandomShapelessRecipe(Arrays.asList(ingredients), result, name, uuid, rngMap);
+//		else
+//			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid);
+//	}
 
 	@SuppressWarnings("nls")
 	public static IRecipe getRecipeFromFile(File file, FileConfiguration fc, String path)
