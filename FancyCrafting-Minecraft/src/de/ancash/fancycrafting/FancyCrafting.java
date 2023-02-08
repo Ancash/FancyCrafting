@@ -103,6 +103,7 @@ public class FancyCrafting extends JavaPlugin {
 	protected boolean quickCraftingAsync;
 	protected boolean permsForCustomRecipes;
 	protected boolean permsForVanillaRecipes;
+	protected boolean permsForQuickCrafting;
 	protected boolean sortRecipesByRecipeName;
 	protected boolean supportVanilla3x3;
 	protected boolean supportVanilla2x2;
@@ -373,6 +374,7 @@ public class FancyCrafting extends JavaPlugin {
 				config.getInt("crafting.default-template-height"));
 		permsForCustomRecipes = config.getBoolean("crafting.perms-for-custom-recipes");
 		permsForVanillaRecipes = config.getBoolean("crafting.perms-for-vanilla-recipes");
+		permsForQuickCrafting = config.getBoolean("crafting.perms-for-quick-crafting");
 		checkRecipesAsync = config.getBoolean("crafting.check-recipes-async");
 		quickCraftingAsync = config.getBoolean("crafting.check-quick-crafting-async");
 		sortRecipesByRecipeName = config.getBoolean("sort-recipes-by-recipe-name");
@@ -388,6 +390,7 @@ public class FancyCrafting extends JavaPlugin {
 		getLogger().info("Check quick crafting async: " + quickCraftingAsync);
 		getLogger().info("Perms for custom recipes: " + permsForCustomRecipes);
 		getLogger().info("Perms for vanilla recipes: " + permsForVanillaRecipes);
+		getLogger().info("Perms for quick crafting: " + permsForQuickCrafting);
 		getLogger().info("Sort recipes by recipe name: " + sortRecipesByRecipeName);
 		getLogger().info("Default crafting template: " + defaultDim.getWidth() + "x" + defaultDim.getHeight());
 		getLogger().info("Crafting cooldown in ticks: " + craftingCooldown);
@@ -477,6 +480,10 @@ public class FancyCrafting extends JavaPlugin {
 		return singleton.permsForVanillaRecipes;
 	}
 
+	public static boolean permsForQuickCrafting() {
+		return singleton.permsForQuickCrafting;
+	}
+	
 	public static boolean registerRecipe(IRecipe recipe) {
 		return singleton.getRecipeManager().registerRecipe(recipe);
 	}
