@@ -31,7 +31,7 @@ import de.ancash.fancycrafting.recipe.complex.BookDuplicateRecipe;
 import de.ancash.fancycrafting.recipe.complex.IComplexRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.InventoryUtils;
-import de.ancash.minecraft.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XMaterial;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
 
@@ -45,7 +45,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	}
 
 	public CraftingWorkspaceGUI(FancyCrafting pl, Player player, WorkspaceTemplate template, boolean v) {
-		this(pl, player, template, v, new AutoRecipeMatcher(pl, player, pl.getRecipeManager().getAutoMatchingRecipes()));
+		this(pl, player, template, v,
+				new AutoRecipeMatcher(pl, player, pl.getRecipeManager().getAutoMatchingRecipes()));
 	}
 
 	public CraftingWorkspaceGUI(FancyCrafting pl, Player player, WorkspaceTemplate template, boolean v,
