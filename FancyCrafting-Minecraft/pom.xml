@@ -81,6 +81,12 @@
 			<version>1.19.2-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
-
 	</dependencies>
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub Ancash Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/Ancash/FancyCrafting</url>
+		</repository>
+	</distributionManagement>
 </project>
