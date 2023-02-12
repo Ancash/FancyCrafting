@@ -54,7 +54,7 @@ public class WorkbenchClickListener implements Listener {
 		dataByUUID.remove(e.getPlayer().getUniqueId());
 	}
 
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onClick(InventoryClickEvent event) {
 		InventoryType type = event.getInventory().getType();
 		if (useCustom && type == InventoryType.WORKBENCH)
