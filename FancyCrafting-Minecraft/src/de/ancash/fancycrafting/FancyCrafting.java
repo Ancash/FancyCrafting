@@ -109,6 +109,8 @@ public class FancyCrafting extends JavaPlugin {
 	protected boolean supportVanilla2x2;
 	protected int craftingCooldown;
 	protected boolean debug;
+	protected PermissionDefault craftPermDef;
+	protected PermissionDefault viewPermDef;
 
 	protected FileConfiguration config;
 	private final File configFile = new File("plugins/FancyCrafting/config.yml");
@@ -382,6 +384,8 @@ public class FancyCrafting extends JavaPlugin {
 		supportVanilla3x3 = config.getBoolean("crafting.support-vanilla-3x3");
 		debug = config.getBoolean("debug");
 		craftingCooldown = config.getInt("crafting.cooldown");
+		craftPermDef = parsePermissionDefault(config.getString("craft-recipe-permission-default"));
+		viewPermDef = parsePermissionDefault(config.getString("view-recipe-permission-default"));
 		getLogger().info("Debug: " + debug);
 		MinecraftLoggerUtil.enableDebugging(this,
 				(pl, record) -> debug ? true : record.getLevel().intValue() >= Level.INFO.intValue(),
@@ -391,12 +395,25 @@ public class FancyCrafting extends JavaPlugin {
 		getLogger().info("Perms for custom recipes: " + permsForCustomRecipes);
 		getLogger().info("Perms for vanilla recipes: " + permsForVanillaRecipes);
 		getLogger().info("Perms for quick crafting: " + permsForQuickCrafting);
+		getLogger().info("Craft recipe permission default: " + craftPermDef);
+		getLogger().info("View recipe permission default: " + viewPermDef);
 		getLogger().info("Sort recipes by recipe name: " + sortRecipesByRecipeName);
 		getLogger().info("Default crafting template: " + defaultDim.getWidth() + "x" + defaultDim.getHeight());
 		getLogger().info("Crafting cooldown in ticks: " + craftingCooldown);
 		getLogger().info("Open on crafting table open: " + config.getBoolean("open-on-crafting-table-open"));
 		getLogger().info("Support vanilla 3x3: " + supportVanilla3x3);
 		getLogger().info("Support vanilla 2x2: " + supportVanilla2x2);
+	}
+	
+	private PermissionDefault parsePermissionDefault(String s) {
+		try {
+			return PermissionDefault.valueOf(s.toUpperCase());
+		} catch(Exception e) {
+			getLogger().warning("'" + s.toUpperCase() + "' is not a valid permission default");
+			getLogger().warning("Possible values: " + PermissionDefault.values());
+			getLogger().warning("Using FALSE as permission default");
+			return PermissionDefault.FALSE;
+		}
 	}
 
 	private String format(LogRecord record) {
@@ -470,6 +487,14 @@ public class FancyCrafting extends JavaPlugin {
 
 	public RecipeManager getRecipeManager() {
 		return recipeManager;
+	}
+	
+	public static PermissionDefault getCraftPermDef() {
+		return singleton.craftPermDef;
+	}
+	
+	public static PermissionDefault getViewPermDef() {
+		return singleton.viewPermDef;
 	}
 
 	public static boolean permsForCustomRecipes() {

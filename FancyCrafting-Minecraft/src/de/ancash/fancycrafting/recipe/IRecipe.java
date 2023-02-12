@@ -20,7 +20,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionDefault;
 
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.complex.ArmorDyeRecipe;
@@ -72,9 +71,9 @@ public abstract class IRecipe {
 					|| result.getItemMeta().getDisplayName().isEmpty() ? ItemStackUtils.getDisplayName(result)
 							: result.getItemMeta().getDisplayName();
 			this.craftPermission = new Permission("fancycrafting.craft." + this.recipeName.replace(" ", "-"), //$NON-NLS-3$
-					PermissionDefault.FALSE);
+					FancyCrafting.getCraftPermDef());
 			this.viewPermission = new Permission("fancycrafting.view." + this.recipeName.replace(" ", "-"), //$NON-NLS-3$
-					PermissionDefault.FALSE);
+					FancyCrafting.getViewPermDef());
 		} else {
 			this.recipeName = name == null ? "null" : name;
 			this.resultName = "null";

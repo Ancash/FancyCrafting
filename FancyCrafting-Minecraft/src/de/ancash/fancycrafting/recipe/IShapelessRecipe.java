@@ -1,6 +1,7 @@
 package de.ancash.fancycrafting.recipe;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class IShapelessRecipe extends IRecipe {
 			boolean suitableForAutoMatching, UUID uuid) {
 		super(result, name, vanilla, suitableForAutoMatching, uuid);
 		this.ings = Collections.unmodifiableList(
-				ings.stream().filter(i -> i != null && i.getType() != Material.AIR).collect(Collectors.toList()));
+				ings.stream().filter(i -> i != null && i.getType() != Material.AIR).collect(Collectors.toCollection(() -> new ArrayList<>())));
 		this.iings = Collections.unmodifiableList(this.ings.stream().map(IItemStack::new).collect(Collectors.toList()));
 		for (IItemStack ii : iings) {
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
@@ -53,7 +54,7 @@ public class IShapelessRecipe extends IRecipe {
 
 	@Override
 	public List<ItemStack> getIngredients() {
-		return ings;
+		return ings.stream().map(ItemStack::clone).collect(Collectors.toList());
 	}
 
 	@Override
