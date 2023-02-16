@@ -41,8 +41,8 @@ public class IShapelessRecipe extends IRecipe {
 	IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, boolean vanilla,
 			boolean suitableForAutoMatching, UUID uuid) {
 		super(result, name, vanilla, suitableForAutoMatching, uuid);
-		this.ings = Collections.unmodifiableList(
-				ings.stream().filter(i -> i != null && i.getType() != Material.AIR).collect(Collectors.toCollection(() -> new ArrayList<>())));
+		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null && i.getType() != Material.AIR)
+				.collect(Collectors.toCollection(() -> new ArrayList<>())));
 		this.iings = Collections.unmodifiableList(this.ings.stream().map(IItemStack::new).collect(Collectors.toList()));
 		for (IItemStack ii : iings) {
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);

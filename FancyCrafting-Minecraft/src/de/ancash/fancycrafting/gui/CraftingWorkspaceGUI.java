@@ -22,16 +22,16 @@ import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.gui.handler.AutoRecipeMatcherHandler;
 import de.ancash.fancycrafting.gui.handler.RecipeMatchHandler;
 import de.ancash.fancycrafting.gui.handler.RecipePermissionHandler;
-import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.AutoRecipeMatcher;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
+import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.fancycrafting.recipe.complex.BookDuplicateRecipe;
 import de.ancash.fancycrafting.recipe.complex.IComplexRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.InventoryUtils;
-import com.cryptomorin.xseries.XMaterial;
+import de.ancash.minecraft.cryptomorin.xseries.XMaterial;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
 

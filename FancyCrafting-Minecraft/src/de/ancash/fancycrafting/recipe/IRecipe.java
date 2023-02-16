@@ -325,8 +325,8 @@ public abstract class IRecipe {
 	}
 
 	@SuppressWarnings("nls")
-	public static List<String> ingredientsToList(FancyCrafting pl, ItemStack[] ingredients, int width,
-			int height, String format) {
+	public static List<String> ingredientsToList(FancyCrafting pl, ItemStack[] ingredients, int width, int height,
+			String format) {
 		StringBuilder builder = new StringBuilder();
 		Map<Integer, Character> mapped = new HashMap<>();
 		int cpos = 0;
@@ -362,8 +362,7 @@ public abstract class IRecipe {
 		return Arrays.asList(builder.toString().split("\n"));
 	}
 
-	public static List<String> ingredientsToListColorless(FancyCrafting pl, ItemStack[] ingredients,
-			String format) {
+	public static List<String> ingredientsToListColorless(FancyCrafting pl, ItemStack[] ingredients, String format) {
 		return ingredientsToListColorless(pl, ingredients, 8, 6, format);
 	}
 

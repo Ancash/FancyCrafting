@@ -20,7 +20,7 @@ public class AutoRecipeMatcher {
 	private final Set<IRecipe> possibleRecipes;
 	private List<IItemStack> ingredients;
 	private final FancyCrafting pl;
-	
+
 	public AutoRecipeMatcher(FancyCrafting pl, Player player, Set<IRecipe> recipes) {
 		this.player = player;
 		this.possibleRecipes = recipes.stream().filter(r -> FancyCrafting.canCraftRecipe(r, player))
@@ -45,7 +45,7 @@ public class AutoRecipeMatcher {
 	public boolean match(IRecipe recipe, Map<Integer, Integer> map) {
 		return !match0(recipe, map) ? false : !pl.getRecipeManager().isBlacklisted(recipe.getHashMatrix());
 	}
-	
+
 	protected boolean match0(IRecipe recipe, Map<Integer, Integer> map) {
 		if (!map.keySet().containsAll(recipe.getIngredientsHashCodes().keySet()))
 			return false;

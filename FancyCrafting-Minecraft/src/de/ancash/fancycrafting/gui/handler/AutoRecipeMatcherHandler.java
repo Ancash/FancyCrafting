@@ -33,8 +33,7 @@ public class AutoRecipeMatcherHandler {
 	private final FancyCrafting pl;
 	private final AutoRecipeMatcher matcher;
 
-	public AutoRecipeMatcherHandler(FancyCrafting pl, AbstractCraftingWorkspace workspace,
-			AutoRecipeMatcher matcher) {
+	public AutoRecipeMatcherHandler(FancyCrafting pl, AbstractCraftingWorkspace workspace, AutoRecipeMatcher matcher) {
 		this.workspace = workspace;
 		this.pl = pl;
 		this.matcher = matcher;

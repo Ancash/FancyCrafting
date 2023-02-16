@@ -1,5 +1,5 @@
 name: FancyCrafting
-version: 4.6.3
+version: 4.6.4
 main: de.ancash.fancycrafting.FancyCrafting
 depend: [ILibrary]
 api-version: 1.13

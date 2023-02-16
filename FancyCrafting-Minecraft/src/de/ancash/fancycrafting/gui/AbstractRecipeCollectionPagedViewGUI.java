@@ -28,8 +28,7 @@ public abstract class AbstractRecipeCollectionPagedViewGUI extends IGUI {
 		this(pl, player, recipes, pl.getWorkspaceObjects().getCustomRecipesTitle());
 	}
 
-	public AbstractRecipeCollectionPagedViewGUI(FancyCrafting pl, Player player, List<IRecipe> recipes,
-			String title) {
+	public AbstractRecipeCollectionPagedViewGUI(FancyCrafting pl, Player player, List<IRecipe> recipes, String title) {
 		super(player.getUniqueId(), 54, title);
 		Collections.sort(recipes,
 				(a, b) -> pl.sortRecipesByRecipeName() ? a.getRecipeName().compareTo(b.getRecipeName())

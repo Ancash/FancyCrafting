@@ -9,23 +9,23 @@ import org.bukkit.entity.Player;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.minecraft.IItemStack;
 
-public class RecipeMatcherCallable implements Callable<IRecipe>{
+public class RecipeMatcherCallable implements Callable<IRecipe> {
 
 	private IMatrix<IItemStack> matrix;
 	private final FancyCrafting pl;
 	private final Player player;
 	private final VanillaRecipeMatcher vanillaMatcher;
-	
+
 	public RecipeMatcherCallable(FancyCrafting pl, Player player) {
 		this.pl = pl;
 		this.player = player;
 		this.vanillaMatcher = new VanillaRecipeMatcher(pl, player);
 	}
-	
+
 	public void setMatrix(IMatrix<IItemStack> matrix) {
 		this.matrix = matrix;
 	}
-	
+
 	@Override
 	public synchronized IRecipe call() {
 		return match();
@@ -34,8 +34,8 @@ public class RecipeMatcherCallable implements Callable<IRecipe>{
 	protected IRecipe match() {
 		if (matrix.getArray().length == 0)
 			return null;
-		if (pl.getRecipeManager().isBlacklisted(Stream.of(matrix.getArray())
-				.map(i -> i != null ? i.hashCode() : null).collect(Collectors.toList())))
+		if (pl.getRecipeManager().isBlacklisted(
+				Stream.of(matrix.getArray()).map(i -> i != null ? i.hashCode() : null).collect(Collectors.toList())))
 			return null;
 		IRecipe match = pl.getRecipeManager().matchRecipe(matrix);
 

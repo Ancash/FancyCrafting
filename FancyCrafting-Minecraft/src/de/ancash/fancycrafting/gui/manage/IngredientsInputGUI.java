@@ -68,8 +68,8 @@ public class IngredientsInputGUI extends ItemInputIGUI {
 		this.onInput = onInput;
 	}
 
-	public static ItemStack getManageIngredientsItem(FancyCrafting pl, List<ItemStack> ings, int width,
-			int heigth, boolean shaped, boolean random) {
+	public static ItemStack getManageIngredientsItem(FancyCrafting pl, List<ItemStack> ings, int width, int heigth,
+			boolean shaped, boolean random) {
 		ItemStack item = pl.getWorkspaceObjects().getManageIngredientsItem().getOriginal();
 		Map<String, String> placeholder = new HashMap<>();
 		ItemStack[] ingsa = new ItemStack[width * heigth];

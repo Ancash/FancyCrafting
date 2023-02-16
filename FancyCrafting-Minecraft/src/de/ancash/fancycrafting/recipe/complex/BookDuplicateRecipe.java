@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.crafting.recipe.ComplexRecipeWrapper;
-import com.cryptomorin.xseries.XMaterial;
+import de.ancash.minecraft.cryptomorin.xseries.XMaterial;
 
 public class BookDuplicateRecipe extends IShapelessRecipe implements IComplexRecipe {
 

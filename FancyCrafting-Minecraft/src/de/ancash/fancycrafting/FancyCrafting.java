@@ -29,9 +29,6 @@ import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import de.ancash.libs.org.apache.commons.io.FileUtils;
-import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
-import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.commands.BlacklistSubCommand;
 import de.ancash.fancycrafting.commands.CreateSubCommand;
 import de.ancash.fancycrafting.commands.EditSubCommand;
@@ -54,9 +51,11 @@ import de.ancash.fancycrafting.gui.manage.random.EditRandomRecipeGUI;
 import de.ancash.fancycrafting.gui.manage.random.ViewRandomRecipeGUI;
 import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
 import de.ancash.fancycrafting.listeners.WorkbenchOpenListener;
-import de.ancash.fancycrafting.recipe.RecipeMatcherCallable;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
+import de.ancash.fancycrafting.recipe.RecipeMatcherCallable;
+import de.ancash.libs.org.apache.commons.io.FileUtils;
+import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.Metrics;
@@ -404,11 +403,11 @@ public class FancyCrafting extends JavaPlugin {
 		getLogger().info("Support vanilla 3x3: " + supportVanilla3x3);
 		getLogger().info("Support vanilla 2x2: " + supportVanilla2x2);
 	}
-	
+
 	private PermissionDefault parsePermissionDefault(String s) {
 		try {
 			return PermissionDefault.valueOf(s.toUpperCase());
-		} catch(Exception e) {
+		} catch (Exception e) {
 			getLogger().warning("'" + s.toUpperCase() + "' is not a valid permission default");
 			getLogger().warning("Possible values: " + PermissionDefault.values());
 			getLogger().warning("Using FALSE as permission default");
@@ -488,11 +487,11 @@ public class FancyCrafting extends JavaPlugin {
 	public RecipeManager getRecipeManager() {
 		return recipeManager;
 	}
-	
+
 	public static PermissionDefault getCraftPermDef() {
 		return singleton.craftPermDef;
 	}
-	
+
 	public static PermissionDefault getViewPermDef() {
 		return singleton.viewPermDef;
 	}
@@ -508,7 +507,7 @@ public class FancyCrafting extends JavaPlugin {
 	public static boolean permsForQuickCrafting() {
 		return singleton.permsForQuickCrafting;
 	}
-	
+
 	public static boolean registerRecipe(IRecipe recipe) {
 		return singleton.getRecipeManager().registerRecipe(recipe);
 	}

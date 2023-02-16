@@ -254,7 +254,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 
 			return match0();
 		}
-		
+
 		protected IRecipe match0() {
 			IRecipe match = null;
 			if (workspace.matrix.getArray().length == 0)

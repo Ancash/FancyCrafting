@@ -25,11 +25,11 @@ import de.ancash.datastructures.tuples.Triplet;
 import de.ancash.datastructures.tuples.Tuple;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.gui.handler.RecipeResultSupplier;
-import de.ancash.fancycrafting.recipe.RecipeMatcherCallable;
 import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
+import de.ancash.fancycrafting.recipe.RecipeMatcherCallable;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.InventoryUtils;
 
@@ -85,13 +85,13 @@ public class WorkbenchClickListener implements Listener {
 		InventoryType type = event.getInventory().getType();
 		if (useCustom && type == InventoryType.WORKBENCH)
 			return;
-		
+
 		if (type == InventoryType.CRAFTING && !support2x2)
 			return;
 
 		if (type == InventoryType.WORKBENCH && !support3x3)
 			return;
-		
+
 		UUID id = event.getView().getPlayer().getUniqueId();
 		dataByUUID.computeIfAbsent(id,
 				p -> Tuple.of(pl.newDefaultRecipeMatcher((Player) event.getView().getPlayer()), 0, null));

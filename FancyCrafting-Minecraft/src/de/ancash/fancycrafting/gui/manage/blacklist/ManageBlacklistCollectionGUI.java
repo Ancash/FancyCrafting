@@ -26,9 +26,9 @@ public class ManageBlacklistCollectionGUI extends AbstractRecipeCollectionPagedV
 	@Override
 	public void open() {
 		super.open();
-		addInventoryItem(new InventoryItem(this, super.pl.getAddRecipeToBlacklistItem().getOriginal(),
-				49, (a, b, c, top) -> {
-					if(top)
+		addInventoryItem(
+				new InventoryItem(this, super.pl.getAddRecipeToBlacklistItem().getOriginal(), 49, (a, b, c, top) -> {
+					if (top)
 						CreateBlacklistedRecipeGUI.open(super.pl, player);
 				}));
 	}

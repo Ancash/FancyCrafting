@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -122,7 +122,7 @@ public class ManageProbabilitiesGUI extends ItemInputIGUI {
 		numberIn.setText(String.valueOf(curProb));
 		numberIn.setTitle(pl.getWorkspaceObjects().getManageProbabilitiesTitle());
 		IGUIManager.remove(getId());
-		numberIn.open();
+		numberIn.start();
 	}
 
 	@Override
