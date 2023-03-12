@@ -118,13 +118,16 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 							StringInputGUI sig = new StringInputGUI(plugin, player, (str) -> {
 								this.recipeName = str;
 								Bukkit.getScheduler().runTaskLater(plugin, () -> openMainMenu(), 1);
-							}, (str) -> Tuple.of(str != null && !str.isEmpty(),
-									str == null || str.isEmpty() ? plugin.getResponse().INVALID_RECIPE_NAME : null));
+							}, (str) -> {
+								return Tuple.of(str != null && !str.isEmpty(),
+										str == null || str.isEmpty() ? plugin.getResponse().INVALID_RECIPE_NAME : null);
+							});
 							sig.setLeft(plugin.getWorkspaceObjects().getInputRecipeNameLeftItem().getOriginal());
 							sig.setRight(plugin.getWorkspaceObjects().getInputRecipeNameRightItem().getOriginal());
 							sig.setText(recipeName);
 							sig.setTitle(plugin.getWorkspaceObjects().getInputRecipeNameTitle());
 							sig.open();
+
 						})));
 	}
 

@@ -123,6 +123,9 @@ public class AutoRecipeMatcherHandler {
 			workspace.getPlayer().sendMessage(pl.getResponse().CRAFTING_COOLDOWN_MESSAGE);
 			return;
 		}
+		if(workspace.getPlayer().getInventory().firstEmpty() == -1) {
+			return;
+		}
 		// shift ignored, only single click
 		Map<Integer, Duplet<IItemStack, Integer>> map = new HashMap<>();
 		for (ItemStack is : recipe.getIngredients()) {
