@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.ancash</groupId>
 	<artifactId>fancycrafting</artifactId>
-	<version>4.6.5</version>
+	<version>4.6.6</version>
 	<properties>
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
@@ -59,12 +59,14 @@
 			<id>github</id>
 			<name>GitHub Ancash Apache Maven Packages</name>
 			<url>https://maven.pkg.github.com/Ancash/ilibrary</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
+		</repository>
+		<repository>
+			<id>essentials-releases</id>
+			<url>https://repo.essentialsx.net/releases/</url>
+		</repository>
+		<repository>
+			<id>paper-repo</id>
+			<url>https://papermc.io/repo/repository/maven-public/</url>
 		</repository>
 	</repositories>
 	<dependencies>
@@ -73,7 +75,18 @@
 			<artifactId>ilibrary</artifactId>
 			<version>3.7.5</version>
 			<scope>provided</scope>
-
+		</dependency>
+		<dependency>
+			<groupId>net.essentialsx</groupId>
+			<artifactId>EssentialsX</artifactId>
+			<version>2.19.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.bstats</groupId>
+			<artifactId>bstats-bukkit</artifactId>
+			<version>3.0.2</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.spigotmc</groupId>

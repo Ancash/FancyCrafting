@@ -20,6 +20,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.earth2me.essentials.Essentials;
+
 import de.ancash.ILibrary;
 import de.ancash.datastructures.tuples.Triplet;
 import de.ancash.datastructures.tuples.Tuple;
@@ -41,6 +43,8 @@ public class WorkbenchClickListener implements Listener {
 	private final boolean useCustom;
 	private final boolean support3x3;
 	private final boolean support2x2;
+	@SuppressWarnings("nls")
+	private final boolean checkForEssentials = Bukkit.getPluginManager().getPlugin("Essentials") != null;
 
 	public WorkbenchClickListener(FancyCrafting pl, boolean useCustom, boolean support3x3, boolean support2x2) {
 		this.pl = pl;
@@ -69,6 +73,10 @@ public class WorkbenchClickListener implements Listener {
 		if (type == InventoryType.WORKBENCH && !support3x3)
 			return;
 
+		if (checkForEssentials
+				&& Essentials.getPlugin(Essentials.class).getUser((Player) event.getView().getPlayer()).isRecipeSee())
+			return;
+
 		if (!event.getInventory().equals(event.getClickedInventory()) || event.getSlot() != 0)
 			return;
 
@@ -90,6 +98,10 @@ public class WorkbenchClickListener implements Listener {
 			return;
 
 		if (type == InventoryType.WORKBENCH && !support3x3)
+			return;
+
+		if (checkForEssentials
+				&& Essentials.getPlugin(Essentials.class).getUser((Player) event.getView().getPlayer()).isRecipeSee())
 			return;
 
 		UUID id = event.getView().getPlayer().getUniqueId();

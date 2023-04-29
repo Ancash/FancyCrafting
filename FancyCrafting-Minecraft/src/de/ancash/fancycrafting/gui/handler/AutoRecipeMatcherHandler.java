@@ -123,7 +123,7 @@ public class AutoRecipeMatcherHandler {
 			workspace.getPlayer().sendMessage(pl.getResponse().CRAFTING_COOLDOWN_MESSAGE);
 			return;
 		}
-		if(workspace.getPlayer().getInventory().firstEmpty() == -1) {
+		if (workspace.getPlayer().getInventory().firstEmpty() == -1) {
 			return;
 		}
 		// shift ignored, only single click

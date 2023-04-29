@@ -78,6 +78,7 @@ public class FancyCrafting extends JavaPlugin {
 	public static final Permission CREATE_PERM = new Permission("fancycrafting.admin.create", PermissionDefault.FALSE);
 	public static final Permission EDIT_PERM = new Permission("fancycrafting.admin.edit", PermissionDefault.FALSE);
 	public static final Permission VIEW_ALL_PERM = new Permission("fancycrafting.admin.view", PermissionDefault.FALSE);
+	public static final Permission QUICK_CRAFTING_PERM = new Permission("fancycrafting.qc", PermissionDefault.FALSE);
 	public static final Permission OPEN_DEFAULT_PERM = new Permission("fancycrafting.open", PermissionDefault.FALSE);
 	public static final Permission OPEN_OTHER_DEFAULT_PERM = new Permission("fancycrafting.open.other",
 			PermissionDefault.FALSE);

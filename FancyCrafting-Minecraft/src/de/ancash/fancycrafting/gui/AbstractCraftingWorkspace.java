@@ -54,7 +54,9 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	public AbstractCraftingWorkspace(FancyCrafting pl, Player player, WorkspaceTemplate template,
 			boolean includeVanillaRecipes, AutoRecipeMatcher matcher) {
 		super(player.getUniqueId(), template.getDimension().getSize(), template.getTitle());
-		this.matcher = matcher;
+		if (template.getSlots().enableQuickCrafting()
+				&& (!FancyCrafting.permsForQuickCrafting() || player.hasPermission(FancyCrafting.QUICK_CRAFTING_PERM)))
+			this.matcher = matcher;
 		this.pl = pl;
 		this.template = template;
 		this.includeVanillaRecipes = includeVanillaRecipes;
@@ -89,7 +91,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 	}
 
 	public boolean enableQuickCrafting() {
-		return getTemplate().getSlots().enableQuickCrafting();
+		return matcher != null;
 	}
 
 	public int getLastCraftTick() {
@@ -266,7 +268,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 				else
 					workspace.permissionHandler.onNoPermission(match, workspace.player);
 
-			if (workspace.includeVanillaRecipes
+			if (!doIngredientsHaveMeta() && workspace.includeVanillaRecipes
 					&& (match = workspace.vanillaMatcher.matchVanillaRecipe(workspace.matrix)) != null)
 				if (workspace.permissionHandler.canCraftRecipe(match, workspace.player))
 					return workspace.currentRecipe = match;
@@ -274,6 +276,11 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 					workspace.permissionHandler.onNoPermission(match, workspace.player);
 			workspace.matchHandler.onNoRecipeMatch();
 			return workspace.currentRecipe = null;
+		}
+
+		protected boolean doIngredientsHaveMeta() {
+			return Stream.of(workspace.matrix.getArray()).filter(i -> i != null).map(IItemStack::getOriginal)
+					.filter(ItemStack::hasItemMeta).findAny().isPresent();
 		}
 	}
 }

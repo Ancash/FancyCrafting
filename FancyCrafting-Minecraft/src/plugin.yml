@@ -1,7 +1,8 @@
 name: FancyCrafting
-version: 4.6.5
+version: 4.6.6
 main: de.ancash.fancycrafting.FancyCrafting
 depend: [ILibrary]
+soft-depend: [Essentials]
 author: [Ancash]
 api-version: 1.13
 

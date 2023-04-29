@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.minecraft.IItemStack;
@@ -42,11 +43,19 @@ public class RecipeMatcherCallable implements Callable<IRecipe> {
 		if (match != null)
 			if (FancyCrafting.canCraftRecipe(match, player))
 				return match;
+
+		if (doIngredientsHaveMeta())
+			return null;
 		match = vanillaMatcher.matchVanillaRecipe(matrix);
 		if (match != null)
 			if (FancyCrafting.canCraftRecipe(match, player))
 				return match;
 		return null;
+	}
+
+	protected boolean doIngredientsHaveMeta() {
+		return Stream.of(matrix.getArray()).filter(i -> i != null).map(IItemStack::getOriginal)
+				.filter(ItemStack::hasItemMeta).findAny().isPresent();
 	}
 
 	public IMatrix<IItemStack> getMatrix() {
