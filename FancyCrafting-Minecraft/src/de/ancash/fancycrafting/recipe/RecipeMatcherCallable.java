@@ -44,7 +44,7 @@ public class RecipeMatcherCallable implements Callable<IRecipe> {
 			if (FancyCrafting.canCraftRecipe(match, player))
 				return match;
 
-		if (doIngredientsHaveMeta())
+		if (FancyCrafting.vanillaRecipesAcceptPlainItemsOnly() && doIngredientsHaveMeta())
 			return null;
 		match = vanillaMatcher.matchVanillaRecipe(matrix);
 		if (match != null)

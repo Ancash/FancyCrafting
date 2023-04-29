@@ -15,6 +15,7 @@ crafting:
    perms-for-custom-recipes: false
    perms-for-vanilla-recipes: false
    perms-for-quick-crafting: false
+   vanilla-recipes-accept-plain-items-only: true
    use-custom-gui: true
    cooldown: 3
    cooldown-message: "§eWoah! Slow down"

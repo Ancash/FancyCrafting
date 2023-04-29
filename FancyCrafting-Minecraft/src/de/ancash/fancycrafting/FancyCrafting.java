@@ -108,6 +108,7 @@ public class FancyCrafting extends JavaPlugin {
 	protected boolean supportVanilla3x3;
 	protected boolean supportVanilla2x2;
 	protected int craftingCooldown;
+	protected boolean vanillaRecipesAcceptPlainItemsOnly;
 	protected boolean debug;
 	protected PermissionDefault craftPermDef;
 	protected PermissionDefault viewPermDef;
@@ -386,6 +387,7 @@ public class FancyCrafting extends JavaPlugin {
 		craftingCooldown = config.getInt("crafting.cooldown");
 		craftPermDef = parsePermissionDefault(config.getString("craft-recipe-permission-default"));
 		viewPermDef = parsePermissionDefault(config.getString("view-recipe-permission-default"));
+		vanillaRecipesAcceptPlainItemsOnly = config.getBoolean("crafting.vanilla-recipes-accept-plain-items-only");
 		getLogger().info("Debug: " + debug);
 		MinecraftLoggerUtil.enableDebugging(this,
 				(pl, record) -> debug ? true : record.getLevel().intValue() >= Level.INFO.intValue(),
@@ -403,6 +405,7 @@ public class FancyCrafting extends JavaPlugin {
 		getLogger().info("Open on crafting table open: " + config.getBoolean("open-on-crafting-table-open"));
 		getLogger().info("Support vanilla 3x3: " + supportVanilla3x3);
 		getLogger().info("Support vanilla 2x2: " + supportVanilla2x2);
+		getLogger().info("Vanilla recipes accept plain items only: " + vanillaRecipesAcceptPlainItemsOnly);
 	}
 
 	private PermissionDefault parsePermissionDefault(String s) {
@@ -491,6 +494,10 @@ public class FancyCrafting extends JavaPlugin {
 
 	public static PermissionDefault getCraftPermDef() {
 		return singleton.craftPermDef;
+	}
+
+	public static boolean vanillaRecipesAcceptPlainItemsOnly() {
+		return singleton.vanillaRecipesAcceptPlainItemsOnly;
 	}
 
 	public static PermissionDefault getViewPermDef() {
