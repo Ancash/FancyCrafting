@@ -268,7 +268,8 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 				else
 					workspace.permissionHandler.onNoPermission(match, workspace.player);
 
-			if (!FancyCrafting.vanillaRecipesAcceptPlainItemsOnly() && !doIngredientsHaveMeta()
+			if ((!FancyCrafting.vanillaRecipesAcceptPlainItemsOnly()
+					|| (FancyCrafting.vanillaRecipesAcceptPlainItemsOnly() && !doIngredientsHaveMeta()))
 					&& workspace.includeVanillaRecipes
 					&& (match = workspace.vanillaMatcher.matchVanillaRecipe(workspace.matrix)) != null)
 				if (workspace.permissionHandler.canCraftRecipe(match, workspace.player))
