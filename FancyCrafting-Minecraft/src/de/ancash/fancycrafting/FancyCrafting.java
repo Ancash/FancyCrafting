@@ -55,7 +55,7 @@ import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.RecipeMatcherCallable;
 import de.ancash.libs.org.apache.commons.io.FileUtils;
-import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
+import org.simpleyaml.configuration.file.YamlFile;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.Metrics;
@@ -288,7 +288,7 @@ public class FancyCrafting extends JavaPlugin {
 	}
 
 	private void applyConfigPatches()
-			throws de.ancash.libs.org.simpleyaml.exceptions.InvalidConfigurationException, IOException {
+			throws org.simpleyaml.exceptions.InvalidConfigurationException, IOException {
 		YamlFile yamlCfg = new YamlFile(configFile);
 		yamlCfg.load();
 		de.ancash.misc.io.FileUtils.move(yamlCfg, "use-custom-crafting-gui", "crafting.use-custom-gui");

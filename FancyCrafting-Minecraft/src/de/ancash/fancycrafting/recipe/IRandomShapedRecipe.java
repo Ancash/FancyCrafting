@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 
 import de.ancash.datastructures.tuples.Duplet;
 import de.ancash.datastructures.tuples.Tuple;
-import de.ancash.libs.org.simpleyaml.configuration.file.YamlFile;
+import org.simpleyaml.configuration.file.YamlFile;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 
