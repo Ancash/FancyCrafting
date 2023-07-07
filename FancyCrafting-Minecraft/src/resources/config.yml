@@ -1,7 +1,7 @@
 sort-recipes-by-recipe-name: true #false = sorted by result name/material name
 debug: true
-player-not-found: "§cCould not find §r%player%"
-no-console-command: "§cThis is not for you!"
+player-not-found: §cCould not find §r%player%
+no-console-command: §cThis is not for you!
 craft-recipe-permission-default: FALSE
 view-recipe-permission-default: FALSE
 
@@ -18,142 +18,194 @@ crafting:
    vanilla-recipes-accept-plain-items-only: true
    use-custom-gui: true
    cooldown: 3
-   cooldown-message: "§eWoah! Slow down"
+   cooldown-message: §eWoah! Slow down
 #some messages
-no-permission: "§cYou don't have permission to do that!"
-invalid-recipe: "§cThat recipe does not exist: %recipe%"
-invalid-crafting-dimension: "§cInvalid crafting dimension: %w & %h"
-invalid-recipe-name: "Invalid recipe name"
-recipe-saved: "§aRecipe saved"
-recipe-deleted: "§eRecipe deleted"
+no-permission: §cYou don't have permission to do that!
+invalid-recipe: '§cThat recipe does not exist: %recipe%'
+invalid-crafting-dimension: '§cInvalid crafting dimension: %w & %h'
+invalid-recipe-name: Invalid recipe name
+recipe-saved: §aRecipe saved
+recipe-deleted: §eRecipe deleted
 
 #the item to click to close the inventory
 close:
-  type: BARRIER
-  meta:
-     displayname: "§cClose"
-  #the item around the crafting slots
+   Amount: 1
+   NBTNexusItem:
+      type: SERIALIZED
+   UnspecificMeta:
+      DisplayName: '&cClose'
+   XMaterial: BARRIER
+#the item around the crafting slots
 background:
-   type: GRAY_STAINED_GLASS_PANE
-   meta:
-      displayname: " "
+   Amount: 1
+   NBTNexusItem:
+      type: SERIALIZED
+   UnspecificMeta:
+      DisplayName: ' '
+   XMaterial: GRAY_STAINED_GLASS_PANE
 workbench:
    quick_crafting:
-      type: WHITE_STAINED_GLASS_PANE
-      meta:
-         displayname: "§cQuick Crafting Slot"
-         lore:
-         - "§7Quick crafting allows you to"
-         - "§7craft items without assembling"
-         - "§7the recipe."
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+         UnspecificMeta:
+            Lore:
+            - '&7Quick crafting allows you to'
+            - '&7craft items without assembling'
+            - '&7the recipe.'
+            DisplayName: '&cQuick Crafting Slot'
+      XMaterial: WHITE_STAINED_GLASS_PANE
    invalid_recipe:
-      type: RED_STAINED_GLASS_PANE
-      meta:
-         displayname: " "
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         DisplayName: ' '
+      XMaterial: RED_STAINED_GLASS_PANE
    valid_recipe:
-      type: GREEN_STAINED_GLASS_PANE
-      meta:
-         displayname: " "
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         DisplayName: ' '
+      XMaterial: GREEN_STAINED_GLASS_PANE
 recipe-create-gui: #creating & editing
-   title: "Create Recipe"
-   manage-ingredients-title: "Input Ingredients"
-   manage-result-title: "Manage Result"
-   manage-probabilities-title: "Manage probabilities"
-   input-recipe-name-title: "Input recipe name"
+   title: Create Recipe
+   manage-ingredients-title: Input Ingredients
+   manage-result-title: Manage Result
+   manage-probabilities-title: Manage probabilities
+   input-recipe-name-title: Input recipe name
    input-recipe-name-left:
-      type: DIAMOND_SWORD
-      meta:
-         displayname: "§aInput recipe name"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         DisplayName: '&aInput recipe name'
+      XMaterial: DIAMOND_SWORD
    input-recipe-name-right:
-      type: DIAMOND_SWORD
-      meta:
-         displayname: "§aInput recipe name"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         DisplayName: '&aInput recipe name'
+      XMaterial: DIAMOND_SWORD
    manage-recipe-name:
-      type: OAK_SIGN
-      meta:
-         displayname: "§aEdit recipe name"
-         lore:
-         - "§aRecipe name: §f%recipe%"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+         - '&aRecipe name: &f%recipe%'
+         DisplayName: '&aEdit recipe name'
+      XMaterial: OAK_SIGN
    create-normal:
-      type: PORK
-      meta:
-         displayname: "§eNormal recipe"
-         lore:
-         - "§7Create a normal shaped"
-         - "§7or shapeless recipe"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+         - '&7Create a normal shaped'
+         - '&7or shapeless recipe'
+         DisplayName: '&eNormal recipe'
+      XMaterial: PORKCHOP
    create-random:
-      type: BEEF
-      meta:
-         displayname: "§eRandom recipe"
-         lore:
-         - "§7Create a random shaped"
-         - "§7or shapeless recipe."
-         - ""
-         - "§7What is a random recipe?"
-         - "§7Instead of only one result you can"
-         - "§7set multiple results for one recipe"
-         - "§7Each result has a predefined probability"
-         - "§7of appearing."
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+         - '&7Create a random shaped'
+         - '&7or shapeless recipe.'
+         - ''
+         - '&7What is a random recipe?'
+         - '&7Instead of only one result you can'
+         - '&7set multiple results for one recipe'
+         - '&7Each result has a predefined probability'
+         - '&7of appearing.'
+         DisplayName: '&eRandom recipe'
+      XMaterial: BEEF
    manage-random-results:
       format: "§a%prob%%§7: §f%item%"
-      type: CHEST
-      meta:
-         displayname: "§aManage results"
-         lore:
-         - "§7Add/remove results and change"
-         - "§7their probability of appearing."
-         - ""
-         - "§aList of current results and probability:"
-         - ""
-         - "%probability_map%"
-         - ""
-         - "§eClick to manage"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+         - '&7Add/remove results and change'
+         - '&7their probability of appearing.'
+         - ''
+         - '&aList of current results and probability:'
+         - ''
+         - '%probability_map%'
+         - ''
+         - '&eClick to manage'
+         DisplayName: '&aManage results'
+      XMaterial: CHEST
    manage-random-invalid-result:
-      type: RED_STAINED_GLASS_PANE
-      meta:
-         displayname: "§cClick an item in your inventory"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         DisplayName: §cClick an item in your inventory
+      XMaterial: RED_STAINED_GLASS_PANE
    manage-random-result-probability:
-      #header:
-      #- ""
+#header:
       footer:
-      - ""
-      - "§aProbability: %probability%"
-      - "§cRight click to delete"
-      - "§eLeft click to edit probability"
+      - ''
+      - '§aProbability: %probability%'
+      - §cRight click to delete
+      - §eLeft click to edit probability
    manage-ingredients:
       id-format: "§a%id%: §f%item%"
-      type: CRAFTING_TABLE
-      meta:
-         displayname: "§aManage ingredients and type"
-         lore:
-         - "§7Manage the required ingredients and"
-         - "§7make the recipe shaped or shapeless"
-         - ""
-         - "§aRecipe type: §7%rtype%"
-         - "§aIngredients:"
-         - ""
-         - "%ingredients%"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+         - '&7Manage the required ingredients and'
+         - '&7make the recipe shaped or shapeless'
+         - ''
+         - '&aRecipe type: &7%rtype%'
+         - '&aIngredients:'
+         - ''
+         - '%ingredients%'
+         DisplayName: '&aManage ingredients and type'
+      XMaterial: CRAFTING_TABLE
    shapeless:
-      type: BLUE_STAINED_GLASS_PANE
-      meta:
-         displayname: "§bShapeless Recipe"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         DisplayName: '&bShapeless Recipe'
+      XMaterial: BLUE_STAINED_GLASS_PANE
    shaped:
-      type: GREEN_STAINED_GLASS_PANE
-      meta:
-         displayname: "§aShaped Recipe"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         DisplayName: '&aShaped Recipe'
+      XMaterial: GREEN_STAINED_GLASS_PANE
    save:
-      type: GREEN_STAINED_GLASS_PANE
-      meta:
-         displayname: "§aSave Recipe"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         DisplayName: '&aSave Recipe'
+      XMaterial: GREEN_STAINED_GLASS_PANE
    edit:
-      type: WRITABLE_BOOK
-      meta:
-         displayname: "aEdit Recipe"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         DisplayName: aEdit Recipe
+      XMaterial: WRITABLE_BOOK
    delete:
-      type: RED_STAINED_GLASS_PANE
-      meta:
-         displayname: "§cDelete Recipe"
-   
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         DisplayName: '&cDelete Recipe'
+      XMaterial: RED_STAINED_GLASS_PANE
 recipe-view-gui:
    size: 36
    probability-slot: 16
@@ -163,43 +215,58 @@ recipe-view-gui:
    next-slot: 35
    previous-slot: 27
    ingredients-slot: 10
-   edit-title: "Edit %recipe%"
-   page-title: "Custom Recipes"
-   single-title: "%recipe% Recipe"
+   edit-title: Edit %recipe%
+   page-title: Custom Recipes
+   single-title: '%recipe% Recipe'
    next:
-      type: ARROW
-      meta:
-         displayname: "§aNext Recipe"
-         lore:
-         - "§7Click to view the next recipe"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+         - '&7Click to view the next recipe'
+         DisplayName: '&aNext Recipe'
+      XMaterial: ARROW
    previous:
-      type: ARROW
-      meta:
-         displayname: "§aPrevious Recipe"
-         lore:
-         - "§7Click to view the previous recipe"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+         - '&7Click to view the previous recipe'
+         DisplayName: '&aPrevious Recipe'
+      XMaterial: ARROW
    back:
       commands:
-      - "kill %player%"
-      type: ARROW
-      meta:
-         displayname: "§c§lBack"
-         lore:
-         - "§7Click to go back"
+      - kill %player%
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+         - '&7Click to go back'
+         DisplayName: '&c&lBack'
+      XMaterial: ARROW
    view-random-results:
-      format: "§a%prob%%§7: §f%item%"
-      type: CHEST
-      meta:
-         displayname: "§aPossible results"
-         lore:
-         - "%probability_map%"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+         - '%probability_map%'
+         DisplayName: '&aPossible results'
+      XMaterial: CHEST
+      format: '§a%prob%%§7: §f%item%'
    view-ingredients:
-      id-format: "§a%id%: §f%item%"
-      type: CRAFTING_TABLE
-      meta:
-         displayname: "§aIngredients & recipe type"
-         lore:
-         - "§aRecipe type: §7%rtype%"
-         - "§aIngredients:"
-         - ""
-         - "%ingredients%"
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+         - '&aRecipe type: &7%rtype%'
+         - '&aIngredients:'
+         - ''
+         - '%ingredients%'
+         DisplayName: '&aIngredients & recipe type'
+      XMaterial: CRAFTING_TABLE
+      id-format: '§a%id%: §f%item%'

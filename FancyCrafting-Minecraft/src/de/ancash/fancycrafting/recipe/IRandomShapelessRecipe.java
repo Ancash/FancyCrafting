@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
+import org.simpleyaml.configuration.file.YamlFile;
 
 import de.ancash.datastructures.tuples.Duplet;
 import de.ancash.datastructures.tuples.Tuple;
-import org.simpleyaml.configuration.file.YamlFile;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 

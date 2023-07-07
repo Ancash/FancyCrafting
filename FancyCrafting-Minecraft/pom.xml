@@ -77,6 +77,12 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>de.ancash</groupId>
+			<artifactId>nbtnexus</artifactId>
+			<version>1.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>net.essentialsx</groupId>
 			<artifactId>EssentialsX</artifactId>
 			<version>2.19.0</version>

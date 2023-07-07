@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
-
 import org.simpleyaml.configuration.file.YamlFile;
+
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 

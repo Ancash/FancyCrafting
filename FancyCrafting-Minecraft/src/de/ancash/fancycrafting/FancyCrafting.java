@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -19,15 +20,18 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.simpleyaml.configuration.file.YamlFile;
 
 import de.ancash.fancycrafting.commands.BlacklistSubCommand;
 import de.ancash.fancycrafting.commands.CreateSubCommand;
@@ -55,7 +59,6 @@ import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.RecipeMatcherCallable;
 import de.ancash.libs.org.apache.commons.io.FileUtils;
-import org.simpleyaml.configuration.file.YamlFile;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.Metrics;
@@ -65,6 +68,8 @@ import de.ancash.minecraft.updatechecker.UpdateChecker;
 import de.ancash.misc.ANSIEscapeCodes;
 import de.ancash.misc.MathsUtils;
 import de.ancash.misc.io.IPrintStream.ConsoleColor;
+import de.ancash.nbtnexus.serde.ItemDeserializer;
+import de.ancash.nbtnexus.serde.ItemSerializer;
 
 @SuppressWarnings("nls")
 public class FancyCrafting extends JavaPlugin {
@@ -93,7 +98,7 @@ public class FancyCrafting extends JavaPlugin {
 	protected RecipeManager recipeManager;
 	protected final WorkspaceObjects workspaceObjects = new WorkspaceObjects();
 	private final File blacklistFile = new File("plugins/FancyCrafting/blacklist/config.yml");
-	private final YamlConfiguration blacklistConfig = YamlConfiguration.loadConfiguration(blacklistFile);
+	private final YamlFile blacklistConfig = new YamlFile(blacklistFile);
 
 	private String manageBlacklistTitle;
 	private IItemStack addRecipeToBlacklistItem;
@@ -113,7 +118,7 @@ public class FancyCrafting extends JavaPlugin {
 	protected PermissionDefault craftPermDef;
 	protected PermissionDefault viewPermDef;
 
-	protected FileConfiguration config;
+	protected YamlFile config;
 	private final File configFile = new File("plugins/FancyCrafting/config.yml");
 
 	public void onEnable() {
@@ -147,8 +152,7 @@ public class FancyCrafting extends JavaPlugin {
 						config.getBoolean("crafting.support-vanilla-2x2")), this);
 	}
 
-	@Override
-	public FileConfiguration getConfig() {
+	public YamlFile getYamlConfig() {
 		return config;
 	}
 
@@ -180,12 +184,30 @@ public class FancyCrafting extends JavaPlugin {
 	private void loadBlacklistConfig() throws FileNotFoundException, IOException, InvalidConfigurationException {
 		if (!blacklistFile.exists())
 			FileUtils.copyInputStreamToFile(getResource("resources/blacklist-config.yml"), blacklistFile);
+		transformItemStack(blacklistFile, "add-recipe-to-blacklist.item");
 		checkFile(blacklistFile, "resources/blacklist-config.yml");
 		blacklistConfig.load(blacklistFile);
 		manageBlacklistTitle = blacklistConfig.getString("main-title");
-		addRecipeToBlacklistItem = new IItemStack(
-				ItemStackUtils.getItemStack(blacklistConfig, "add-recipe-to-blacklist.item"));
+		addRecipeToBlacklistItem = new IItemStack(ItemDeserializer.INSTANCE.deserializeItemStack(
+				blacklistConfig.getConfigurationSection("add-recipe-to-blacklist.item").getMapValues(false)));
 		addRecipeToBlacklistTitle = blacklistConfig.getString("add-recipe-to-blacklist.title");
+	}
+
+	private void transformItemStack(File file, String path)
+			throws FileNotFoundException, IOException, InvalidConfigurationException {
+		FileConfiguration fc = YamlConfiguration.loadConfiguration(file);
+		fc.load(file);
+		try {
+			ItemStack item = ItemStackUtils.getItemStack(fc, path);
+			if (item == null || item.getType() == Material.AIR)
+				return;
+			getLogger().info("Converting item at " + path);
+			fc.set(path, null);
+			fc.createSection(path, ItemSerializer.INSTANCE.serializeItemStack(item));
+		} catch (Exception ex) {
+
+		}
+		fc.save(file);
 	}
 
 	public void load() {
@@ -238,13 +260,14 @@ public class FancyCrafting extends JavaPlugin {
 	private void loadFiles() throws IOException, InvalidConfigurationException {
 		if (!configFile.exists())
 			FileUtils.copyInputStreamToFile(getResource("resources/config.yml"), configFile);
+		config = new YamlFile(configFile);
+		config.load();
 		applyConfigPatches();
-		checkFile(configFile, "resources/config.yml");
+		checkFile(config, "resources/config.yml");
 
 		if (!new File("plugins/FancyCrafting/recipes.yml").exists())
 			new File("plugins/FancyCrafting/recipes.yml").createNewFile();
 
-		config = YamlConfiguration.loadConfiguration(configFile);
 		loadConfig();
 
 		getLogger().info("Loading crafting templates...");
@@ -288,25 +311,52 @@ public class FancyCrafting extends JavaPlugin {
 	}
 
 	private void applyConfigPatches()
-			throws org.simpleyaml.exceptions.InvalidConfigurationException, IOException {
-		YamlFile yamlCfg = new YamlFile(configFile);
-		yamlCfg.load();
-		de.ancash.misc.io.FileUtils.move(yamlCfg, "use-custom-crafting-gui", "crafting.use-custom-gui");
-		de.ancash.misc.io.FileUtils.move(yamlCfg, "crafting-cooldown-message", "crafting.cooldown-message");
-		de.ancash.misc.io.FileUtils.move(yamlCfg, "crafting-cooldown", "crafting.cooldown");
-		de.ancash.misc.io.FileUtils.move(yamlCfg, "check-recipes-async", "crafting.check-recipes-async");
-		de.ancash.misc.io.FileUtils.move(yamlCfg, "check-quick-crafting-async", "crafting.check-quick-crafting-async");
-		de.ancash.misc.io.FileUtils.move(yamlCfg, "perms-for-custom-recipes", "crafting.perms-for-custom-recipes");
-		de.ancash.misc.io.FileUtils.move(yamlCfg, "perms-for-vanilla-recipes", "crafting.perms-for-vanilla-recipes");
-		de.ancash.misc.io.FileUtils.move(yamlCfg, "default-template-width", "crafting.default-template-width");
-		de.ancash.misc.io.FileUtils.move(yamlCfg, "default-template-height", "crafting.default-template-height");
-		yamlCfg.save();
+			throws org.simpleyaml.exceptions.InvalidConfigurationException, IOException, InvalidConfigurationException {
+		de.ancash.misc.io.FileUtils.move(config, "use-custom-crafting-gui", "crafting.use-custom-gui");
+		de.ancash.misc.io.FileUtils.move(config, "crafting-cooldown-message", "crafting.cooldown-message");
+		de.ancash.misc.io.FileUtils.move(config, "crafting-cooldown", "crafting.cooldown");
+		de.ancash.misc.io.FileUtils.move(config, "check-recipes-async", "crafting.check-recipes-async");
+		de.ancash.misc.io.FileUtils.move(config, "check-quick-crafting-async", "crafting.check-quick-crafting-async");
+		de.ancash.misc.io.FileUtils.move(config, "perms-for-custom-recipes", "crafting.perms-for-custom-recipes");
+		de.ancash.misc.io.FileUtils.move(config, "perms-for-vanilla-recipes", "crafting.perms-for-vanilla-recipes");
+		de.ancash.misc.io.FileUtils.move(config, "default-template-width", "crafting.default-template-width");
+		de.ancash.misc.io.FileUtils.move(config, "default-template-height", "crafting.default-template-height");
+		config.save();
+		transformItemStack(configFile, "close");
+		transformItemStack(configFile, "background");
+		transformItemStack(configFile, "workbench.quick_crafting");
+		transformItemStack(configFile, "workbench.invalid_recipe");
+		transformItemStack(configFile, "workbench.valid_recipe");
+		transformItemStack(configFile, "recipe-create-gui.input-recipe-name-left");
+		transformItemStack(configFile, "recipe-create-gui.input-recipe-name-right");
+		transformItemStack(configFile, "recipe-create-gui.manage-recipe-name");
+		transformItemStack(configFile, "recipe-create-gui.create-normal");
+		transformItemStack(configFile, "recipe-create-gui.create-random");
+		transformItemStack(configFile, "recipe-create-gui.manage-random-results");
+		transformItemStack(configFile, "recipe-create-gui.manage-random-invalid-result");
+		transformItemStack(configFile, "recipe-create-gui.manage-ingredients");
+		transformItemStack(configFile, "recipe-create-gui.shapeless");
+		transformItemStack(configFile, "recipe-create-gui.shaped");
+		transformItemStack(configFile, "recipe-create-gui.save");
+		transformItemStack(configFile, "recipe-create-gui.edit");
+		transformItemStack(configFile, "recipe-create-gui.delete");
+		transformItemStack(configFile, "recipe-view-gui.next");
+		transformItemStack(configFile, "recipe-view-gui.previous");
+		transformItemStack(configFile, "recipe-view-gui.back");
+		transformItemStack(configFile, "recipe-view-gui.view-random-results");
+		transformItemStack(configFile, "recipe-view-gui.view-ingredients");
+		config.load();
 	}
 
 	public void checkFile(File file, String src) throws IOException {
 		getLogger().fine("Checking " + file.getPath() + " for completeness (comparing to " + src + ")");
 		de.ancash.misc.io.FileUtils.setMissingConfigurationSections(new YamlFile(file), getResource(src),
-				new HashSet<>(Arrays.asList("type")));
+				new HashSet<>());
+	}
+
+	public void checkFile(YamlFile file, String src) throws IOException {
+		getLogger().fine("Checking " + file.getFilePath() + " for completeness (comparing to " + src + ")");
+		de.ancash.misc.io.FileUtils.setMissingConfigurationSections(file, getResource(src), new HashSet<>());
 	}
 
 	protected void checkForUpdates() {
@@ -315,47 +365,46 @@ public class FancyCrafting extends JavaPlugin {
 				.setChangelogLink(RESOURCE_ID).setNotifyOpsOnJoin(true).checkEveryXHours(6).checkNow();
 	}
 
+	private ItemStack getItem(YamlFile file, String path) {
+		Map<String, Object> map = file.getConfigurationSection(path).getMapValues(false);
+		map.remove("commands");
+		map.remove("format");
+		map.remove("id-format");
+		return ItemDeserializer.INSTANCE.deserializeItemStack(map);
+	}
+
 	private void loadConfig() throws IOException, InvalidConfigurationException {
 		viewSlots = new ViewSlots(config.getInt("recipe-view-gui.size"), config.getInt("recipe-view-gui.result-slot"),
 				config.getInt("recipe-view-gui.ingredients-slot"), config.getInt("recipe-view-gui.probability-slot"),
 				config.getInt("recipe-view-gui.close-slot"), config.getInt("recipe-view-gui.back-slot"),
 				config.getInt("recipe-view-gui.previous-slot"), config.getInt("recipe-view-gui.next-slot"),
 				config.getInt("recipe-view-gui.edit-slot"));
-		workspaceObjects.setBackgroundItem(new IItemStack(ItemStackUtils.getItemStack(config, "background")))
-				.setBackItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.back")))
-				.setCloseItem(new IItemStack(ItemStackUtils.getItemStack(config, "close")))
-				.setPrevItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.previous")))
-				.setNextItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.next")))
-				.setValidItem(new IItemStack(ItemStackUtils.getItemStack(config, "workbench.valid_recipe")))
-				.setInvalidItem(new IItemStack(ItemStackUtils.getItemStack(config, "workbench.invalid_recipe")))
-				.setShapelessItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.shapeless")))
-				.setShapedItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.shaped")))
-				.setSaveItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.save")))
-				.setEditItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.edit")))
-				.setDeleteItem(new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.delete")))
-				.setQuickCraftingItem(new IItemStack(ItemStackUtils.getItemStack(config, "workbench.quick_crafting")))
-				.setCreateNormalRecipeItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.create-normal")))
-				.setCreateRandomRecipeItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.create-random")))
-				.setManageRandomResultsItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-random-results")))
-				.setViewRandomResultsItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.view-random-results")))
-				.setManageIngredientsItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-ingredients")))
-				.setManageIngredientsItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-ingredients")))
-				.setViewIngredientsItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-view-gui.view-ingredients")))
-				.setManageRandomInvalidResultItem(new IItemStack(
-						ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-random-invalid-result")))
-				.setInputRecipeNameLeftItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.input-recipe-name-left")))
-				.setInputRecipeNameRightItem(new IItemStack(
-						ItemStackUtils.getItemStack(config, "recipe-create-gui.input-recipe-name-right")))
-				.setManageRecipeNameItem(
-						new IItemStack(ItemStackUtils.getItemStack(config, "recipe-create-gui.manage-recipe-name")))
+		workspaceObjects.setBackgroundItem(new IItemStack(getItem(config, "background")))
+				.setBackItem(new IItemStack(getItem(config, "recipe-view-gui.back")))
+				.setCloseItem(new IItemStack(getItem(config, "close")))
+				.setPrevItem(new IItemStack(getItem(config, "recipe-view-gui.previous")))
+				.setNextItem(new IItemStack(getItem(config, "recipe-view-gui.next")))
+				.setValidItem(new IItemStack(getItem(config, "workbench.valid_recipe")))
+				.setInvalidItem(new IItemStack(getItem(config, "workbench.invalid_recipe")))
+				.setShapelessItem(new IItemStack(getItem(config, "recipe-create-gui.shapeless")))
+				.setShapedItem(new IItemStack(getItem(config, "recipe-create-gui.shaped")))
+				.setSaveItem(new IItemStack(getItem(config, "recipe-create-gui.save")))
+				.setEditItem(new IItemStack(getItem(config, "recipe-create-gui.edit")))
+				.setDeleteItem(new IItemStack(getItem(config, "recipe-create-gui.delete")))
+				.setQuickCraftingItem(new IItemStack(getItem(config, "workbench.quick_crafting")))
+				.setCreateNormalRecipeItem(new IItemStack(getItem(config, "recipe-create-gui.create-normal")))
+				.setCreateRandomRecipeItem(new IItemStack(getItem(config, "recipe-create-gui.create-random")))
+				.setManageRandomResultsItem(new IItemStack(getItem(config, "recipe-create-gui.manage-random-results")))
+				.setViewRandomResultsItem(new IItemStack(getItem(config, "recipe-view-gui.view-random-results")))
+				.setManageIngredientsItem(new IItemStack(getItem(config, "recipe-create-gui.manage-ingredients")))
+				.setManageIngredientsItem(new IItemStack(getItem(config, "recipe-create-gui.manage-ingredients")))
+				.setViewIngredientsItem(new IItemStack(getItem(config, "recipe-view-gui.view-ingredients")))
+				.setManageRandomInvalidResultItem(
+						new IItemStack(getItem(config, "recipe-create-gui.manage-random-invalid-result")))
+				.setInputRecipeNameLeftItem(new IItemStack(getItem(config, "recipe-create-gui.input-recipe-name-left")))
+				.setInputRecipeNameRightItem(
+						new IItemStack(getItem(config, "recipe-create-gui.input-recipe-name-right")))
+				.setManageRecipeNameItem(new IItemStack(getItem(config, "recipe-create-gui.manage-recipe-name")))
 				.setCreateRecipeTitle(config.getString("recipe-create-gui.title"))
 				.setCustomRecipesTitle(config.getString("recipe-view-gui.page-title"))
 				.setViewRecipeTitle(config.getString("recipe-view-gui.single-title"))
