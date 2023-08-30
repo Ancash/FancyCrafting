@@ -11,7 +11,8 @@ public final class Response {
 	public final String RECIPE_SAVED;
 	public final String RECIPE_DELETED;
 	public final String CRAFTING_COOLDOWN_MESSAGE;
-
+	public final String INVALID_CATEGORY_NAME;
+	
 	@SuppressWarnings("nls")
 	public Response(FancyCrafting fc) {
 		CRAFTING_COOLDOWN_MESSAGE = fc.getConfig().getString("crafting.cooldown-message");
@@ -21,6 +22,7 @@ public final class Response {
 		PLAYER_NOT_FOUND = fc.getConfig().getString("player-not-found");
 		NO_CONSOLE_COMMAND = fc.getConfig().getString("no-console-command");
 		INVALID_RECIPE_NAME = fc.getConfig().getString("invalid-recipe-name");
+		INVALID_CATEGORY_NAME = fc.getConfig().getString("invalid-category-name");
 		RECIPE_SAVED = fc.getConfig().getString("recipe-saved");
 		RECIPE_DELETED = fc.getConfig().getString("recipe-deleted");
 	}

@@ -19,7 +19,7 @@ public class BookDuplicateRecipe extends IShapelessRecipe implements IComplexRec
 	}
 
 	public BookDuplicateRecipe(Collection<ItemStack> ings, ItemStack result, String name) {
-		super(ings, result, name, true, false);
+		super(ings, result, name, true, false, null);
 	}
 
 	@Override

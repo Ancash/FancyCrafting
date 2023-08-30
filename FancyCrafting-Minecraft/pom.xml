@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.ancash</groupId>
 	<artifactId>fancycrafting</artifactId>
-	<version>4.7.0</version>
+	<version>4.8.0</version>
 	<properties>
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
@@ -73,7 +73,7 @@
 		<dependency>
 			<groupId>de.ancash</groupId>
 			<artifactId>ilibrary</artifactId>
-			<version>3.8.0</version>
+			<version>3.8.4</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

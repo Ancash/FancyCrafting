@@ -27,8 +27,8 @@ public class IRandomShapelessRecipe extends IShapelessRecipe implements IRandomR
 	private final Random random = new Random();
 
 	public IRandomShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, UUID uuid,
-			Map<ItemStack, Integer> probMap) {
-		super(ings, result, name, uuid);
+			Map<ItemStack, Integer> probMap, RecipeCategory category) {
+		super(ings, result, name, uuid, category);
 		probList = Collections.unmodifiableList(probMap.entrySet().stream()
 				.map(entry -> Tuple.of(new IItemStack(entry.getKey()), entry.getValue())).collect(Collectors.toList()));
 		probSum = probList.stream().map(Duplet::getSecond).mapToInt(Integer::valueOf).sum();
@@ -73,6 +73,7 @@ public class IRandomShapelessRecipe extends IShapelessRecipe implements IRandomR
 		temp.set("recipe.height", size);
 		temp.set("recipe.uuid", uuid.toString());
 		temp.set("recipe.random", true);
+		temp.set("recipe.category", category.getName());
 		for (int i = 0; i < getIIngredients().size(); i++)
 			temp.set("recipe.ingredients." + i,
 					ItemStackUtils.itemStackToString(getIIngredients().get(i).getOriginal()));

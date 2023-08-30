@@ -42,8 +42,8 @@ public class ManageBlacklistedRecipeGUI extends EditNormalRecipeGUI {
 	protected void onRecipeSave() {
 		closeAll();
 		try {
-			pl.addRecipeToBlacklist(shaped ? new IShapedRecipe(ingredients, 8, 6, result, recipeName, recipe.getUUID())
-					: new IShapelessRecipe(Arrays.asList(ingredients), result, recipeName, recipe.getUUID()));
+			pl.addRecipeToBlacklist(shaped ? new IShapedRecipe(ingredients, 8, 6, result, recipeName, recipe.getUUID(), null)
+					: new IShapelessRecipe(Arrays.asList(ingredients), result, recipeName, recipe.getUUID(), null));
 			player.sendMessage("§aSaved blacklisted recipe!");
 		} catch (IOException e) {
 			player.sendMessage("§cCould not save blacklisted recipe!");

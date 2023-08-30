@@ -41,6 +41,7 @@ public class WorkspaceObjects {
 	private String viewIngredientsIdFormat;
 	private String viewRandomResultsFormat;
 	private String inputRecipeNameTitle;
+	private String inputCategoryNameTitle;
 	private List<String> manageProbabilityFooter;
 	private List<String> manageProbabilityHeader;
 	private List<String> backCommands;
@@ -342,6 +343,15 @@ public class WorkspaceObjects {
 		return this;
 	}
 
+	public String getInputCategoryNameTitle() {
+		return inputCategoryNameTitle;
+	}
+	
+	public WorkspaceObjects setInputCategoryNameTitle(String s) {
+		this.inputCategoryNameTitle = s;
+		return this;
+	}
+	
 	public IItemStack getManageRecipeNameItem() {
 		return manageRecipeNameItem;
 	}

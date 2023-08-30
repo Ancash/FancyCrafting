@@ -27,7 +27,6 @@ import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
-import de.ancash.fancycrafting.recipe.complex.BookDuplicateRecipe;
 import de.ancash.fancycrafting.recipe.complex.IComplexRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.InventoryUtils;
@@ -373,7 +372,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		Set<Integer> done = new HashSet<>();
 		Set<XMaterial> ignoredMaterials = new HashSet<>();
 
-		if (shapeless instanceof BookDuplicateRecipe)
+		if (shapeless instanceof IComplexRecipe)
 			ignoredMaterials = ((IComplexRecipe) shapeless).getIgnoredMaterials();
 
 		for (IItemStack ingredient : shapeless.getIIngredients()) {

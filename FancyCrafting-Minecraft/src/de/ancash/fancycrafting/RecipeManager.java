@@ -31,6 +31,7 @@ import de.ancash.fancycrafting.recipe.IRandomShapelessRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
+import de.ancash.fancycrafting.recipe.RecipeCategory;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.misc.MathsUtils;
 
@@ -243,20 +244,20 @@ public class RecipeManager {
 	}
 
 	public void createRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String id, UUID uuid, int width,
-			int height) throws InvalidRecipeException {
-		saveRecipe(result, ingredients, shaped, id, uuid, width, height);
+			int height, RecipeCategory category) throws InvalidRecipeException {
+		saveRecipe(result, ingredients, shaped, id, uuid, width, height, category);
 		reloadRecipes();
 	}
 
 	public void saveRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name, UUID uuid, int width,
-			int height) throws InvalidRecipeException {
+			int height, RecipeCategory category) throws InvalidRecipeException {
 		try {
 			recipeCfg.load(recipeFile);
 			if (shaped)
-				new IShapedRecipe(ingredients, width, height, result, name, uuid).saveToFile(recipeCfg,
+				new IShapedRecipe(ingredients, width, height, result, name, uuid, category).saveToFile(recipeCfg,
 						uuid.toString());
 			else
-				new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid).saveToFile(recipeCfg,
+				new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid, category).saveToFile(recipeCfg,
 						uuid.toString());
 			recipeCfg.save(recipeFile);
 		} catch (Exception ex) {
@@ -265,14 +266,14 @@ public class RecipeManager {
 	}
 
 	public void saveRandomRecipe(ItemStack result, ItemStack[] ingredients, boolean shaped, String name, UUID uuid,
-			int width, int height, Map<ItemStack, Integer> rngMap) throws InvalidRecipeException {
+			int width, int height, Map<ItemStack, Integer> rngMap, RecipeCategory category) throws InvalidRecipeException {
 		try {
 			recipeCfg.load(recipeFile);
 			if (shaped)
-				new IRandomShapedRecipe(ingredients, width, height, result, name, uuid, rngMap).saveToFile(recipeCfg,
+				new IRandomShapedRecipe(ingredients, width, height, result, name, uuid, rngMap, category).saveToFile(recipeCfg,
 						uuid.toString());
 			else
-				new IRandomShapelessRecipe(Arrays.asList(ingredients), result, name, uuid, rngMap).saveToFile(recipeCfg,
+				new IRandomShapelessRecipe(Arrays.asList(ingredients), result, name, uuid, rngMap, category).saveToFile(recipeCfg,
 						uuid.toString());
 			recipeCfg.save(recipeFile);
 		} catch (Exception ex) {

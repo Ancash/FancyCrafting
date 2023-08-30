@@ -6,9 +6,12 @@ import java.util.stream.Stream;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.minecraft.IItemStack;
+import de.ancash.nbtnexus.NBTNexus;
+import de.ancash.nbtnexus.serde.SerializedItem;
 
 public class RecipeMatcherCallable implements Callable<IRecipe> {
 
@@ -55,7 +58,16 @@ public class RecipeMatcherCallable implements Callable<IRecipe> {
 
 	protected boolean doIngredientsHaveMeta() {
 		return Stream.of(matrix.getArray()).filter(i -> i != null).map(IItemStack::getOriginal)
-				.filter(ItemStack::hasItemMeta).findAny().isPresent();
+				.filter(ItemStack::hasItemMeta).filter(item -> {
+					ItemMeta meta = item.getItemMeta();
+					if (meta.hasLocalizedName() || meta.hasDisplayName() || meta.hasLore()
+							|| !meta.getItemFlags().isEmpty() || meta.hasCustomModelData())
+						return true;
+					SerializedItem si = SerializedItem.of(item);
+					if (si.getMap().keySet().stream().filter(s -> s.contains(NBTNexus.SPLITTER)).findAny().isPresent())
+						return true;
+					return false;
+				}).findAny().isPresent();
 	}
 
 	public IMatrix<IItemStack> getMatrix() {

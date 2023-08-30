@@ -26,6 +26,7 @@ invalid-crafting-dimension: '§cInvalid crafting dimension: %w & %h'
 invalid-recipe-name: Invalid recipe name
 recipe-saved: §aRecipe saved
 recipe-deleted: §eRecipe deleted
+invalid-category-name: Invalid category name
 
 #the item to click to close the inventory
 close:
@@ -75,6 +76,7 @@ recipe-create-gui: #creating & editing
    manage-result-title: Manage Result
    manage-probabilities-title: Manage probabilities
    input-recipe-name-title: Input recipe name
+   input-category-name-title: Input category name
    input-recipe-name-left:
       Amount: 1
       NBTNexusItem:

@@ -13,7 +13,7 @@ public class CreateRandomRecipeGUI extends EditRandomRecipeGUI {
 
 	public CreateRandomRecipeGUI(FancyCrafting pl, Player player, String name) {
 		super(pl, player,
-				new IRandomShapedRecipe(new ItemStack[1], 1, 1, null, name, UUID.randomUUID(), new HashMap<>()),
+				new IRandomShapedRecipe(new ItemStack[1], 1, 1, null, name, UUID.randomUUID(), new HashMap<>(), null),
 				pl.getWorkspaceObjects().getCreateRecipeTitle());
 	}
 

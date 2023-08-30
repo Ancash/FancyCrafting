@@ -18,7 +18,7 @@ public class FireworkRecipe extends IShapelessRecipe implements IComplexRecipe {
 	}
 
 	public FireworkRecipe(Collection<ItemStack> ings, ItemStack result, String name) {
-		super(ings, result, name, true, false);
+		super(ings, result, name, true, false, null);
 	}
 
 	@Override

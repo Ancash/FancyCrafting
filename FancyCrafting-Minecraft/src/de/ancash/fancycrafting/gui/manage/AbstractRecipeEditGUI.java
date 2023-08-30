@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -20,7 +21,11 @@ import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
+import de.ancash.fancycrafting.recipe.RecipeCategory;
+import de.ancash.lambda.Lambda;
+import de.ancash.minecraft.ItemBuilder;
 import de.ancash.minecraft.ItemStackUtils;
+import de.ancash.minecraft.cryptomorin.xseries.XMaterial;
 import de.ancash.minecraft.inventory.IGUI;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
@@ -38,6 +43,7 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 	protected ItemStack[] ingredients;
 	protected ItemStack result;
 	protected boolean shaped;
+	protected RecipeCategory category;
 
 	public AbstractRecipeEditGUI(FancyCrafting pl, Player player, IRecipe recipe) {
 		this(pl, player, recipe, pl.getWorkspaceObjects().getEditRecipeTitle());
@@ -52,6 +58,7 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 		this.player = player;
 		this.plugin = pl;
 		this.recipeName = recipe.getRecipeName();
+		category = recipe.getCategory();
 		this.result = recipe.getResult() == null || recipe.getResult().getType() == Material.AIR
 				? plugin.getWorkspaceObjects().getManageRandomInvalidResultItem().getOriginal()
 				: recipe.getResult();
@@ -101,6 +108,7 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 		addManageResult();
 		addManageIngredients();
 		addManageRecipeName();
+		addManageCategory();
 		IGUIManager.register(this, getId());
 		onMainMenuOpen();
 		super.open();
@@ -113,7 +121,7 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 				new InventoryItem(this,
 						ItemStackUtils.replacePlaceholder(
 								plugin.getWorkspaceObjects().getManageRecipeNameItem().getOriginal(), placeholder),
-						14, (a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> {
+						14, (a, b, c, top) -> Lambda.execIf(top, () -> {
 							IGUIManager.remove(getId());
 							StringInputGUI sig = new StringInputGUI(plugin, player, (str) -> {
 								this.recipeName = str;
@@ -142,6 +150,30 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 						setItem(result, 12);
 					}
 				})));
+	}
+
+	@SuppressWarnings("nls")
+	private void addManageCategory() {
+		addInventoryItem(new InventoryItem(this,
+				new ItemBuilder(XMaterial.CHEST).setDisplayname("§aEdit Category: §7" + category.getName()).build(), 20,
+				(a, b, c, top) -> {
+
+					IGUIManager.remove(getId());
+					StringInputGUI sig = new StringInputGUI(plugin, player, (str) -> {
+						this.category = RecipeCategory.getOrCreateCategory(str);
+						Bukkit.getScheduler().runTaskLater(plugin, () -> openMainMenu(), 1);
+					}, (str) -> Tuple.of(str != null && !str.isEmpty() && !str.contains(" "),
+							plugin.getResponse().INVALID_CATEGORY_NAME));
+					sig.setLeft(new ItemBuilder(XMaterial.CHEST).setLore(Arrays
+							.asList(("§eNo spaces allowed\n§eExisting Categories:\n"
+									+ String.join(", ", RecipeCategory.getCategories()))
+									.replaceAll("(.{1,50})\\s+", "$1\n").split("\n"))
+							.stream().map(s -> "§7" + s).collect(Collectors.toList())).build());
+					sig.setText(category.getName());
+					sig.setTitle(plugin.getWorkspaceObjects().getInputCategoryNameTitle());
+					sig.open();
+
+				}));
 	}
 
 	private void addManageIngredients() {

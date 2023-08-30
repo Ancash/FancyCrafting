@@ -32,8 +32,10 @@ import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.fancycrafting.recipe.RecipeMatcherCallable;
+import de.ancash.fancycrafting.recipe.complex.IComplexRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.InventoryUtils;
+import de.ancash.minecraft.cryptomorin.xseries.XMaterial;
 
 public class WorkbenchClickListener implements Listener {
 
@@ -235,6 +237,11 @@ public class WorkbenchClickListener implements Listener {
 
 	private void collectShapeless(int size, CraftingInventory inv, IShapelessRecipe shapeless, int multiplicator) {
 		Set<Integer> done = new HashSet<>();
+		Set<XMaterial> ignoredMaterials = new HashSet<>();
+
+		if (shapeless instanceof IComplexRecipe)
+			ignoredMaterials = ((IComplexRecipe) shapeless).getIgnoredMaterials();
+		
 		for (IItemStack ingredient : shapeless.getIIngredients()) {
 			for (int craftSlot = 0; craftSlot < size * size; craftSlot++) {
 				if (done.contains(craftSlot))
@@ -244,6 +251,10 @@ public class WorkbenchClickListener implements Listener {
 				if (ingredient.hashCode() != new IItemStack(inv.getItem(craftSlot + 1)).hashCode()
 						&& !shapeless.isVanilla())
 					continue;
+				
+				if(ignoredMaterials.contains(XMaterial.matchXMaterial(inv.getItem(craftSlot + 1))))
+					continue;
+				
 				int amt = ingredient.getOriginal().getAmount() * multiplicator;
 				if (inv.getItem(craftSlot + 1).getAmount() <= amt)
 					inv.setItem(craftSlot + 1, null);

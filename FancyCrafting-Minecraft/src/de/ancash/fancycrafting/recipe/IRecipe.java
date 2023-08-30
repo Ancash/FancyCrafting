@@ -26,6 +26,7 @@ import de.ancash.fancycrafting.recipe.complex.ArmorDyeRecipe;
 import de.ancash.fancycrafting.recipe.complex.BannerDuplicateRecipe;
 import de.ancash.fancycrafting.recipe.complex.BookDuplicateRecipe;
 import de.ancash.fancycrafting.recipe.complex.FireworkRecipe;
+import de.ancash.fancycrafting.recipe.complex.RepairRecipe;
 import de.ancash.fancycrafting.recipe.complex.ShulkerDyeRecipe;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
@@ -44,18 +45,27 @@ public abstract class IRecipe {
 	protected final UUID uuid;
 	protected final Permission craftPermission;
 	protected final Permission viewPermission;
+	protected final RecipeCategory category;
 
-	public IRecipe(ItemStack result, String name, UUID uuid) {
-		this(result, name, false, true, uuid);
+	public IRecipe(ItemStack result, String name, UUID uuid, RecipeCategory category) {
+		this(result, name, false, true, uuid, category);
 	}
 
-	public IRecipe(ItemStack result, String name, boolean vanilla, boolean suitableForAutoMatching) {
-		this(result, name, vanilla, suitableForAutoMatching, null);
+	public IRecipe(ItemStack result, String name, boolean vanilla, boolean suitableForAutoMatching,
+			RecipeCategory category) {
+		this(result, name, vanilla, suitableForAutoMatching, null, category);
 	}
 
 	@SuppressWarnings("nls")
-	IRecipe(ItemStack result, String name, boolean vanilla, boolean suitableForAutoMatching, UUID uuid) {
+	IRecipe(ItemStack result, String name, boolean vanilla, boolean suitableForAutoMatching, UUID uuid,
+			RecipeCategory category) {
 		this.uuid = uuid;
+		if (vanilla) {
+			this.category = null;
+		} else if (category == null)
+			this.category = RecipeCategory.DEFAULT;
+		else
+			this.category = category;
 		this.result = result == null ? null : new IItemStack(result);
 		this.vanilla = vanilla;
 		if (vanilla)
@@ -112,6 +122,10 @@ public abstract class IRecipe {
 
 	public boolean isVanilla() {
 		return vanilla;
+	}
+	
+	public RecipeCategory getCategory() {
+		return category;
 	}
 
 	public String getRecipeName() {
@@ -177,6 +191,14 @@ public abstract class IRecipe {
 
 		ItemStack result = fc.contains(path + ".result") ? ItemStackUtils.getItemStack(fc, path + ".result") : null;
 		String name = fc.getString(path + ".name");
+		String catName = fc.getString(path + ".category");
+		if(catName == null) {
+			catName = RecipeCategory.DEFAULT.getName();
+			fc.set(path + ".category", catName);
+			FancyCrafting.getPlugin(FancyCrafting.class).getLogger().info("No category set for '" + name + "' at '" + path + "'. Set to '" + catName + "'");
+			save = true;
+		}
+		RecipeCategory category = RecipeCategory.getOrCreateCategory(catName);
 
 		int width = fc.getInt(path + ".width");
 		int height = fc.getInt(path + ".height");
@@ -219,13 +241,13 @@ public abstract class IRecipe {
 
 		if (shaped)
 			if (random)
-				return new IRandomShapedRecipe(ingredients, width, height, result, name, uuid, rngMap);
+				return new IRandomShapedRecipe(ingredients, width, height, result, name, uuid, rngMap, category);
 			else
-				return new IShapedRecipe(ingredients, width, height, result, name, uuid);
+				return new IShapedRecipe(ingredients, width, height, result, name, uuid, category);
 		else if (random)
-			return new IRandomShapelessRecipe(Arrays.asList(ingredients), result, name, uuid, rngMap);
+			return new IRandomShapelessRecipe(Arrays.asList(ingredients), result, name, uuid, rngMap, category);
 		else
-			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid);
+			return new IShapelessRecipe(Arrays.asList(ingredients), result, name, uuid, category);
 	}
 
 	public static IRecipe fromVanillaRecipe(FancyCrafting pl, Recipe v) {
@@ -262,6 +284,8 @@ public abstract class IRecipe {
 					return new ShulkerDyeRecipe(Arrays.asList(ings), v.getResult());
 				case FIREWORK:
 					return new FireworkRecipe(Arrays.asList(ings), v.getResult());
+				case REPAIR:
+					return new RepairRecipe(Arrays.asList(ings), v.getResult());
 				default:
 					throw new IllegalArgumentException(complex.getType().name());
 				}
@@ -281,13 +305,13 @@ public abstract class IRecipe {
 						ings[a * 3 + b] = removeUnspecificMeta(s, s.getIngredientMap().get(str.charAt(b)), ignoreMeta);
 					}
 				}
-				r = new IShapedRecipe(ings, 3, 3, v.getResult(), null, true, suitableForAutoMatching.get());
+				r = new IShapedRecipe(ings, 3, 3, v.getResult(), null, true, suitableForAutoMatching.get(), null);
 			} else if (v instanceof ShapelessRecipe) {
 				ShapelessRecipe s = (ShapelessRecipe) v;
 				r = new IShapelessRecipe(s.getIngredientList().stream().map(i -> {
 					suitableForAutoMatching.compareAndSet(true, isSuitableForAutoMatching(i));
 					return removeUnspecificMeta(s, i, ignoreMeta);
-				}).collect(Collectors.toList()), v.getResult(), null, true, suitableForAutoMatching.get());
+				}).collect(Collectors.toList()), v.getResult(), null, true, suitableForAutoMatching.get(), null);
 			}
 		} catch (Exception e) {
 			List<ItemStack> ings = null;

@@ -29,18 +29,18 @@ public class IShapelessRecipe extends IRecipe {
 	private final List<Integer> hashMatrix;
 	protected final int size;
 
-	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, UUID uuid) {
-		this(ings, result, name, false, true, uuid);
+	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, UUID uuid, RecipeCategory category) {
+		this(ings, result, name, false, true, uuid, category);
 	}
 
 	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, boolean vanilla,
-			boolean suitableForAutoMatching) {
-		this(ings, result, name, vanilla, suitableForAutoMatching, null);
+			boolean suitableForAutoMatching, RecipeCategory category) {
+		this(ings, result, name, vanilla, suitableForAutoMatching, null, category);
 	}
 
 	IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, boolean vanilla,
-			boolean suitableForAutoMatching, UUID uuid) {
-		super(result, name, vanilla, suitableForAutoMatching, uuid);
+			boolean suitableForAutoMatching, UUID uuid, RecipeCategory category) {
+		super(result, name, vanilla, suitableForAutoMatching, uuid, category);
 		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null && i.getType() != Material.AIR)
 				.collect(Collectors.toCollection(() -> new ArrayList<>())));
 		this.iings = Collections.unmodifiableList(this.ings.stream().map(IItemStack::new).collect(Collectors.toList()));
@@ -121,6 +121,7 @@ public class IShapelessRecipe extends IRecipe {
 		file.set(path + ".height", size);
 		file.set(path + ".uuid", uuid.toString());
 		file.set(path + ".random", false);
+		file.set(path + ".category", category.getName());
 		for (int i = 0; i < getIngredients().size(); i++)
 			if (getIngredients().get(i) != null)
 				ItemStackUtils.setItemStack(file, path + ".ingredients." + i, getIngredients().get(i));
@@ -137,6 +138,7 @@ public class IShapelessRecipe extends IRecipe {
 		temp.set("recipe.height", size);
 		temp.set("recipe.uuid", uuid.toString());
 		temp.set("recipe.random", false);
+		temp.set("recipe.category", category.getName());
 		for (int i = 0; i < getIIngredients().size(); i++)
 			temp.set("recipe.ingredients." + i,
 					ItemStackUtils.itemStackToString(getIIngredients().get(i).getOriginal()));

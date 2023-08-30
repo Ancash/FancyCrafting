@@ -11,12 +11,12 @@ import de.ancash.fancycrafting.recipe.IShapedRecipe;
 public class CreateNormalRecipeGUI extends EditNormalRecipeGUI {
 
 	public CreateNormalRecipeGUI(FancyCrafting pl, Player player, String name) {
-		super(pl, player, new IShapedRecipe(new ItemStack[1], 1, 1, null, name, UUID.randomUUID()),
+		super(pl, player, new IShapedRecipe(new ItemStack[1], 1, 1, null, name, UUID.randomUUID(), null),
 				pl.getWorkspaceObjects().getCreateRecipeTitle());
 	}
 
 	public CreateNormalRecipeGUI(FancyCrafting pl, Player player, String name, String title) {
-		super(pl, player, new IShapedRecipe(new ItemStack[1], 1, 1, null, name, UUID.randomUUID()), title);
+		super(pl, player, new IShapedRecipe(new ItemStack[1], 1, 1, null, name, UUID.randomUUID(), null), title);
 	}
 
 	@Override

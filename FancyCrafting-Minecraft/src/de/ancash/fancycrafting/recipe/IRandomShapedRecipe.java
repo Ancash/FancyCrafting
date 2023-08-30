@@ -26,8 +26,8 @@ public class IRandomShapedRecipe extends IShapedRecipe implements IRandomRecipe 
 	private final Map<ItemStack, Integer> probMap;
 
 	public IRandomShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, UUID uuid,
-			Map<ItemStack, Integer> probMap) {
-		super(ings, width, height, result, name, uuid);
+			Map<ItemStack, Integer> probMap, RecipeCategory category) {
+		super(ings, width, height, result, name, uuid, category);
 		probList = Collections.unmodifiableList(probMap.entrySet().stream()
 				.map(entry -> Tuple.of(new IItemStack(entry.getKey()), entry.getValue())).collect(Collectors.toList()));
 		probSum = probList.stream().map(Duplet::getSecond).mapToInt(Integer::valueOf).sum();
@@ -72,6 +72,7 @@ public class IRandomShapedRecipe extends IShapedRecipe implements IRandomRecipe 
 		temp.set("recipe.height", getHeight());
 		temp.set("recipe.uuid", uuid.toString());
 		temp.set("recipe.random", true);
+		temp.set("recipe.category", category.getName());
 		for (int i = 0; i < getIngredientsArray().length; i++)
 			if (getIngredientsArray()[i] != null)
 				temp.set("recipe.ingredients." + i,

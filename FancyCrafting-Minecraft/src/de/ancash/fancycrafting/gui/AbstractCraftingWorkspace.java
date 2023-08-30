@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import de.ancash.ILibrary;
 import de.ancash.fancycrafting.FancyCrafting;
@@ -22,6 +23,8 @@ import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.VanillaRecipeMatcher;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.inventory.IGUI;
+import de.ancash.nbtnexus.NBTNexus;
+import de.ancash.nbtnexus.serde.SerializedItem;
 
 public abstract class AbstractCraftingWorkspace extends IGUI {
 
@@ -282,7 +285,17 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 
 		protected boolean doIngredientsHaveMeta() {
 			return Stream.of(workspace.matrix.getArray()).filter(i -> i != null).map(IItemStack::getOriginal)
-					.filter(ItemStack::hasItemMeta).findAny().isPresent();
+					.filter(ItemStack::hasItemMeta).filter(item -> {
+						ItemMeta meta = item.getItemMeta();
+						if (meta.hasLocalizedName() || meta.hasDisplayName() || meta.hasLore()
+								|| !meta.getItemFlags().isEmpty() || meta.hasCustomModelData())
+							return true;
+						SerializedItem si = SerializedItem.of(item);
+						if(si.getMap().keySet().stream().filter(s -> s.contains(NBTNexus.SPLITTER)).findAny().isPresent())
+							return true;
+						return false;
+					}).findAny().isPresent();
+
 		}
 	}
 }

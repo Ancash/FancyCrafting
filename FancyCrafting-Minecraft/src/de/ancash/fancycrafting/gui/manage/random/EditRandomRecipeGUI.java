@@ -80,7 +80,7 @@ public class EditRandomRecipeGUI extends AbstractRecipeEditGUI {
 		closeAll();
 		try {
 			plugin.getRecipeManager().saveRandomRecipe(result, ingredients, shaped, recipeName, recipe.getUUID(), 8, 6,
-					probabilityMap);
+					probabilityMap, category);
 			player.sendMessage(plugin.getResponse().RECIPE_SAVED);
 			plugin.getRecipeManager().reloadRecipes();
 		} catch (InvalidRecipeException e) {

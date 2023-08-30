@@ -25,7 +25,7 @@ public class EditNormalRecipeGUI extends AbstractRecipeEditGUI {
 	protected void onRecipeSave() {
 		closeAll();
 		try {
-			plugin.getRecipeManager().saveRecipe(result, ingredients, shaped, recipeName, recipe.getUUID(), 8, 6);
+			plugin.getRecipeManager().saveRecipe(result, ingredients, shaped, recipeName, recipe.getUUID(), 8, 6, category);
 			player.sendMessage(plugin.getResponse().RECIPE_SAVED);
 			plugin.getRecipeManager().reloadRecipes();
 		} catch (InvalidRecipeException e) {

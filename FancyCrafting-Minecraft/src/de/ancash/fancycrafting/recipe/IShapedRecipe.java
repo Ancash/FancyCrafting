@@ -24,16 +24,16 @@ public class IShapedRecipe extends IRecipe {
 	private final Map<Integer, Integer> hashCodes = new HashMap<>();
 	private final List<Integer> hashMatrix = new ArrayList<>();
 
-	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, UUID uuid) {
-		super(result, name, uuid);
+	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, UUID uuid, RecipeCategory category) {
+		super(result, name, uuid, category);
 		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
 		matrix.optimize();
 		addHashs();
 	}
 
 	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, boolean vanilla,
-			boolean suitableForAutoMatching) {
-		super(result, name, vanilla, suitableForAutoMatching);
+			boolean suitableForAutoMatching, RecipeCategory category) {
+		super(result, name, vanilla, suitableForAutoMatching, category);
 		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
 		matrix.optimize();
 		addHashs();
@@ -130,6 +130,7 @@ public class IShapedRecipe extends IRecipe {
 		file.set(path + ".height", matrix.getHeight());
 		file.set(path + ".uuid", uuid.toString());
 		file.set(path + ".random", false);
+		file.set(path + ".category", category.getName());
 		for (int i = 0; i < getIngredientsArray().length; i++)
 			if (getIngredientsArray()[i] != null)
 				ItemStackUtils.setItemStack(file, path + ".ingredients." + i, getIngredientsArray()[i].getOriginal());
@@ -146,6 +147,7 @@ public class IShapedRecipe extends IRecipe {
 		temp.set("recipe.height", matrix.getHeight());
 		temp.set("recipe.uuid", uuid.toString());
 		temp.set("recipe.random", false);
+		temp.set("recipe.category", category.getName());
 		for (int i = 0; i < getIngredientsArray().length; i++)
 			if (getIngredientsArray()[i] != null)
 				temp.set("recipe.ingredients." + i,
