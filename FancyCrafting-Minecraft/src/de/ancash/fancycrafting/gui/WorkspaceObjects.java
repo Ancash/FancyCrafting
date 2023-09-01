@@ -346,12 +346,12 @@ public class WorkspaceObjects {
 	public String getInputCategoryNameTitle() {
 		return inputCategoryNameTitle;
 	}
-	
+
 	public WorkspaceObjects setInputCategoryNameTitle(String s) {
 		this.inputCategoryNameTitle = s;
 		return this;
 	}
-	
+
 	public IItemStack getManageRecipeNameItem() {
 		return manageRecipeNameItem;
 	}

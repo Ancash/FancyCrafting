@@ -57,7 +57,7 @@ import de.ancash.fancycrafting.listeners.WorkbenchClickListener;
 import de.ancash.fancycrafting.listeners.WorkbenchOpenListener;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
-import de.ancash.fancycrafting.recipe.RecipeMatcherCallable;
+import de.ancash.fancycrafting.recipe.crafting.RecipeMatcherCallable;
 import de.ancash.libs.org.apache.commons.io.FileUtils;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
@@ -87,7 +87,7 @@ public class FancyCrafting extends JavaPlugin {
 	public static final Permission OPEN_DEFAULT_PERM = new Permission("fancycrafting.open", PermissionDefault.FALSE);
 	public static final Permission OPEN_OTHER_DEFAULT_PERM = new Permission("fancycrafting.open.other",
 			PermissionDefault.FALSE);
-	public static final Permission RELOAD = new Permission("fancycrafting.admin.reload", PermissionDefault.FALSE);
+	public static final Permission RELOAD_PERM = new Permission("fancycrafting.admin.reload", PermissionDefault.FALSE);
 
 	protected final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 

@@ -10,27 +10,24 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import de.ancash.ILibrary;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.gui.handler.AutoRecipeMatcherHandler;
 import de.ancash.fancycrafting.gui.handler.RecipeMatchHandler;
 import de.ancash.fancycrafting.gui.handler.RecipePermissionHandler;
-import de.ancash.fancycrafting.recipe.AutoRecipeMatcher;
 import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
-import de.ancash.fancycrafting.recipe.VanillaRecipeMatcher;
-import de.ancash.minecraft.IItemStack;
+import de.ancash.fancycrafting.recipe.crafting.AutoRecipeMatcher;
+import de.ancash.fancycrafting.recipe.crafting.VanillaRecipeMatcher;
 import de.ancash.minecraft.inventory.IGUI;
-import de.ancash.nbtnexus.NBTNexus;
 import de.ancash.nbtnexus.serde.SerializedItem;
 
 public abstract class AbstractCraftingWorkspace extends IGUI {
 
 	protected final FancyCrafting pl;
 	protected final WorkspaceTemplate template;
-	protected IMatrix<IItemStack> matrix = new IMatrix<>(new IItemStack[0], 0, 0);
+	protected IMatrix<SerializedItem> matrix = new IMatrix<>(new SerializedItem[0], 0, 0);
 	protected IRecipe currentRecipe;
 	protected boolean includeVanillaRecipes;
 	protected final Player player;
@@ -77,7 +74,7 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		this.recipeMatcherCallable = r;
 	}
 
-	public IMatrix<IItemStack> getMatrix() {
+	public IMatrix<SerializedItem> getMatrix() {
 		return matrix;
 	}
 
@@ -190,12 +187,12 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 		return currentRecipe != null;
 	}
 
-	public IItemStack[] getIngredients() {
-		IItemStack[] ings = new IItemStack[template.getSlots().getCraftingSlots().length];
+	public SerializedItem[] getIngredients() {
+		SerializedItem[] ings = new SerializedItem[template.getSlots().getCraftingSlots().length];
 		for (int i = 0; i < ings.length; i++) {
 			ItemStack item = getItem(template.getSlots().getCraftingSlots()[i]);
 			if (item != null && item.getType() != Material.AIR)
-				ings[i] = new IItemStack(item.clone());
+				ings[i] = SerializedItem.of(item);
 		}
 		return ings;
 	}
@@ -271,8 +268,9 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 				else
 					workspace.permissionHandler.onNoPermission(match, workspace.player);
 
-			if ((!FancyCrafting.vanillaRecipesAcceptPlainItemsOnly()
-					|| (FancyCrafting.vanillaRecipesAcceptPlainItemsOnly() && !doIngredientsHaveMeta()))
+			if ((!FancyCrafting.vanillaRecipesAcceptPlainItemsOnly() || (FancyCrafting
+					.vanillaRecipesAcceptPlainItemsOnly()
+					&& !de.ancash.fancycrafting.recipe.crafting.RecipeMatcherCallable.doIngredientsHaveMeta(matrix)))
 					&& workspace.includeVanillaRecipes
 					&& (match = workspace.vanillaMatcher.matchVanillaRecipe(workspace.matrix)) != null)
 				if (workspace.permissionHandler.canCraftRecipe(match, workspace.player))
@@ -281,21 +279,6 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 					workspace.permissionHandler.onNoPermission(match, workspace.player);
 			workspace.matchHandler.onNoRecipeMatch();
 			return workspace.currentRecipe = null;
-		}
-
-		protected boolean doIngredientsHaveMeta() {
-			return Stream.of(workspace.matrix.getArray()).filter(i -> i != null).map(IItemStack::getOriginal)
-					.filter(ItemStack::hasItemMeta).filter(item -> {
-						ItemMeta meta = item.getItemMeta();
-						if (meta.hasLocalizedName() || meta.hasDisplayName() || meta.hasLore()
-								|| !meta.getItemFlags().isEmpty() || meta.hasCustomModelData())
-							return true;
-						SerializedItem si = SerializedItem.of(item);
-						if(si.getMap().keySet().stream().filter(s -> s.contains(NBTNexus.SPLITTER)).findAny().isPresent())
-							return true;
-						return false;
-					}).findAny().isPresent();
-
 		}
 	}
 }

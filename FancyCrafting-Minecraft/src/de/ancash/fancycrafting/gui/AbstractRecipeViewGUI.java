@@ -19,11 +19,11 @@ import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
-import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.inventory.IGUI;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
+import de.ancash.nbtnexus.serde.SerializedItem;
 
 public abstract class AbstractRecipeViewGUI extends IGUI {
 
@@ -52,7 +52,7 @@ public abstract class AbstractRecipeViewGUI extends IGUI {
 		this.template = WorkspaceTemplate.get(recipe.getWidth(), recipe.getHeight());
 		if (recipe instanceof IShapedRecipe) {
 			ingredients = Arrays.asList(((IShapedRecipe) recipe).getIngredientsArray()).stream()
-					.map(i -> i == null ? null : i.getOriginal()).toArray(ItemStack[]::new);
+					.map(i -> i == null ? null : i.toItem()).toArray(ItemStack[]::new);
 		} else {
 			ingredients = new ItemStack[template.getDimension().getWidth() * template.getDimension().getHeight()];
 			for (int i = 0; i < recipe.getIngredients().size(); i++)
@@ -128,7 +128,7 @@ public abstract class AbstractRecipeViewGUI extends IGUI {
 		ItemStack clicked = event.getClickedInventory().getItem(event.getSlot());
 		if (clicked == null)
 			return;
-		IItemStack ii = new IItemStack(clicked);
+		SerializedItem ii = SerializedItem.of(clicked);
 		Set<IRecipe> r = plugin.getRecipeManager().getRecipeByHash(ii);
 		if (r == null)
 			return;

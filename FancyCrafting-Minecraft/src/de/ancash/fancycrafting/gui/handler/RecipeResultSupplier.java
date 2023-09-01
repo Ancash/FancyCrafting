@@ -12,7 +12,7 @@ public class RecipeResultSupplier {
 
 	public ItemStack getSingleRecipeCraft(IRecipe recipe, Player player) {
 		if (recipe instanceof IRandomRecipe) {
-			return ((IRandomRecipe) recipe).getRandom().getOriginal();
+			return ((IRandomRecipe) recipe).getRandom().toItem();
 		} else if (recipe instanceof IShapedRecipe) {
 			return ((IShapedRecipe) recipe).getResult();
 		} else if (recipe instanceof IShapelessRecipe) {

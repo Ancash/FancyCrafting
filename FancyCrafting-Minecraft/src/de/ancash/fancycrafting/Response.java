@@ -12,7 +12,7 @@ public final class Response {
 	public final String RECIPE_DELETED;
 	public final String CRAFTING_COOLDOWN_MESSAGE;
 	public final String INVALID_CATEGORY_NAME;
-	
+
 	@SuppressWarnings("nls")
 	public Response(FancyCrafting fc) {
 		CRAFTING_COOLDOWN_MESSAGE = fc.getConfig().getString("crafting.cooldown-message");

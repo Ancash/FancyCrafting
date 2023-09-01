@@ -18,18 +18,20 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.simpleyaml.configuration.file.YamlFile;
 
-import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
+import de.ancash.nbtnexus.serde.SerializedItem;
+import de.ancash.nbtnexus.serde.access.SerializedMetaAccess;
 
 public class IShapelessRecipe extends IRecipe {
 
 	private final List<ItemStack> ings;
-	private final List<IItemStack> iings;
+	private final List<SerializedItem> iings;
 	private final Map<Integer, Integer> hashCodes = new HashMap<>();
 	private final List<Integer> hashMatrix;
 	protected final int size;
 
-	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, UUID uuid, RecipeCategory category) {
+	public IShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, UUID uuid,
+			RecipeCategory category) {
 		this(ings, result, name, false, true, uuid, category);
 	}
 
@@ -43,13 +45,15 @@ public class IShapelessRecipe extends IRecipe {
 		super(result, name, vanilla, suitableForAutoMatching, uuid, category);
 		this.ings = Collections.unmodifiableList(ings.stream().filter(i -> i != null && i.getType() != Material.AIR)
 				.collect(Collectors.toCollection(() -> new ArrayList<>())));
-		this.iings = Collections.unmodifiableList(this.ings.stream().map(IItemStack::new).collect(Collectors.toList()));
-		for (IItemStack ii : iings) {
+		this.iings = Collections
+				.unmodifiableList(this.ings.stream().map(SerializedItem::of).collect(Collectors.toList()));
+		for (SerializedItem ii : iings) {
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
-			hashCodes.put(ii.hashCode(), hashCodes.get(ii.hashCode()) + ii.getOriginal().getAmount());
+			hashCodes.put(ii.hashCode(),
+					hashCodes.get(ii.hashCode()) + SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(ii.getMap()));
 		}
 		this.size = (int) Math.ceil(Math.sqrt(this.ings.size()));
-		hashMatrix = iings.stream().map(IItemStack::hashCode).sorted().collect(Collectors.toList());
+		hashMatrix = iings.stream().map(SerializedItem::hashCode).sorted().collect(Collectors.toList());
 	}
 
 	@Override
@@ -58,7 +62,7 @@ public class IShapelessRecipe extends IRecipe {
 	}
 
 	@Override
-	public List<IItemStack> getIIngredients() {
+	public List<SerializedItem> getSerializedIngredients() {
 		return iings;
 	}
 
@@ -78,9 +82,9 @@ public class IShapelessRecipe extends IRecipe {
 	}
 
 	@Override
-	public boolean matches(IMatrix<IItemStack> m) {
-		List<IItemStack> items = Stream.of(m.getArray()).filter(i -> i != null).collect(Collectors.toList());
-		List<Integer> hashMatrix = items.stream().map(IItemStack::hashCode).sorted().collect(Collectors.toList());
+	public boolean matches(IMatrix<SerializedItem> m) {
+		List<SerializedItem> items = Stream.of(m.getArray()).filter(i -> i != null).collect(Collectors.toList());
+		List<Integer> hashMatrix = items.stream().map(SerializedItem::hashCode).sorted().collect(Collectors.toList());
 		if (!hashMatrix.equals(this.hashMatrix))
 			return false;
 		if (isVanilla())
@@ -94,7 +98,8 @@ public class IShapelessRecipe extends IRecipe {
 					continue;
 				if (items.get(a).hashCode() != iings.get(b).hashCode())
 					continue;
-				if (items.get(a).getOriginal().getAmount() < iings.get(b).getOriginal().getAmount())
+				if (SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(items.get(a)
+						.getMap()) < SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(iings.get(b).getMap()))
 					continue;
 				done.add(b);
 				break;
@@ -115,7 +120,7 @@ public class IShapelessRecipe extends IRecipe {
 		file.set(path, null);
 		file.set(path + ".name", recipeName);
 		if (result != null)
-			ItemStackUtils.setItemStack(file, uuid + ".result", result.getOriginal());
+			ItemStackUtils.setItemStack(file, uuid + ".result", result.toItem());
 		file.set(path + ".shaped", false);
 		file.set(path + ".width", size);
 		file.set(path + ".height", size);
@@ -132,16 +137,16 @@ public class IShapelessRecipe extends IRecipe {
 	public String saveToString() throws IOException {
 		YamlFile temp = new YamlFile();
 		temp.set("recipe.name", recipeName);
-		temp.set("recipe.result", ItemStackUtils.itemStackToString(result.getOriginal()));
+		temp.set("recipe.result", ItemStackUtils.itemStackToString(result.toItem()));
 		temp.set("recipe.shaped", true);
 		temp.set("recipe.width", size);
 		temp.set("recipe.height", size);
 		temp.set("recipe.uuid", uuid.toString());
 		temp.set("recipe.random", false);
 		temp.set("recipe.category", category.getName());
-		for (int i = 0; i < getIIngredients().size(); i++)
+		for (int i = 0; i < getSerializedIngredients().size(); i++)
 			temp.set("recipe.ingredients." + i,
-					ItemStackUtils.itemStackToString(getIIngredients().get(i).getOriginal()));
+					ItemStackUtils.itemStackToString(getSerializedIngredients().get(i).toItem()));
 		return temp.saveToString();
 	}
 

@@ -60,15 +60,17 @@ public abstract class AbstractRecipeCollectionPagedViewGUI extends IGUI {
 		open(currentPage);
 		open();
 	}
-	
+
 	protected void calcFilteredRecipes() {
 		filteredRecipes.clear();
-		if(categoryPos == 0) {
+		if (categoryPos == 0) {
 			filteredRecipes.addAll(recipes);
 			return;
-		} 
-		RecipeCategory cat = RecipeCategory.getCategory(new ArrayList<>(RecipeCategory.getCategories()).get(categoryPos - 1));
-		recipes.stream().filter(r -> r.getCategory().equals(cat)).forEach(filteredRecipes::add);;
+		}
+		RecipeCategory cat = RecipeCategory
+				.getCategory(new ArrayList<>(RecipeCategory.getCategories()).get(categoryPos - 1));
+		recipes.stream().filter(r -> r.getCategory().equals(cat)).forEach(filteredRecipes::add);
+		;
 	}
 
 	protected void addCategoryFilter() {
@@ -82,7 +84,7 @@ public abstract class AbstractRecipeCollectionPagedViewGUI extends IGUI {
 			categoryPos = 0;
 
 		lore.add("§aClick to switch");
-		
+
 		if (categoryPos == 0)
 			lore.add("§eAll");
 		else
@@ -95,7 +97,7 @@ public abstract class AbstractRecipeCollectionPagedViewGUI extends IGUI {
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 		addInventoryItem(new InventoryItem(this, item, 52, (a, b, c, top) -> {
-			if(!top)
+			if (!top)
 				return;
 			categoryPos++;
 			currentPage = 1;

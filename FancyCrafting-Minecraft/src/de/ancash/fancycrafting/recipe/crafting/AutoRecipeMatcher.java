@@ -1,4 +1,4 @@
-package de.ancash.fancycrafting.recipe;
+package de.ancash.fancycrafting.recipe.crafting;
 
 import java.util.HashSet;
 import java.util.List;
@@ -11,14 +11,16 @@ import java.util.stream.Stream;
 import org.bukkit.entity.Player;
 
 import de.ancash.fancycrafting.FancyCrafting;
-import de.ancash.minecraft.IItemStack;
+import de.ancash.fancycrafting.recipe.IRecipe;
+import de.ancash.nbtnexus.serde.SerializedItem;
+import de.ancash.nbtnexus.serde.access.SerializedMetaAccess;
 
 public class AutoRecipeMatcher {
 
 	private final Player player;
 	private Set<IRecipe> matchedRecipes = new HashSet<>();
 	private final Set<IRecipe> possibleRecipes;
-	private List<IItemStack> ingredients;
+	private List<SerializedItem> ingredients;
 	private final FancyCrafting pl;
 
 	public AutoRecipeMatcher(FancyCrafting pl, Player player, Set<IRecipe> recipes) {
@@ -33,7 +35,7 @@ public class AutoRecipeMatcher {
 	}
 
 	public void compute() {
-		ingredients = getInventoryContentsAsIItemStack();
+		ingredients = getInventoryContents();
 		Map<Integer, Integer> mappedIngredientHashCodes = mapHashCodes(ingredients);
 		matchedRecipes.clear();
 		for (IRecipe possible : possibleRecipes) {
@@ -55,13 +57,13 @@ public class AutoRecipeMatcher {
 		return true;
 	}
 
-	private List<IItemStack> getInventoryContentsAsIItemStack() {
-		return Stream.of(player.getInventory().getContents()).filter(i -> i != null).map(IItemStack::new)
+	private List<SerializedItem> getInventoryContents() {
+		return Stream.of(player.getInventory().getContents()).filter(i -> i != null).map(SerializedItem::of)
 				.collect(Collectors.toList());
 	}
 
-	private Map<Integer, Integer> mapHashCodes(List<IItemStack> from) {
-		return from.stream()
-				.collect(Collectors.toMap(e -> e.hashCode(), e -> e.getOriginal().getAmount(), (s, a) -> s + a));
+	private Map<Integer, Integer> mapHashCodes(List<SerializedItem> from) {
+		return from.stream().collect(Collectors.toMap(e -> e.hashCode(),
+				e -> SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(e.getMap()), (s, a) -> s + a));
 	}
 }

@@ -14,8 +14,7 @@ public class RepairRecipe extends IShapelessRecipe implements IComplexRecipe {
 
 	@SuppressWarnings("nls")
 	public RepairRecipe(Collection<ItemStack> ings, ItemStack result) {
-		this(ings, result,
-				"repair-recipe." + ItemStackUtils.getDisplayName(result).toLowerCase().replace(" ", "-"));
+		this(ings, result, "repair-recipe." + ItemStackUtils.getDisplayName(result).toLowerCase().replace(" ", "-"));
 	}
 
 	public RepairRecipe(Collection<ItemStack> ings, ItemStack result, String name) {

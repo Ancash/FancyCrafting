@@ -16,12 +16,12 @@ import org.simpleyaml.configuration.file.YamlFile;
 
 import de.ancash.datastructures.tuples.Duplet;
 import de.ancash.datastructures.tuples.Tuple;
-import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
+import de.ancash.nbtnexus.serde.SerializedItem;
 
 public class IRandomShapelessRecipe extends IShapelessRecipe implements IRandomRecipe {
 
-	private final List<Duplet<IItemStack, Integer>> probList;
+	private final List<Duplet<SerializedItem, Integer>> probList;
 	private final Map<ItemStack, Integer> probMap;
 	private final int probSum;
 	private final Random random = new Random();
@@ -29,14 +29,15 @@ public class IRandomShapelessRecipe extends IShapelessRecipe implements IRandomR
 	public IRandomShapelessRecipe(Collection<ItemStack> ings, ItemStack result, String name, UUID uuid,
 			Map<ItemStack, Integer> probMap, RecipeCategory category) {
 		super(ings, result, name, uuid, category);
-		probList = Collections.unmodifiableList(probMap.entrySet().stream()
-				.map(entry -> Tuple.of(new IItemStack(entry.getKey()), entry.getValue())).collect(Collectors.toList()));
+		probList = Collections.unmodifiableList(
+				probMap.entrySet().stream().map(entry -> Tuple.of(SerializedItem.of(entry.getKey()), entry.getValue()))
+						.collect(Collectors.toList()));
 		probSum = probList.stream().map(Duplet::getSecond).mapToInt(Integer::valueOf).sum();
 		this.probMap = probMap;
 	}
 
 	@Override
-	public List<Duplet<IItemStack, Integer>> getProbabilityList() {
+	public List<Duplet<SerializedItem, Integer>> getProbabilityList() {
 		return probList;
 	}
 
@@ -56,8 +57,8 @@ public class IRandomShapelessRecipe extends IShapelessRecipe implements IRandomR
 		file.set(path + ".random", true); //$NON-NLS-1$
 		file.set(path + ".random-map", null); //$NON-NLS-1$
 		for (int i = 0; i < probList.size(); i++) {
-			Duplet<IItemStack, Integer> d = probList.get(i);
-			ItemStackUtils.setItemStack(file, path + ".random-map." + i + ".item", d.getFirst().getOriginal()); //$NON-NLS-1$//$NON-NLS-2$
+			Duplet<SerializedItem, Integer> d = probList.get(i);
+			ItemStackUtils.setItemStack(file, path + ".random-map." + i + ".item", d.getFirst().toItem()); //$NON-NLS-1$//$NON-NLS-2$
 			file.set(path + ".random-map." + i + ".prob", d.getSecond()); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
@@ -67,29 +68,29 @@ public class IRandomShapelessRecipe extends IShapelessRecipe implements IRandomR
 	public String saveToString() throws IOException {
 		YamlFile temp = new YamlFile();
 		temp.set("recipe.name", recipeName);
-		temp.set("recipe.result", ItemStackUtils.itemStackToString(result.getOriginal()));
+		temp.set("recipe.result", ItemStackUtils.itemStackToString(result.toItem()));
 		temp.set("recipe.shaped", true);
 		temp.set("recipe.width", size);
 		temp.set("recipe.height", size);
 		temp.set("recipe.uuid", uuid.toString());
 		temp.set("recipe.random", true);
 		temp.set("recipe.category", category.getName());
-		for (int i = 0; i < getIIngredients().size(); i++)
+		for (int i = 0; i < getSerializedIngredients().size(); i++)
 			temp.set("recipe.ingredients." + i,
-					ItemStackUtils.itemStackToString(getIIngredients().get(i).getOriginal()));
+					ItemStackUtils.itemStackToString(getSerializedIngredients().get(i).toItem()));
 		for (int i = 0; i < probList.size(); i++) {
-			Duplet<IItemStack, Integer> d = probList.get(i);
-			temp.set("recipe.random-map." + i + ".item", ItemStackUtils.itemStackToString(d.getFirst().getOriginal())); //$NON-NLS-1$ //$NON-NLS-2$
+			Duplet<SerializedItem, Integer> d = probList.get(i);
+			temp.set("recipe.random-map." + i + ".item", ItemStackUtils.itemStackToString(d.getFirst().toItem())); //$NON-NLS-1$ //$NON-NLS-2$
 			temp.set("recipe.random-map." + i + ".prob", d.getSecond()); //$NON-NLS-1$//$NON-NLS-2$
 		}
 		return temp.saveToString();
 	}
 
 	@Override
-	public IItemStack getRandom() {
+	public SerializedItem getRandom() {
 		int r = random.nextInt(probSum) + 1;
-		Iterator<Duplet<IItemStack, Integer>> iter = probList.iterator();
-		Duplet<IItemStack, Integer> duplet;
+		Iterator<Duplet<SerializedItem, Integer>> iter = probList.iterator();
+		Duplet<SerializedItem, Integer> duplet;
 		while (iter.hasNext()) {
 			duplet = iter.next();
 			r -= duplet.getSecond();

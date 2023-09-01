@@ -1,4 +1,4 @@
-package de.ancash.fancycrafting.recipe;
+package de.ancash.fancycrafting.recipe.crafting;
 
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -9,13 +9,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import de.ancash.fancycrafting.FancyCrafting;
-import de.ancash.minecraft.IItemStack;
+import de.ancash.fancycrafting.recipe.IMatrix;
+import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.nbtnexus.NBTNexus;
 import de.ancash.nbtnexus.serde.SerializedItem;
 
 public class RecipeMatcherCallable implements Callable<IRecipe> {
 
-	private IMatrix<IItemStack> matrix;
+	private IMatrix<SerializedItem> matrix;
 	private final FancyCrafting pl;
 	private final Player player;
 	private final VanillaRecipeMatcher vanillaMatcher;
@@ -26,7 +27,7 @@ public class RecipeMatcherCallable implements Callable<IRecipe> {
 		this.vanillaMatcher = new VanillaRecipeMatcher(pl, player);
 	}
 
-	public void setMatrix(IMatrix<IItemStack> matrix) {
+	public void setMatrix(IMatrix<SerializedItem> matrix) {
 		this.matrix = matrix;
 	}
 
@@ -47,7 +48,7 @@ public class RecipeMatcherCallable implements Callable<IRecipe> {
 			if (FancyCrafting.canCraftRecipe(match, player))
 				return match;
 
-		if (FancyCrafting.vanillaRecipesAcceptPlainItemsOnly() && doIngredientsHaveMeta())
+		if (FancyCrafting.vanillaRecipesAcceptPlainItemsOnly() && doIngredientsHaveMeta(matrix))
 			return null;
 		match = vanillaMatcher.matchVanillaRecipe(matrix);
 		if (match != null)
@@ -56,8 +57,8 @@ public class RecipeMatcherCallable implements Callable<IRecipe> {
 		return null;
 	}
 
-	protected boolean doIngredientsHaveMeta() {
-		return Stream.of(matrix.getArray()).filter(i -> i != null).map(IItemStack::getOriginal)
+	public static boolean doIngredientsHaveMeta(IMatrix<SerializedItem> matrix) {
+		return Stream.of(matrix.getArray()).filter(i -> i != null).map(SerializedItem::toItem)
 				.filter(ItemStack::hasItemMeta).filter(item -> {
 					ItemMeta meta = item.getItemMeta();
 					if (meta.hasLocalizedName() || meta.hasDisplayName() || meta.hasLore()
@@ -70,7 +71,7 @@ public class RecipeMatcherCallable implements Callable<IRecipe> {
 				}).findAny().isPresent();
 	}
 
-	public IMatrix<IItemStack> getMatrix() {
+	public IMatrix<SerializedItem> getMatrix() {
 		return matrix;
 	}
 }

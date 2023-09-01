@@ -15,7 +15,7 @@ public class ReloadSubCommand extends FancyCraftingSubCommand {
 
 	@Override
 	public Boolean apply(CommandSender sender, String[] arg1) {
-		if (!sender.isOp() && !sender.hasPermission(FancyCrafting.RELOAD)) {
+		if (!sender.isOp() && !sender.hasPermission(FancyCrafting.RELOAD_PERM)) {
 			sender.sendMessage(this.pl.getResponse().NO_PERMISSION);
 			return true;
 		}

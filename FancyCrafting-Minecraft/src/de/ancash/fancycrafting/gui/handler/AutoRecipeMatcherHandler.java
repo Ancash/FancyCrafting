@@ -18,11 +18,11 @@ import de.ancash.datastructures.tuples.Duplet;
 import de.ancash.datastructures.tuples.Tuple;
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.gui.AbstractCraftingWorkspace;
-import de.ancash.fancycrafting.recipe.AutoRecipeMatcher;
 import de.ancash.fancycrafting.recipe.IRecipe;
-import de.ancash.minecraft.IItemStack;
+import de.ancash.fancycrafting.recipe.crafting.AutoRecipeMatcher;
 import de.ancash.minecraft.InventoryUtils;
 import de.ancash.minecraft.inventory.InventoryItem;
+import de.ancash.nbtnexus.serde.SerializedItem;
 
 public class AutoRecipeMatcherHandler {
 
@@ -106,7 +106,7 @@ public class AutoRecipeMatcherHandler {
 		for (i = 0; i < workspace.getTemplate().getSlots().getAutoCraftingSlots().length
 				&& i < quickCraftingRecipes.size(); i++) {
 			IRecipe recipe = quickCraftingRecipes.get(i);
-			temp.add(recipe.getResultAsIItemStack().hashCode());
+			temp.add(recipe.getResultAsSerializedItem().hashCode());
 			addQuickCraftingItem(recipe, i);
 		}
 		while (i < workspace.getTemplate().getSlots().getAutoCraftingSlots().length) {
@@ -127,18 +127,18 @@ public class AutoRecipeMatcherHandler {
 			return;
 		}
 		// shift ignored, only single click
-		Map<Integer, Duplet<IItemStack, Integer>> map = new HashMap<>();
+		Map<Integer, Duplet<SerializedItem, Integer>> map = new HashMap<>();
 		for (ItemStack is : recipe.getIngredients()) {
 			if (is == null || is.getType() == Material.AIR)
 				continue;
 			int amt = is.getAmount();
 			is.setAmount(1);
-			IItemStack iis = new IItemStack(is);
+			SerializedItem iis = SerializedItem.of(is);
 			map.merge(iis.hashCode(), Tuple.of(iis, amt),
 					(a, b) -> Tuple.of(a.getFirst(), a.getSecond() + b.getSecond()));
 		}
 		map.values().forEach(
-				d -> InventoryUtils.removeItemStack(workspace.getPlayer(), d.getFirst().getOriginal(), d.getSecond()));
+				d -> InventoryUtils.removeItemStack(workspace.getPlayer(), d.getFirst().toItem(), d.getSecond()));
 		workspace.getPlayer().getInventory().addItem(
 				workspace.getRecipeMatchCompletionHandler().getSingleRecipeCraft(recipe, workspace.getPlayer()));
 		workspace.updateLastCraftTick();

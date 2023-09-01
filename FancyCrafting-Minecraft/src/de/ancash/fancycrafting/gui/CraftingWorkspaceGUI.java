@@ -22,17 +22,18 @@ import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.gui.handler.AutoRecipeMatcherHandler;
 import de.ancash.fancycrafting.gui.handler.RecipeMatchHandler;
 import de.ancash.fancycrafting.gui.handler.RecipePermissionHandler;
-import de.ancash.fancycrafting.recipe.AutoRecipeMatcher;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.fancycrafting.recipe.complex.IComplexRecipe;
-import de.ancash.minecraft.IItemStack;
+import de.ancash.fancycrafting.recipe.crafting.AutoRecipeMatcher;
 import de.ancash.minecraft.InventoryUtils;
 import de.ancash.minecraft.cryptomorin.xseries.XMaterial;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
+import de.ancash.nbtnexus.serde.SerializedItem;
+import de.ancash.nbtnexus.serde.access.SerializedMetaAccess;
 
 public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
@@ -88,9 +89,9 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 
 				if (event.getView().getBottomInventory().getItem(event.getSlot()) != null) {
 					if (getItem(template.getSlots().getResultSlot()) != null) {
-						IItemStack clicked = new IItemStack(
-								event.getView().getBottomInventory().getItem(event.getSlot()));
-						if (new IItemStack(getItem(template.getSlots().getResultSlot())).hashCode() == clicked
+						SerializedItem clicked = SerializedItem
+								.of(event.getView().getBottomInventory().getItem(event.getSlot()));
+						if (SerializedItem.of(getItem(template.getSlots().getResultSlot())).hashCode() == clicked
 								.hashCode()
 								|| pl.getWorkspaceObjects().getBackgroundItem().hashCode() == clicked.hashCode()
 								|| pl.getWorkspaceObjects().getValidItem().hashCode() == clicked.hashCode()
@@ -149,7 +150,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		if (shift == null || shift.getType() == Material.AIR)
 			return false;
 
-		IItemStack iShift = new IItemStack(shift);
+		SerializedItem iShift = SerializedItem.of(shift);
 		if (iShift.hashCode() == pl.getWorkspaceObjects().getCloseItem().hashCode()
 				|| iShift.hashCode() == pl.getWorkspaceObjects().getBackgroundItem().hashCode()
 				|| iShift.hashCode() == pl.getWorkspaceObjects().getValidItem().hashCode()
@@ -236,8 +237,8 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 	}
 
 	private void onTopCursorNotNullSlotNotNull(InventoryClickEvent event, ItemStack slotItem, ItemStack cursor) {
-		IItemStack iSlotItem = new IItemStack(slotItem);
-		IItemStack iCursor = new IItemStack(cursor);
+		SerializedItem iSlotItem = SerializedItem.of(slotItem);
+		SerializedItem iCursor = SerializedItem.of(cursor);
 		if (iSlotItem.hashCode() == iCursor.hashCode() && slotItem.getAmount() < slotItem.getMaxStackSize()) {
 			if (event.isLeftClick()) {
 				int free = slotItem.getMaxStackSize() - slotItem.getAmount();
@@ -314,7 +315,7 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			}
 		} else if ((event.getAction().equals(InventoryAction.PLACE_ONE)
 				|| event.getAction().equals(InventoryAction.PLACE_ALL))
-				&& new IItemStack(cursor).hashCode() == recipe.getResultAsIItemStack().hashCode()
+				&& SerializedItem.of(cursor).hashCode() == recipe.getResultAsSerializedItem().hashCode()
 				&& cursor.getAmount() + recipe.getResult().getAmount() <= cursor.getMaxStackSize()
 				&& !(recipe instanceof IRandomRecipe)) {
 			cursor.setAmount(cursor.getAmount() + recipe.getResult().getAmount());
@@ -334,14 +335,16 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 				if (matrix.getArray()[i] == null)
 					continue;
 				if (recipe.isVanilla()) {
-					shiftSize = Math.min(shiftSize, matrix.getArray()[i].getOriginal().getAmount());
+					shiftSize = Math.min(shiftSize,
+							SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(matrix.getArray()[i].getMap()));
 				} else {
-					IItemStack iIngredient = ((IShapedRecipe) recipe).getIngredientsArray()[i];
-					IItemStack iCompare = matrix.getArray()[i];
-					if (!iIngredient.isSimilar(iCompare))
+					SerializedItem iIngredient = ((IShapedRecipe) recipe).getIngredientsArray()[i];
+					SerializedItem iCompare = matrix.getArray()[i];
+					if (!iIngredient.areEqualIgnoreAmount(iCompare))
 						continue;
 					shiftSize = Math.min(shiftSize,
-							(int) (iCompare.getOriginal().getAmount() / iIngredient.getOriginal().getAmount()));
+							(int) (SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(iCompare.getMap())
+									/ SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(iIngredient.getMap())));
 				}
 			}
 		}
@@ -349,14 +352,16 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			for (ItemStack ingredient : ((IShapelessRecipe) recipe).getIngredients()) {
 				if (ingredient == null)
 					continue;
-				for (IItemStack currentItem : matrix.getArray()) {
+				for (SerializedItem currentItem : matrix.getArray()) {
 					if (currentItem == null)
 						continue;
 					if (recipe.isVanilla())
-						shiftSize = Math.min(shiftSize, currentItem.getOriginal().getAmount());
-					else if (new IItemStack(ingredient).isSimilar(currentItem))
 						shiftSize = Math.min(shiftSize,
-								(int) (currentItem.getOriginal().getAmount() / ingredient.getAmount()));
+								SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(currentItem.getMap()));
+					else if (currentItem.areEqualIgnoreAmount(SerializedItem.of(ingredient)))
+						shiftSize = Math.min(shiftSize,
+								(int) (SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(currentItem.getMap())
+										/ ingredient.getAmount()));
 				}
 			}
 		}
@@ -375,16 +380,17 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		if (shapeless instanceof IComplexRecipe)
 			ignoredMaterials = ((IComplexRecipe) shapeless).getIgnoredMaterials();
 
-		for (IItemStack ingredient : shapeless.getIIngredients()) {
+		for (SerializedItem ingredient : shapeless.getSerializedIngredients()) {
 			for (int craftSlot : template.getSlots().getCraftingSlots()) {
 				if (done.contains(craftSlot))
 					continue;
 				if (getItem(craftSlot) == null)
 					continue;
-				if (ingredient.hashCode() != new IItemStack(getItem(craftSlot)).hashCode() && !shapeless.isVanilla())
+				if (ingredient.hashCode() != SerializedItem.of(getItem(craftSlot)).hashCode() && !shapeless.isVanilla())
 					continue;
 				if (!ignoredMaterials.contains(XMaterial.matchXMaterial(getItem(craftSlot))))
-					setAmount(getItem(craftSlot).getAmount(), ingredient.getOriginal().getAmount() * multiplicator,
+					setAmount(getItem(craftSlot).getAmount(),
+							SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(ingredient.getMap()) * multiplicator,
 							craftSlot);
 				done.add(craftSlot);
 				break;
@@ -399,11 +405,12 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 			for (int x = 0; x < shaped.getWidth(); x++) {
 				int i = y * shaped.getWidth() + x;
 				int j = mirror(shaped.getWidth(), y, x, isMirrored);
-				IItemStack fromInv = matrix.getArray()[j];
-				IItemStack fromRec = shaped.getIngredientsArray()[i];
+				SerializedItem fromInv = matrix.getArray()[j];
+				SerializedItem fromRec = shaped.getIngredientsArray()[i];
 				if (fromInv == null || fromRec == null)
 					continue;
-				int amount = fromInv.getOriginal().getAmount() - fromRec.getOriginal().getAmount() * multiplicator;
+				int amount = SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(fromInv.getMap())
+						- SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(fromRec.getMap()) * multiplicator;
 				int slot;
 				if (isMirrored)
 					slot = template.getSlots().getCraftingSlots()[base + y * template.getDimension().getWidth()

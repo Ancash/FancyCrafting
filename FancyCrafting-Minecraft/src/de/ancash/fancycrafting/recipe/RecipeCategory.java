@@ -18,13 +18,13 @@ public class RecipeCategory {
 		categories = new HashMap<>();
 		DEFAULT = getOrCreateCategory("Default");
 	}
-	
+
 	public static RecipeCategory getOrCreateCategory(String name) {
 		if (!existsCategory(name))
 			FancyCrafting.getPlugin(FancyCrafting.class).getLogger().info("Recipe Category '" + name + "' created");
 		return categories.computeIfAbsent(name, k -> new RecipeCategory(name));
 	}
-	
+
 	public static Set<String> getCategories() {
 		return Collections.unmodifiableSet(categories.keySet());
 	}
@@ -49,11 +49,11 @@ public class RecipeCategory {
 
 	@Override
 	public boolean equals(Object arg0) {
-		if(arg0 == null)
+		if (arg0 == null)
 			return false;
 		return arg0.hashCode() == hashCode();
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return name.hashCode();

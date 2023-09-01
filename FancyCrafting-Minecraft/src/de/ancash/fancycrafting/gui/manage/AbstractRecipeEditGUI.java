@@ -64,8 +64,8 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 				: recipe.getResult();
 		if (recipe instanceof IShapedRecipe) {
 			IShapedRecipe shapedRandom = (IShapedRecipe) recipe;
-			ingredients = Arrays.asList(shapedRandom.getInMatrix(8, 6)).stream()
-					.map(i -> i != null ? i.getOriginal() : null).toArray(ItemStack[]::new);
+			ingredients = Arrays.asList(shapedRandom.getInMatrix(8, 6)).stream().map(i -> i != null ? i.toItem() : null)
+					.toArray(ItemStack[]::new);
 			this.shaped = true;
 		} else {
 			IShapelessRecipe shapelessRandom = (IShapelessRecipe) recipe;

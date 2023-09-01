@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -28,16 +29,18 @@ import de.ancash.fancycrafting.recipe.complex.BookDuplicateRecipe;
 import de.ancash.fancycrafting.recipe.complex.FireworkRecipe;
 import de.ancash.fancycrafting.recipe.complex.RepairRecipe;
 import de.ancash.fancycrafting.recipe.complex.ShulkerDyeRecipe;
-import de.ancash.minecraft.IItemStack;
+import de.ancash.lambda.Lambda;
 import de.ancash.minecraft.ItemStackUtils;
 import de.ancash.minecraft.crafting.recipe.ComplexRecipeWrapper;
 import de.ancash.minecraft.crafting.recipe.WrappedRecipe;
+import de.ancash.nbtnexus.serde.SerializedItem;
+import de.ancash.nbtnexus.serde.access.SerializedMetaAccess;
 
 public abstract class IRecipe {
 
 	private static final char[] chars = "ABCDEFGHIJKLMNOPQRSTUVWYabcdefghijklmnopqrstuvw".toCharArray(); //$NON-NLS-1$
 
-	protected final IItemStack result;
+	protected final SerializedItem result;
 	protected final String recipeName;
 	protected final String resultName;
 	protected final boolean vanilla;
@@ -46,6 +49,7 @@ public abstract class IRecipe {
 	protected final Permission craftPermission;
 	protected final Permission viewPermission;
 	protected final RecipeCategory category;
+	protected Map<SerializedItem, Integer> mappedIngredients;
 
 	public IRecipe(ItemStack result, String name, UUID uuid, RecipeCategory category) {
 		this(result, name, false, true, uuid, category);
@@ -66,7 +70,7 @@ public abstract class IRecipe {
 			this.category = RecipeCategory.DEFAULT;
 		else
 			this.category = category;
-		this.result = result == null ? null : new IItemStack(result);
+		this.result = result == null ? null : SerializedItem.of(result);
 		this.vanilla = vanilla;
 		if (vanilla)
 			this.suitableForAutoMatching = suitableForAutoMatching;
@@ -77,9 +81,7 @@ public abstract class IRecipe {
 				this.recipeName = ItemStackUtils.getDisplayName(result);
 			else
 				this.recipeName = name;
-			resultName = result.getItemMeta().getDisplayName() == null
-					|| result.getItemMeta().getDisplayName().isEmpty() ? ItemStackUtils.getDisplayName(result)
-							: result.getItemMeta().getDisplayName();
+			resultName = ItemStackUtils.getDisplayName(result);
 			this.craftPermission = new Permission("fancycrafting.craft." + this.recipeName.replace(" ", "-"), //$NON-NLS-3$
 					FancyCrafting.getCraftPermDef());
 			this.viewPermission = new Permission("fancycrafting.view." + this.recipeName.replace(" ", "-"), //$NON-NLS-3$
@@ -89,6 +91,7 @@ public abstract class IRecipe {
 			this.resultName = "null";
 			this.craftPermission = null;
 			this.viewPermission = null;
+			mappedIngredients = null;
 		}
 	}
 
@@ -106,24 +109,32 @@ public abstract class IRecipe {
 
 	public abstract List<ItemStack> getIngredients();
 
-	public abstract List<IItemStack> getIIngredients();
+	public abstract List<SerializedItem> getSerializedIngredients();
 
 	public abstract boolean isShiftCollectable();
 
-	public abstract boolean matches(IMatrix<IItemStack> m);
+	public abstract boolean matches(IMatrix<SerializedItem> m);
 
 	public ItemStack getResult() {
-		return result == null ? null : result.getOriginal().clone();
+		return result == null ? null : result.toItem();
 	}
 
-	public IItemStack getResultAsIItemStack() {
+	public Map<SerializedItem, Integer> mapIngredients() {
+		if (mappedIngredients == null)
+			mappedIngredients = Collections.unmodifiableMap(
+					getSerializedIngredients().stream().filter(Lambda.notNull()).collect(Collectors.toMap(i -> i,
+							i -> SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(i.getMap()), (a, b) -> a + b)));
+		return mappedIngredients;
+	}
+
+	public SerializedItem getResultAsSerializedItem() {
 		return result;
 	}
 
 	public boolean isVanilla() {
 		return vanilla;
 	}
-	
+
 	public RecipeCategory getCategory() {
 		return category;
 	}
@@ -192,10 +203,11 @@ public abstract class IRecipe {
 		ItemStack result = fc.contains(path + ".result") ? ItemStackUtils.getItemStack(fc, path + ".result") : null;
 		String name = fc.getString(path + ".name");
 		String catName = fc.getString(path + ".category");
-		if(catName == null) {
+		if (catName == null) {
 			catName = RecipeCategory.DEFAULT.getName();
 			fc.set(path + ".category", catName);
-			FancyCrafting.getPlugin(FancyCrafting.class).getLogger().info("No category set for '" + name + "' at '" + path + "'. Set to '" + catName + "'");
+			FancyCrafting.getPlugin(FancyCrafting.class).getLogger()
+					.info("No category set for '" + name + "' at '" + path + "'. Set to '" + catName + "'");
 			save = true;
 		}
 		RecipeCategory category = RecipeCategory.getOrCreateCategory(catName);
@@ -356,7 +368,7 @@ public abstract class IRecipe {
 		int cpos = 0;
 		for (int i = 0; i < ingredients.length; i++) {
 			if (ingredients[i] != null) {
-				int hash = new IItemStack(ingredients[i]).hashCode();
+				int hash = SerializedItem.of(ingredients[i]).hashCode();
 				if (!mapped.containsKey(hash)) {
 					mapped.put(hash, chars[cpos++]);
 					builder.append(format.replace("%id%", String.valueOf(mapped.get(hash))).replace("%item%",
@@ -371,7 +383,7 @@ public abstract class IRecipe {
 				if (ing == null)
 					builder.append("§7----");
 				else
-					builder.append("§a").append(mapped.get(new IItemStack(ing).hashCode())).append("§7x")
+					builder.append("§a").append(mapped.get(SerializedItem.of(ing).hashCode())).append("§7x")
 							.append(ing.getAmount()).append(ing.getAmount() >= 10 ? "" : "§7-");
 				if (row < width - 1)
 					builder.append("§7|");

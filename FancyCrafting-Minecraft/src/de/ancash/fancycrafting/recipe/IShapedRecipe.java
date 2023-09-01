@@ -15,59 +15,62 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.simpleyaml.configuration.file.YamlFile;
 
-import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
+import de.ancash.nbtnexus.serde.SerializedItem;
+import de.ancash.nbtnexus.serde.access.SerializedMetaAccess;
 
 public class IShapedRecipe extends IRecipe {
 
-	private final IMatrix<IItemStack> matrix;
+	private final IMatrix<SerializedItem> matrix;
 	private final Map<Integer, Integer> hashCodes = new HashMap<>();
 	private final List<Integer> hashMatrix = new ArrayList<>();
 
-	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, UUID uuid, RecipeCategory category) {
+	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, UUID uuid,
+			RecipeCategory category) {
 		super(result, name, uuid, category);
-		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
+		this.matrix = new IMatrix<>(toSerializedItemArray(ings), width, height);
 		matrix.optimize();
-		addHashs();
+		calcHashs();
 	}
 
 	public IShapedRecipe(ItemStack[] ings, int width, int height, ItemStack result, String name, boolean vanilla,
 			boolean suitableForAutoMatching, RecipeCategory category) {
 		super(result, name, vanilla, suitableForAutoMatching, category);
-		this.matrix = new IMatrix<>(toIItemStackArray(ings), width, height);
+		this.matrix = new IMatrix<>(toSerializedItemArray(ings), width, height);
 		matrix.optimize();
-		addHashs();
+		calcHashs();
 	}
 
-	private void addHashs() {
+	private void calcHashs() {
 		for (int i = 0; i < matrix.getArray().length; i++)
 			hashMatrix.add(matrix.getArray()[i] == null ? null : matrix.getArray()[i].hashCode());
 
-		for (IItemStack ii : matrix.getArray()) {
+		for (SerializedItem ii : matrix.getArray()) {
 			if (ii == null)
 				continue;
 			hashCodes.computeIfAbsent(ii.hashCode(), key -> 0);
-			hashCodes.put(ii.hashCode(), hashCodes.get(ii.hashCode()) + ii.getOriginal().getAmount());
+			hashCodes.put(ii.hashCode(),
+					hashCodes.get(ii.hashCode()) + SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(ii.getMap()));
 		}
 	}
 
-	private static IItemStack[] toIItemStackArray(ItemStack[] from) {
+	private static SerializedItem[] toSerializedItemArray(ItemStack[] from) {
 		return Arrays.asList(from).stream()
-				.map(item -> item == null || item.getType() == Material.AIR ? null : new IItemStack(item))
-				.toArray(IItemStack[]::new);
+				.map(item -> item == null || item.getType() == Material.AIR ? null : SerializedItem.of(item))
+				.toArray(SerializedItem[]::new);
 	}
 
-	public IItemStack[] getIngredientsArray() {
+	public SerializedItem[] getIngredientsArray() {
 		return matrix.getArray();
 	}
 
-	public IItemStack[] asArray() {
+	public SerializedItem[] asArray() {
 		return matrix.getArray();
 	}
 
-	public IItemStack[] getInMatrix(int width, int height) {
+	public SerializedItem[] getInMatrix(int width, int height) {
 		matrix.cut(width, height);
-		IItemStack[] temp = matrix.getArray();
+		SerializedItem[] temp = matrix.getArray();
 		matrix.optimize();
 		return temp;
 	}
@@ -81,7 +84,7 @@ public class IShapedRecipe extends IRecipe {
 	}
 
 	@Override
-	public boolean matches(IMatrix<IItemStack> m) {
+	public boolean matches(IMatrix<SerializedItem> m) {
 		if (m.getHeight() != getHeight() || m.getWidth() != getWidth())
 			return false;
 		for (int i = 0; i < m.getArray().length; i++) {
@@ -91,7 +94,8 @@ public class IShapedRecipe extends IRecipe {
 				continue;
 			if (m.getArray()[i].hashCode() != matrix.getArray()[i].hashCode())
 				return false;
-			if (m.getArray()[i].getOriginal().getAmount() < matrix.getArray()[i].getOriginal().getAmount())
+			if (SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(m.getArray()[i]
+					.getMap()) < SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(matrix.getArray()[i].getMap()))
 				return false;
 		}
 		return true;
@@ -99,12 +103,12 @@ public class IShapedRecipe extends IRecipe {
 
 	@Override
 	public List<ItemStack> getIngredients() {
-		return Arrays.asList(matrix.getArray()).stream().map(i -> i == null ? null : i.getOriginal())
+		return Arrays.asList(matrix.getArray()).stream().map(i -> i == null ? null : i.toItem())
 				.collect(Collectors.toList());
 	}
 
 	@Override
-	public List<IItemStack> getIIngredients() {
+	public List<SerializedItem> getSerializedIngredients() {
 		return Arrays.asList(matrix.getArray());
 	}
 
@@ -124,7 +128,7 @@ public class IShapedRecipe extends IRecipe {
 		file.set(path, null);
 		file.set(path + ".name", recipeName);
 		if (result != null)
-			ItemStackUtils.setItemStack(file, uuid + ".result", result.getOriginal());
+			ItemStackUtils.setItemStack(file, uuid + ".result", result.toItem());
 		file.set(path + ".shaped", true);
 		file.set(path + ".width", matrix.getWidth());
 		file.set(path + ".height", matrix.getHeight());
@@ -133,7 +137,7 @@ public class IShapedRecipe extends IRecipe {
 		file.set(path + ".category", category.getName());
 		for (int i = 0; i < getIngredientsArray().length; i++)
 			if (getIngredientsArray()[i] != null)
-				ItemStackUtils.setItemStack(file, path + ".ingredients." + i, getIngredientsArray()[i].getOriginal());
+				ItemStackUtils.setItemStack(file, path + ".ingredients." + i, getIngredientsArray()[i].toItem());
 	}
 
 	@SuppressWarnings("nls")
@@ -141,7 +145,7 @@ public class IShapedRecipe extends IRecipe {
 	public String saveToString() throws IOException {
 		YamlFile temp = new YamlFile();
 		temp.set("recipe.name", recipeName);
-		temp.set("recipe.result", ItemStackUtils.itemStackToString(result.getOriginal()));
+		temp.set("recipe.result", ItemStackUtils.itemStackToString(result.toItem()));
 		temp.set("recipe.shaped", true);
 		temp.set("recipe.width", matrix.getWidth());
 		temp.set("recipe.height", matrix.getHeight());
@@ -151,7 +155,7 @@ public class IShapedRecipe extends IRecipe {
 		for (int i = 0; i < getIngredientsArray().length; i++)
 			if (getIngredientsArray()[i] != null)
 				temp.set("recipe.ingredients." + i,
-						ItemStackUtils.itemStackToString(getIngredientsArray()[i].getOriginal()));
+						ItemStackUtils.itemStackToString(getIngredientsArray()[i].toItem()));
 		return temp.saveToString();
 	}
 

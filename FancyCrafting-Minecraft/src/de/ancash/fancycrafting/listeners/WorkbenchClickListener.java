@@ -16,6 +16,7 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
@@ -31,11 +32,13 @@ import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
-import de.ancash.fancycrafting.recipe.RecipeMatcherCallable;
 import de.ancash.fancycrafting.recipe.complex.IComplexRecipe;
-import de.ancash.minecraft.IItemStack;
+import de.ancash.fancycrafting.recipe.crafting.AutoRecipeCrafter;
+import de.ancash.fancycrafting.recipe.crafting.RecipeMatcherCallable;
 import de.ancash.minecraft.InventoryUtils;
 import de.ancash.minecraft.cryptomorin.xseries.XMaterial;
+import de.ancash.nbtnexus.serde.SerializedItem;
+import de.ancash.nbtnexus.serde.access.SerializedMetaAccess;
 
 public class WorkbenchClickListener implements Listener {
 
@@ -58,6 +61,11 @@ public class WorkbenchClickListener implements Listener {
 	@EventHandler
 	public void onQuit(PlayerQuitEvent e) {
 		dataByUUID.remove(e.getPlayer().getUniqueId());
+	}
+
+	@EventHandler
+	public void onJoin(PlayerJoinEvent e) {
+		new AutoRecipeCrafter(pl, e.getPlayer().getUniqueId(), pl.getRecipeManager().getCustomRecipes());
 	}
 
 	@EventHandler(ignoreCancelled = true)
@@ -124,10 +132,9 @@ public class WorkbenchClickListener implements Listener {
 		Triplet<RecipeMatcherCallable, Integer, IRecipe> triplet = dataByUUID.computeIfAbsent(player.getUniqueId(),
 				k -> Triplet.of(pl.newDefaultRecipeMatcher(player), ILibrary.getTick(), null));
 		int size = (int) Math.sqrt(inv.getType().getDefaultSize() - 1);
-		IMatrix<IItemStack> matrix = new IMatrix<>(
-				Stream.of(inv.getMatrix()).map(i -> i != null && i.getType() != Material.AIR ? new IItemStack(i) : null)
-						.toArray(IItemStack[]::new),
-				size, size);
+		IMatrix<SerializedItem> matrix = new IMatrix<>(Stream.of(inv.getMatrix())
+				.map(i -> i != null && i.getType() != Material.AIR ? SerializedItem.of(i) : null)
+				.toArray(SerializedItem[]::new), size, size);
 		matrix.optimize();
 		triplet.getFirst().setMatrix(matrix);
 		IRecipe match;
@@ -178,7 +185,7 @@ public class WorkbenchClickListener implements Listener {
 					resultSupplier.getSingleRecipeCraft(triplet.getThird(), (Player) event.getWhoClicked()));
 			return;
 		} else {
-			if (triplet.getThird().getResultAsIItemStack().isSimilar(cursor)
+			if (triplet.getThird().getResultAsSerializedItem().areEqualIgnoreAmount(SerializedItem.of(cursor))
 					&& cursor.getMaxStackSize() >= cursor.getAmount() + triplet.getThird().getResult().getAmount()) {
 				if (cursor.getMaxStackSize() >= cursor.getAmount() + triplet.getThird().getResult().getAmount()) {
 					collectIngredients(size, (CraftingInventory) event.getInventory(), triplet.getFirst().getMatrix(),
@@ -189,7 +196,7 @@ public class WorkbenchClickListener implements Listener {
 		}
 	}
 
-	private int shiftCollectIngredients(int size, CraftingInventory inv, Player player, IMatrix<IItemStack> matrix,
+	private int shiftCollectIngredients(int size, CraftingInventory inv, Player player, IMatrix<SerializedItem> matrix,
 			IRecipe recipe) {
 		int space = InventoryUtils.getFreeSpaceExact(player, recipe.getResult());
 		if (space <= 0) {
@@ -201,14 +208,16 @@ public class WorkbenchClickListener implements Listener {
 				if (matrix.getArray()[i] == null)
 					continue;
 				if (recipe.isVanilla()) {
-					shiftSize = Math.min(shiftSize, matrix.getArray()[i].getOriginal().getAmount());
+					shiftSize = Math.min(shiftSize,
+							SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(matrix.getArray()[i].getMap()));
 				} else {
-					IItemStack iIngredient = ((IShapedRecipe) recipe).getIngredientsArray()[i];
-					IItemStack iCompare = matrix.getArray()[i];
-					if (!iIngredient.isSimilar(iCompare))
+					SerializedItem iIngredient = ((IShapedRecipe) recipe).getIngredientsArray()[i];
+					SerializedItem iCompare = matrix.getArray()[i];
+					if (!iIngredient.areEqualIgnoreAmount(iCompare))
 						continue;
 					shiftSize = Math.min(shiftSize,
-							(int) (iCompare.getOriginal().getAmount() / iIngredient.getOriginal().getAmount()));
+							(int) (SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(iCompare.getMap())
+									/ SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(iIngredient.getMap())));
 				}
 			}
 		}
@@ -216,14 +225,16 @@ public class WorkbenchClickListener implements Listener {
 			for (ItemStack ingredient : ((IShapelessRecipe) recipe).getIngredients()) {
 				if (ingredient == null)
 					continue;
-				for (IItemStack currentItem : matrix.getArray()) {
+				for (SerializedItem currentItem : matrix.getArray()) {
 					if (currentItem == null)
 						continue;
 					if (recipe.isVanilla())
-						shiftSize = Math.min(shiftSize, currentItem.getOriginal().getAmount());
-					else if (new IItemStack(ingredient).isSimilar(currentItem))
 						shiftSize = Math.min(shiftSize,
-								(int) (currentItem.getOriginal().getAmount() / ingredient.getAmount()));
+								SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(currentItem.getMap()));
+					else if (currentItem.areEqualIgnoreAmount(SerializedItem.of(ingredient)))
+						shiftSize = Math.min(shiftSize,
+								(int) (SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(currentItem.getMap())
+										/ ingredient.getAmount()));
 				}
 			}
 		}
@@ -241,21 +252,21 @@ public class WorkbenchClickListener implements Listener {
 
 		if (shapeless instanceof IComplexRecipe)
 			ignoredMaterials = ((IComplexRecipe) shapeless).getIgnoredMaterials();
-		
-		for (IItemStack ingredient : shapeless.getIIngredients()) {
+
+		for (SerializedItem ingredient : shapeless.getSerializedIngredients()) {
 			for (int craftSlot = 0; craftSlot < size * size; craftSlot++) {
 				if (done.contains(craftSlot))
 					continue;
 				if (inv.getItem(craftSlot + 1) == null)
 					continue;
-				if (ingredient.hashCode() != new IItemStack(inv.getItem(craftSlot + 1)).hashCode()
+				if (ingredient.hashCode() != SerializedItem.of(inv.getItem(craftSlot + 1)).hashCode()
 						&& !shapeless.isVanilla())
 					continue;
-				
-				if(ignoredMaterials.contains(XMaterial.matchXMaterial(inv.getItem(craftSlot + 1))))
+
+				if (ignoredMaterials.contains(XMaterial.matchXMaterial(inv.getItem(craftSlot + 1))))
 					continue;
-				
-				int amt = ingredient.getOriginal().getAmount() * multiplicator;
+
+				int amt = SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(ingredient.getMap()) * multiplicator;
 				if (inv.getItem(craftSlot + 1).getAmount() <= amt)
 					inv.setItem(craftSlot + 1, null);
 				else
@@ -266,7 +277,7 @@ public class WorkbenchClickListener implements Listener {
 		}
 	}
 
-	private void collectShaped(int size, CraftingInventory inv, IMatrix<IItemStack> matrix, IShapedRecipe shaped,
+	private void collectShaped(int size, CraftingInventory inv, IMatrix<SerializedItem> matrix, IShapedRecipe shaped,
 			int multiplicator) {
 		int base = 1 + size * matrix.getUpMoves() + matrix.getLeftMoves();
 		boolean isMirrored = isMirrored(matrix, shaped);
@@ -274,11 +285,12 @@ public class WorkbenchClickListener implements Listener {
 			for (int x = 0; x < shaped.getWidth(); x++) {
 				int i = y * shaped.getWidth() + x;
 				int j = mirror(shaped.getWidth(), y, x, isMirrored);
-				IItemStack fromInv = matrix.getArray()[j];
-				IItemStack fromRec = shaped.getIngredientsArray()[i];
+				SerializedItem fromInv = matrix.getArray()[j];
+				SerializedItem fromRec = shaped.getIngredientsArray()[i];
 				if (fromInv == null || fromRec == null)
 					continue;
-				int amount = fromInv.getOriginal().getAmount() - fromRec.getOriginal().getAmount() * multiplicator;
+				int amount = SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(fromInv.getMap())
+						- SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(fromRec.getMap()) * multiplicator;
 				int slot;
 				if (isMirrored)
 					slot = base + y * size + (matrix.getWidth() - x - 1);
@@ -303,7 +315,7 @@ public class WorkbenchClickListener implements Listener {
 	 * @param recipe
 	 * @return
 	 */
-	private boolean isMirrored(IMatrix<IItemStack> matrix, IShapedRecipe recipe) {
+	private boolean isMirrored(IMatrix<SerializedItem> matrix, IShapedRecipe recipe) {
 		if (!recipe.isVanilla())
 			return false;
 		for (int y = 0; y < recipe.getHeight(); y++)
@@ -314,7 +326,8 @@ public class WorkbenchClickListener implements Listener {
 		return true;
 	}
 
-	private void collectIngredients(int size, CraftingInventory inventory, IMatrix<IItemStack> matrix, IRecipe recipe) {
+	private void collectIngredients(int size, CraftingInventory inventory, IMatrix<SerializedItem> matrix,
+			IRecipe recipe) {
 		if (recipe instanceof IShapedRecipe)
 			collectShaped(size, inventory, matrix, (IShapedRecipe) recipe, 1);
 		if (recipe instanceof IShapelessRecipe)
