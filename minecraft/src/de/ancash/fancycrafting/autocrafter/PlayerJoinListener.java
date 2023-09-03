@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import de.ancash.fancycrafting.FancyCrafting;
+import de.ancash.fancycrafting.autocrafter.item.NBTRecipeResultReader;
 
 public class PlayerJoinListener implements Listener {
 
