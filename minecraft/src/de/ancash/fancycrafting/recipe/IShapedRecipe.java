@@ -85,6 +85,8 @@ public class IShapedRecipe extends IRecipe {
 
 	@Override
 	public boolean matches(IMatrix<SerializedItem> m) {
+		m = m.clone();
+		m.cut(getWidth(), getHeight());
 		if (m.getHeight() != getHeight() || m.getWidth() != getWidth())
 			return false;
 		for (int i = 0; i < m.getArray().length; i++) {

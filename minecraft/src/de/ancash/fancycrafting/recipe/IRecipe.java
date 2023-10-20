@@ -21,6 +21,7 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.permissions.Permission;
+import org.checkerframework.checker.units.qual.s;
 
 import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.recipe.complex.ArmorDyeRecipe;
@@ -414,7 +415,7 @@ public abstract class IRecipe {
 	@SuppressWarnings("nls")
 	@Override
 	public String toString() {
-		return "IRecipe{name=" + recipeName + ";result=" + result + ";ingredients=" + getIngredients() + "}"; //$NON-NLS-3$ //$NON-NLS-4$
+		return "IRecipe{name=" + recipeName + ";result=" + result.getMap() + ";ingredients=" + getSerializedIngredients().stream().map(s -> s != null ? s.getMap() : null).collect(Collectors.toList()) + "}"; //$NON-NLS-3$ //$NON-NLS-4$
 	}
 
 	public Permission getCraftPermission() {
