@@ -5,10 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -83,30 +82,39 @@ public class IShapelessRecipe extends IRecipe {
 
 	@Override
 	public boolean matches(IMatrix<SerializedItem> m) {
-		List<SerializedItem> items = Stream.of(m.getArray()).filter(i -> i != null).collect(Collectors.toList());
-		List<Integer> hashMatrix = items.stream().map(SerializedItem::hashCode).sorted().collect(Collectors.toList());
+		List<SerializedItem> input = Stream.of(m.getArray()).filter(i -> i != null).collect(Collectors.toList());
+		List<Integer> hashMatrix = input.stream().map(SerializedItem::hashCode).sorted().collect(Collectors.toList());
 		if (!hashMatrix.equals(this.hashMatrix))
 			return false;
 		if (isVanilla())
 			return true;
 
-		Set<Integer> done = new HashSet<>();
+		List<SerializedItem> compareTo = new ArrayList<>();
+		compareTo.addAll(iings);
 
-		for (int a = 0; a < items.size(); a++) {
-			for (int b = 0; b < items.size(); b++) {
-				if (done.contains(b))
-					continue;
-				if (items.get(a).hashCode() != iings.get(b).hashCode())
-					continue;
-				if (SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(items.get(a)
-						.getMap()) < SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(iings.get(b).getMap()))
-					continue;
-				done.add(b);
-				break;
+		Collections.sort(compareTo,
+				(a, b) -> Integer.valueOf(SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(a.getMap()))
+						.compareTo(SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(b.getMap())));
+		Collections.sort(input,
+				(a, b) -> Integer.valueOf(SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(a.getMap()))
+						.compareTo(SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(b.getMap())));
+
+		for (SerializedItem si : compareTo) {
+			Iterator<SerializedItem> iter = input.iterator();
+			boolean match = false;
+			while (iter.hasNext()) {
+				SerializedItem comp = iter.next();
+				if (si.areEqualIgnoreAmount(comp) && SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(
+						si.getMap()) <= SerializedMetaAccess.UNSPECIFIC_META_ACCESS.getAmount(comp.getMap())) {
+					match = true;
+					iter.remove();
+					break;
+				}
 			}
+			if (!match)
+				return false;
 		}
-
-		return done.size() == items.size();
+		return input.isEmpty();
 	}
 
 	@Override

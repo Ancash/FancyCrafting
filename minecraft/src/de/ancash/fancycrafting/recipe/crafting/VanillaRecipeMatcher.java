@@ -18,14 +18,7 @@ import de.ancash.fancycrafting.recipe.IMatrix;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.minecraft.crafting.IContainerWorkbench;
 import de.ancash.minecraft.crafting.ICraftingManager;
-import de.ancash.misc.ReflectionUtils;
 import de.ancash.nbtnexus.serde.SerializedItem;
-import me.wolfyscript.customcrafting.CustomCrafting;
-import me.wolfyscript.customcrafting.recipes.CraftingRecipe;
-import me.wolfyscript.customcrafting.recipes.CustomRecipe;
-import me.wolfyscript.customcrafting.recipes.ICustomVanillaRecipe;
-import me.wolfyscript.customcrafting.recipes.items.Ingredient;
-import me.wolfyscript.utilities.util.NamespacedKey;
 
 public class VanillaRecipeMatcher {
 
@@ -43,6 +36,7 @@ public class VanillaRecipeMatcher {
 		return icw;
 	}
 
+	@SuppressWarnings("nls")
 	public IRecipe matchVanillaRecipe(IMatrix<SerializedItem> matrix) {
 		matrix = matrix.clone();
 		if (matrix.getArray().length != 9) {
@@ -61,21 +55,10 @@ public class VanillaRecipeMatcher {
 			else {
 				if (vanilla instanceof Keyed) {
 					Keyed k = (Keyed) vanilla;
-					System.out.println("recipe is keyed: " + k.getKey());
 					if (Bukkit.getPluginManager().getPlugin("CustomCrafting") != null
 							&& k.getKey().getNamespace().equals("customcrafting")) {
-						System.out.println("is cc recipe");
-						org.bukkit.NamespacedKey bukkitKey = k.getKey();
-						NamespacedKey nk = new NamespacedKey(bukkitKey.getNamespace(),
-								bukkitKey.getKey().replace("cc_placeholder.", "").replace("cc_display.", ""));
-
-						System.out.println(
-								"exists cc recipe: " + CustomCrafting.inst().getRegistries().getRecipes().has(nk));
-						CustomRecipe<?> cr = CustomCrafting.inst().getRegistries().getRecipes().get(nk);
-						if (cr != null) {
-							System.out.println(nk + ": " + cr.getClass() + ":" + ReflectionUtils.toStringRec(cr, true));
-						}
-						System.out.println("ignoring this recipe");
+						WolfyCustomCraftingMatcher.match(vanilla, matrix);
+						cache.put(key, Optional.empty());
 						return null;
 					}
 				}

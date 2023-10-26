@@ -73,7 +73,7 @@ public class AutoCrafter implements Listener {
 
 		Bukkit.getScheduler().runTaskLater(plugin, () -> Lambda.execIf(!event.isCancelled(), this::check), 1);
 	}
-	
+
 	public void check() {
 		if (contending.incrementAndGet() > 1) {
 			contending.decrementAndGet();

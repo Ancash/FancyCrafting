@@ -57,7 +57,9 @@ public class RecipeCategory {
 	public boolean equals(Object arg0) {
 		if (arg0 == null)
 			return false;
-		return arg0.hashCode() == hashCode();
+		if (!(arg0 instanceof RecipeCategory))
+			return false;
+		return name.equalsIgnoreCase(((RecipeCategory) arg0).name);
 	}
 
 	@Override

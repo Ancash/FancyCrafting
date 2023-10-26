@@ -57,21 +57,21 @@ public class NBTRecipeResultReader implements IRecipeComputer, Listener {
 	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
-		if(!event.getPlayer().getUniqueId().equals(player))
+		if (!event.getPlayer().getUniqueId().equals(player))
 			return;
 		ItemStack item = event.getPlayer().getItemInHand();
-		if(item == null || item.getType() == Material.AIR)
+		if (item == null || item.getType() == Material.AIR)
 			return;
-		if(!AutoCrafterItemEditor.isValid(SerializedItem.of(item)))
+		if (!AutoCrafterItemEditor.isValid(SerializedItem.of(item)))
 			return;
-		if(event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK)
+		if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK)
 			return;
-		if(!event.getPlayer().hasPermission(FancyCrafting.AUTO_CRAFTER_EDITOR_PERM) && !event.getPlayer().isOp())
+		if (!event.getPlayer().hasPermission(FancyCrafting.AUTO_CRAFTER_EDITOR_PERM) && !event.getPlayer().isOp())
 			return;
-		
+
 		new AutoCrafterItemEditor(plugin, player, item);
 	}
-	
+
 	@Override
 	public boolean isAsync() {
 		return true;

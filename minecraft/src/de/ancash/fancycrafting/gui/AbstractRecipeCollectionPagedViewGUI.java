@@ -67,10 +67,10 @@ public abstract class AbstractRecipeCollectionPagedViewGUI extends IGUI {
 			filteredRecipes.addAll(recipes);
 			return;
 		}
-		RecipeCategory cat = RecipeCategory
-				.getCategory(new ArrayList<>(RecipeCategory.getCategories()).get(categoryPos - 1));
+		List<String> temp = new ArrayList<>(RecipeCategory.getCategories());
+		Collections.sort(temp);
+		RecipeCategory cat = RecipeCategory.getCategory(temp.get(categoryPos - 1));
 		recipes.stream().filter(r -> r.getCategory().equals(cat)).forEach(filteredRecipes::add);
-		;
 	}
 
 	@SuppressWarnings("nls")
@@ -90,11 +90,12 @@ public abstract class AbstractRecipeCollectionPagedViewGUI extends IGUI {
 			lore.add("§eAll");
 		else
 			lore.add("§7All");
-		for (int i = 0; i < cats.size(); i++)
+		for (int i = 0; i < cats.size(); i++) {
 			if (i + 1 == categoryPos)
 				lore.add("§e" + cats.get(i));
 			else
 				lore.add("§7" + cats.get(i));
+		}
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 		addInventoryItem(new InventoryItem(this, item, 52, (a, b, c, top) -> {
