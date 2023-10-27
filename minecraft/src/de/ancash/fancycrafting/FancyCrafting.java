@@ -61,6 +61,7 @@ import de.ancash.fancycrafting.listeners.WorkbenchOpenListener;
 import de.ancash.fancycrafting.recipe.IRandomRecipe;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.crafting.RecipeMatcherCallable;
+import de.ancash.fancycrafting.recipe.crafting.VanillaRecipeMatcher;
 import de.ancash.libs.org.apache.commons.io.FileUtils;
 import de.ancash.minecraft.IItemStack;
 import de.ancash.minecraft.ItemStackUtils;
@@ -106,7 +107,7 @@ public class FancyCrafting extends JavaPlugin {
 	protected UpdateChecker updateChecker;
 	protected WorkspaceDimension defaultDim;
 	protected ViewSlots viewSlots;
-	protected RecipeManager recipeManager;
+	private RecipeManager recipeManager;
 	protected final WorkspaceObjects workspaceObjects = new WorkspaceObjects();
 	private final File blacklistFile = new File("plugins/FancyCrafting/blacklist/config.yml");
 	private final YamlFile blacklistConfig = new YamlFile(blacklistFile);
@@ -183,13 +184,8 @@ public class FancyCrafting extends JavaPlugin {
 		}
 		loadListeners();
 		recipeManager.clear();
-		try {
-			recipeManager = new RecipeManager((FancyCrafting) this);
-		} catch (IOException e) {
-			getLogger().log(Level.SEVERE, "Could not load recipes", e);
-			Bukkit.getPluginManager().disablePlugin(this);
-			return;
-		}
+		recipeManager.reloadRecipes();
+		VanillaRecipeMatcher.clearCache();
 		System.gc();
 		getLogger().info("Done! " + MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3) + "s");
 	}
@@ -223,7 +219,7 @@ public class FancyCrafting extends JavaPlugin {
 		fc.save(file);
 	}
 
-	public void load() {
+	private void load() {
 		long now = System.nanoTime();
 		getLogger().info("Loading...");
 		checkForUpdates();

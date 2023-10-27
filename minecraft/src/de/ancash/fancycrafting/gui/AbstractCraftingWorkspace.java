@@ -277,6 +277,13 @@ public abstract class AbstractCraftingWorkspace extends IGUI {
 					return workspace.currentRecipe = match;
 				else
 					workspace.permissionHandler.onNoPermission(match, workspace.player);
+
+			if ((match = workspace.pl.getRecipeManager().matchRecipe(workspace.matrix)) != null)
+				if (workspace.permissionHandler.canCraftRecipe(match, workspace.player))
+					return workspace.currentRecipe = match;
+				else
+					workspace.permissionHandler.onNoPermission(match, workspace.player);
+
 			workspace.matchHandler.onNoRecipeMatch();
 			return workspace.currentRecipe = null;
 		}

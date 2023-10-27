@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import de.ancash.fancycrafting.exception.InvalidRecipeException;
 import de.ancash.fancycrafting.exception.RecipeDeleteException;
@@ -65,9 +65,17 @@ public class RecipeManager {
 
 	public void loadBukkitRecipes() {
 		Bukkit.recipeIterator().forEachRemaining(r -> {
+			if (r instanceof Keyed) {
+				Keyed k = (Keyed) r;
+				if (k.getKey().getNamespace().equals("customcrafting")) {
+					plugin.getLogger().info("Skipped recipe " + k.getKey());
+					return;
+				}
+			}
 			IRecipe recipe = IRecipe.fromVanillaRecipe(plugin, r);
 			if (recipe == null)
 				return;
+
 			registerRecipe(recipe);
 		});
 	}
@@ -148,21 +156,11 @@ public class RecipeManager {
 	}
 
 	public void reloadRecipes() {
-		new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				plugin.getLogger().info("Reloading Recipes..."); //$NON-NLS-1$
-				long now = System.nanoTime();
-				customRecipes.clear();
-				recipesByName.clear();
-				recipesByHash.clear();
-				autoMatchingRecipes.clear();
-				loadRecipes();
-				plugin.getLogger()
-						.info("Reloaded! " + (MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3)) + "s"); //$NON-NLS-1$ //$NON-NLS-2$
-			}
-		}.runTaskAsynchronously(plugin);
+		plugin.getLogger().info("Reloading Recipes..."); //$NON-NLS-1$
+		long now = System.nanoTime();
+		clear();
+		loadRecipes();
+		plugin.getLogger().info("Reloaded! " + (MathsUtils.round((System.nanoTime() - now) / 1000000000D, 3)) + "s"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	public Set<IRecipe> getAutoMatchingRecipes() {
@@ -288,11 +286,15 @@ public class RecipeManager {
 		loadBlacklistedRecipes();
 	}
 
+	@SuppressWarnings("nls")
 	public void clear() {
-		customRecipes.clear();
+		blacklistedRecipes.clear();
+		cachedRecipes.clear();
 		autoMatchingRecipes.clear();
-		recipesByName.clear();
 		recipesByHash.clear();
+		recipesByName.clear();
+		customRecipes.clear();
+		plugin.getLogger().info("Cleared recipe cache");
 	}
 
 	public void loadCustomRecipes() {

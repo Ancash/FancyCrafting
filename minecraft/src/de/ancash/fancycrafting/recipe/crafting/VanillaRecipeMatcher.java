@@ -24,6 +24,10 @@ public class VanillaRecipeMatcher {
 
 	private static final ConcurrentHashMap<List<Integer>, Optional<IRecipe>> cache = new ConcurrentHashMap<>();
 
+	public static void clearCache() {
+		cache.clear();
+	}
+
 	private final IContainerWorkbench icw;
 	private final FancyCrafting pl;
 
