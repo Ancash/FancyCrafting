@@ -36,10 +36,10 @@ public class SingleRecipePagedViewGUI {
 	}
 
 	public void addItems(AbstractRecipeViewGUI gui) {
-		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getNextItem().getOriginal(),
+		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getNextItem(),
 				pl.getViewSlots().getNextSlot(),
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(increment()))));
-		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getPrevItem().getOriginal(),
+		gui.addInventoryItem(new InventoryItem(gui, pl.getWorkspaceObjects().getPrevItem(),
 				pl.getViewSlots().getPrevSlot(),
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> openRecipe(decrement()))));
 	}

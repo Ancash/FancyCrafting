@@ -46,13 +46,12 @@ public class AutoCrafterItemEditor extends IGUI {
 		open();
 	}
 
-	@SuppressWarnings("nls")
 	private void setItems() {
 		for (int i = 0; i < inv.getSize(); i++) {
 			if (i < slots)
 				setItem(pl.getWorkspaceObjects().getAutoCrafterVacantSlotItem().toItem(), i);
 			else
-				setItem(pl.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
+				setItem(pl.getWorkspaceObjects().getBackgroundItem(), i);
 		}
 		for (int i = 0; i < items.size(); i++) {
 			List<IRecipe> recipes = new ArrayList<>(pl.getRecipeManager().getRecipeByResult(items.get(i)));

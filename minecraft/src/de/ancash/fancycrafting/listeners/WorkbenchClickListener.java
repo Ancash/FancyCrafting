@@ -33,8 +33,8 @@ import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.fancycrafting.recipe.complex.IComplexRecipe;
 import de.ancash.fancycrafting.recipe.crafting.RecipeMatcherCallable;
-import de.ancash.minecraft.InventoryUtils;
 import de.ancash.minecraft.cryptomorin.xseries.XMaterial;
+import de.ancash.nbtnexus.InventoryUtils;
 import de.ancash.nbtnexus.serde.SerializedItem;
 import de.ancash.nbtnexus.serde.access.SerializedMetaAccess;
 

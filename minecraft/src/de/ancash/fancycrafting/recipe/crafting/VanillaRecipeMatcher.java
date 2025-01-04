@@ -58,13 +58,13 @@ public class VanillaRecipeMatcher {
 				cache.put(key, Optional.empty());
 			else {
 				if (vanilla instanceof Keyed) {
-					Keyed k = (Keyed) vanilla;
-					if (Bukkit.getPluginManager().getPlugin("CustomCrafting") != null
-							&& k.getKey().getNamespace().equals("customcrafting")) {
-						WolfyCustomCraftingMatcher.match(vanilla, matrix);
-						cache.put(key, Optional.empty());
-						return null;
-					}
+//					Keyed k = (Keyed) vanilla;
+//					if (Bukkit.getPluginManager().getPlugin("CustomCrafting") != null
+//							&& k.getKey().getNamespace().equals("customcrafting")) {
+//						WolfyCustomCraftingMatcher.match(vanilla, matrix);
+//						cache.put(key, Optional.empty());
+//						return null;
+//					}
 				}
 				cache.put(key, Optional.ofNullable(IRecipe.fromVanillaRecipe(pl, vanilla, true)));
 			}

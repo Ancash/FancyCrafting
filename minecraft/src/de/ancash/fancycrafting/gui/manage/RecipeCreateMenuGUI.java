@@ -20,13 +20,13 @@ public class RecipeCreateMenuGUI extends IGUI {
 	public RecipeCreateMenuGUI(FancyCrafting pl, Player player, String name) {
 		super(player.getUniqueId(), 9, pl.getWorkspaceObjects().getCreateRecipeTitle());
 		for (int i = 0; i < getSize(); i++)
-			setItem(pl.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
+			setItem(pl.getWorkspaceObjects().getBackgroundItem(), i);
 
-		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCreateNormalRecipeItem().getOriginal(), 2,
+		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCreateNormalRecipeItem(), 2,
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null)
 						.ifPresent(self -> pl.openCreateNormalRecipe(player, name))));
 
-		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCreateRandomRecipeItem().getOriginal(), 6,
+		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCreateRandomRecipeItem(), 6,
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null)
 						.ifPresent(self -> pl.openCreateRandomRecipe(player, name))));
 
@@ -40,8 +40,8 @@ public class RecipeCreateMenuGUI extends IGUI {
 						1),
 				(text) -> Tuple.of(text != null && !text.isEmpty(),
 						text == null || text.isEmpty() ? plugin.getResponse().INVALID_RECIPE_NAME : null))
-				.setLeft(plugin.getWorkspaceObjects().getInputRecipeNameLeftItem().getOriginal())
-				.setRight(plugin.getWorkspaceObjects().getInputRecipeNameRightItem().getOriginal())
+				.setLeft(plugin.getWorkspaceObjects().getInputRecipeNameLeftItem())
+				.setRight(plugin.getWorkspaceObjects().getInputRecipeNameRightItem())
 				.setTitle(plugin.getWorkspaceObjects().getInputRecipeNameTitle()).setText("").open(); //$NON-NLS-1$
 	}
 

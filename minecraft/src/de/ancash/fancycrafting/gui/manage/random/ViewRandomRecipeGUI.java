@@ -31,7 +31,7 @@ public class ViewRandomRecipeGUI extends AbstractRecipeViewGUI {
 	}
 
 	private void addProbabilities() {
-		ItemStack item = plugin.getWorkspaceObjects().getViewRandomResultsItem().getOriginal();
+		ItemStack item = plugin.getWorkspaceObjects().getViewRandomResultsItem();
 		StringBuilder builder = new StringBuilder();
 		int probSum = probabilityMap.values().stream().mapToInt(i -> Integer.valueOf(i)).sum();
 		Iterator<String> iter = random.getProbabilityMap().entrySet().stream()

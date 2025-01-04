@@ -28,10 +28,10 @@ import de.ancash.fancycrafting.recipe.IShapedRecipe;
 import de.ancash.fancycrafting.recipe.IShapelessRecipe;
 import de.ancash.fancycrafting.recipe.complex.IComplexRecipe;
 import de.ancash.fancycrafting.recipe.crafting.AutoRecipeMatcher;
-import de.ancash.minecraft.InventoryUtils;
 import de.ancash.minecraft.cryptomorin.xseries.XMaterial;
 import de.ancash.minecraft.inventory.IGUIManager;
 import de.ancash.minecraft.inventory.InventoryItem;
+import de.ancash.nbtnexus.InventoryUtils;
 import de.ancash.nbtnexus.serde.SerializedItem;
 import de.ancash.nbtnexus.serde.access.SerializedMetaAccess;
 
@@ -56,14 +56,14 @@ public class CraftingWorkspaceGUI extends AbstractCraftingWorkspace {
 		setPermissionHandler(new RecipePermissionHandler(this));
 		setAutoRecipeMatcherHandler(new AutoRecipeMatcherHandler(pl, this, matcher));
 		for (int i = 0; i < template.getDimension().getSize(); i++)
-			setItem(pl.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
+			setItem(pl.getWorkspaceObjects().getBackgroundItem(), i);
 		for (int i : template.getSlots().getCraftingSlots())
 			setItem(null, i);
 		if (enableQuickCrafting())
 			for (int i : template.getSlots().getAutoCraftingSlots())
-				setItem(pl.getWorkspaceObjects().getQuickCraftingItem().getOriginal(), i);
+				setItem(pl.getWorkspaceObjects().getQuickCraftingItem(), i);
 
-		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCloseItem().getOriginal(),
+		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCloseItem(),
 				template.getSlots().getCloseSlot(),
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(CraftingWorkspaceGUI::closeAll)));
 		IGUIManager.register(this, getId());

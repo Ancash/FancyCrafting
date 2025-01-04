@@ -79,10 +79,10 @@ public abstract class AbstractRecipeViewGUI extends IGUI {
 		newInventory(title, plugin.getViewSlots().getSize());
 		for (int i = 0; i < getSize(); i++) {
 			removeInventoryItem(i);
-			setItem(plugin.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
+			setItem(plugin.getWorkspaceObjects().getBackgroundItem(), i);
 		}
 
-		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getCloseItem().getOriginal(),
+		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getCloseItem(),
 				plugin.getViewSlots().getCloseSlot(),
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractRecipeViewGUI::closeAll)));
 		setItem(recipe.getResult(), plugin.getViewSlots().getResultSlot());
@@ -97,7 +97,7 @@ public abstract class AbstractRecipeViewGUI extends IGUI {
 
 	private void addEdit() {
 		if (player.hasPermission(FancyCrafting.EDIT_PERM) && !recipe.isVanilla())
-			addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getEditItem().getOriginal(),
+			addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getEditItem(),
 					plugin.getViewSlots().getEditSlot(), (a, b, c, top) -> Optional.ofNullable(top ? this : null)
 							.ifPresent(self -> editRecipe(player, recipe))));
 	}
@@ -106,13 +106,13 @@ public abstract class AbstractRecipeViewGUI extends IGUI {
 
 	private void addIngredients() {
 		addInventoryItem(new InventoryItem(this,
-				ItemStackUtils.replacePlaceholder(plugin.getWorkspaceObjects().getViewIngredientsItem().getOriginal(),
+				ItemStackUtils.replacePlaceholder(plugin.getWorkspaceObjects().getViewIngredientsItem(),
 						placeholder),
 				plugin.getViewSlots().getIngredientsSlot(),
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(self -> {
 					newInventory(getTitle(), template.getDimension().getSize());
 					for (int i = 0; i < getSize(); i++)
-						setItem(plugin.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
+						setItem(plugin.getWorkspaceObjects().getBackgroundItem(), i);
 					for (int i = 0; i < ingredients.length; i++)
 						setItem(ingredients[i], template.getSlots().getCraftingSlots()[i]);
 					super.open();

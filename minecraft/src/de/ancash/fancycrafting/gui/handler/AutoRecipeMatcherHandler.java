@@ -20,8 +20,8 @@ import de.ancash.fancycrafting.FancyCrafting;
 import de.ancash.fancycrafting.gui.AbstractCraftingWorkspace;
 import de.ancash.fancycrafting.recipe.IRecipe;
 import de.ancash.fancycrafting.recipe.crafting.AutoRecipeMatcher;
-import de.ancash.minecraft.InventoryUtils;
 import de.ancash.minecraft.inventory.InventoryItem;
+import de.ancash.nbtnexus.InventoryUtils;
 import de.ancash.nbtnexus.serde.SerializedItem;
 
 public class AutoRecipeMatcherHandler {
@@ -72,7 +72,7 @@ public class AutoRecipeMatcherHandler {
 					+ (quickCraftingPage * workspace.getTemplate().getSlots().getAutoCraftingSlots().length)) {
 				workspace.removeInventoryItem(workspace.getTemplate().getSlots().getAutoCraftingSlots()[i
 						- (quickCraftingPage * workspace.getTemplate().getSlots().getAutoCraftingSlots().length)]);
-				workspace.setItem(pl.getWorkspaceObjects().getQuickCraftingItem().getOriginal(),
+				workspace.setItem(pl.getWorkspaceObjects().getQuickCraftingItem(),
 						workspace.getTemplate().getSlots().getAutoCraftingSlots()[i - (quickCraftingPage
 								* workspace.getTemplate().getSlots().getAutoCraftingSlots().length)]);
 				i++;
@@ -111,7 +111,7 @@ public class AutoRecipeMatcherHandler {
 		}
 		while (i < workspace.getTemplate().getSlots().getAutoCraftingSlots().length) {
 			workspace.removeInventoryItem(workspace.getTemplate().getSlots().getAutoCraftingSlots()[i]);
-			workspace.setItem(pl.getWorkspaceObjects().getQuickCraftingItem().getOriginal(),
+			workspace.setItem(pl.getWorkspaceObjects().getQuickCraftingItem(),
 					workspace.getTemplate().getSlots().getAutoCraftingSlots()[i]);
 			i++;
 		}
@@ -138,7 +138,7 @@ public class AutoRecipeMatcherHandler {
 					(a, b) -> Tuple.of(a.getFirst(), a.getSecond() + b.getSecond()));
 		}
 		map.values().forEach(
-				d -> InventoryUtils.removeItemStack(workspace.getPlayer(), d.getFirst().toItem(), d.getSecond()));
+				d -> InventoryUtils.removeItemStack(workspace.getPlayer(), d.getFirst(), d.getSecond()));
 		workspace.getPlayer().getInventory().addItem(
 				workspace.getRecipeMatchCompletionHandler().getSingleRecipeCraft(recipe, workspace.getPlayer()));
 		workspace.updateLastCraftTick();

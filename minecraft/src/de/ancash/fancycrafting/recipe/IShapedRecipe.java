@@ -142,12 +142,11 @@ public class IShapedRecipe extends IRecipe {
 				ItemStackUtils.setItemStack(file, path + ".ingredients." + i, getIngredientsArray()[i].toItem());
 	}
 
-	@SuppressWarnings("nls")
 	@Override
 	public String saveToString() throws IOException {
 		YamlFile temp = new YamlFile();
 		temp.set("recipe.name", recipeName);
-		temp.set("recipe.result", ItemStackUtils.itemStackToString(result.toItem()));
+		temp.set("recipe.result", result.toYaml());
 		temp.set("recipe.shaped", true);
 		temp.set("recipe.width", matrix.getWidth());
 		temp.set("recipe.height", matrix.getHeight());
@@ -157,7 +156,7 @@ public class IShapedRecipe extends IRecipe {
 		for (int i = 0; i < getIngredientsArray().length; i++)
 			if (getIngredientsArray()[i] != null)
 				temp.set("recipe.ingredients." + i,
-						ItemStackUtils.itemStackToString(getIngredientsArray()[i].toItem()));
+						getIngredientsArray()[i].toYaml());
 		return temp.saveToString();
 	}
 

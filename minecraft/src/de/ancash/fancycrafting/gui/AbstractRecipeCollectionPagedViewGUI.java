@@ -48,11 +48,11 @@ public abstract class AbstractRecipeCollectionPagedViewGUI extends IGUI {
 		this.maxPages = mp;
 		this.player = player;
 		this.pl = pl;
-		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getNextItem().getOriginal(), 53,
+		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getNextItem(), 53,
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null)
 						.ifPresent(AbstractRecipeCollectionPagedViewGUI::openNextPage)));
 
-		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getPrevItem().getOriginal(), 45,
+		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getPrevItem(), 45,
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null)
 						.ifPresent(AbstractRecipeCollectionPagedViewGUI::openPrevPage)));
 		addCategoryFilter();

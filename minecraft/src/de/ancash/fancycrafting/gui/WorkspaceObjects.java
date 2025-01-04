@@ -2,34 +2,35 @@ package de.ancash.fancycrafting.gui;
 
 import java.util.List;
 
-import de.ancash.minecraft.IItemStack;
+import org.bukkit.inventory.ItemStack;
+
 import de.ancash.nbtnexus.serde.SerializedItem;
 
 public class WorkspaceObjects {
 
-	private IItemStack backItem;
-	private IItemStack closeItem;
-	private IItemStack prevItem;
-	private IItemStack nextItem;
-	private IItemStack invalidItem;
-	private IItemStack validItem;
-	private IItemStack backgroundItem;
-	private IItemStack shapelessItem;
-	private IItemStack shapedItem;
-	private IItemStack saveItem;
-	private IItemStack editItem;
-	private IItemStack deleteItem;
-	private IItemStack quickCraftingItem;
-	private IItemStack createNormalRecipeItem;
-	private IItemStack createRandomRecipeItem;
-	private IItemStack manageRandomResultsItem;
-	private IItemStack viewRandomResultsItem;
-	private IItemStack manageIngredientsItem;
-	private IItemStack viewIngredientsItem;
-	private IItemStack manageRandomInvalidResultItem;
-	private IItemStack inputRecipeNameRightItem;
-	private IItemStack inputRecipeNameLeftItem;
-	private IItemStack manageRecipeNameItem;
+	private ItemStack backItem;
+	private ItemStack closeItem;
+	private ItemStack prevItem;
+	private ItemStack nextItem;
+	private ItemStack invalidItem;
+	private ItemStack validItem;
+	private ItemStack backgroundItem;
+	private ItemStack shapelessItem;
+	private ItemStack shapedItem;
+	private ItemStack saveItem;
+	private ItemStack editItem;
+	private ItemStack deleteItem;
+	private ItemStack quickCraftingItem;
+	private ItemStack createNormalRecipeItem;
+	private ItemStack createRandomRecipeItem;
+	private ItemStack manageRandomResultsItem;
+	private ItemStack viewRandomResultsItem;
+	private ItemStack manageIngredientsItem;
+	private ItemStack viewIngredientsItem;
+	private ItemStack manageRandomInvalidResultItem;
+	private ItemStack inputRecipeNameRightItem;
+	private ItemStack inputRecipeNameLeftItem;
+	private ItemStack manageRecipeNameItem;
 	private SerializedItem autoCrafterVacantSlot;
 	private String createRecipeTitle;
 	private String ingredientsInputTitle;
@@ -52,137 +53,137 @@ public class WorkspaceObjects {
 	private List<String> manageProbabilityHeader;
 	private List<String> backCommands;
 
-	public IItemStack getCreateNormalRecipeItem() {
+	public ItemStack getCreateNormalRecipeItem() {
 		return createNormalRecipeItem;
 	}
 
-	public WorkspaceObjects setCreateNormalRecipeItem(IItemStack createNormalRecipeItem) {
+	public WorkspaceObjects setCreateNormalRecipeItem(ItemStack createNormalRecipeItem) {
 		this.createNormalRecipeItem = createNormalRecipeItem;
 		return this;
 	}
 
-	public IItemStack getCreateRandomRecipeItem() {
+	public ItemStack getCreateRandomRecipeItem() {
 		return createRandomRecipeItem;
 	}
 
-	public WorkspaceObjects setCreateRandomRecipeItem(IItemStack createRandomRecipeItem) {
+	public WorkspaceObjects setCreateRandomRecipeItem(ItemStack createRandomRecipeItem) {
 		this.createRandomRecipeItem = createRandomRecipeItem;
 		return this;
 	}
 
-	public IItemStack getBackItem() {
+	public ItemStack getBackItem() {
 		return backItem;
 	}
 
-	public WorkspaceObjects setBackItem(IItemStack backItem) {
+	public WorkspaceObjects setBackItem(ItemStack backItem) {
 		this.backItem = backItem;
 		return this;
 	}
 
-	public IItemStack getCloseItem() {
+	public ItemStack getCloseItem() {
 		return closeItem;
 	}
 
-	public WorkspaceObjects setCloseItem(IItemStack closeItem) {
+	public WorkspaceObjects setCloseItem(ItemStack closeItem) {
 		this.closeItem = closeItem;
 		return this;
 	}
 
-	public IItemStack getPrevItem() {
+	public ItemStack getPrevItem() {
 		return prevItem;
 	}
 
-	public WorkspaceObjects setPrevItem(IItemStack prevItem) {
+	public WorkspaceObjects setPrevItem(ItemStack prevItem) {
 		this.prevItem = prevItem;
 		return this;
 	}
 
-	public IItemStack getNextItem() {
+	public ItemStack getNextItem() {
 		return nextItem;
 	}
 
-	public WorkspaceObjects setNextItem(IItemStack nextItem) {
+	public WorkspaceObjects setNextItem(ItemStack nextItem) {
 		this.nextItem = nextItem;
 		return this;
 	}
 
-	public IItemStack getInvalidItem() {
+	public ItemStack getInvalidItem() {
 		return invalidItem;
 	}
 
-	public WorkspaceObjects setInvalidItem(IItemStack invalidItem) {
+	public WorkspaceObjects setInvalidItem(ItemStack invalidItem) {
 		this.invalidItem = invalidItem;
 		return this;
 	}
 
-	public IItemStack getValidItem() {
+	public ItemStack getValidItem() {
 		return validItem;
 	}
 
-	public WorkspaceObjects setValidItem(IItemStack validItem) {
+	public WorkspaceObjects setValidItem(ItemStack validItem) {
 		this.validItem = validItem;
 		return this;
 	}
 
-	public IItemStack getBackgroundItem() {
+	public ItemStack getBackgroundItem() {
 		return backgroundItem;
 	}
 
-	public WorkspaceObjects setBackgroundItem(IItemStack backgroundItem) {
+	public WorkspaceObjects setBackgroundItem(ItemStack backgroundItem) {
 		this.backgroundItem = backgroundItem;
 		return this;
 	}
 
-	public IItemStack getShapelessItem() {
+	public ItemStack getShapelessItem() {
 		return shapelessItem;
 	}
 
-	public WorkspaceObjects setShapelessItem(IItemStack shapeless) {
+	public WorkspaceObjects setShapelessItem(ItemStack shapeless) {
 		this.shapelessItem = shapeless;
 		return this;
 	}
 
-	public IItemStack getShapedItem() {
+	public ItemStack getShapedItem() {
 		return shapedItem;
 	}
 
-	public WorkspaceObjects setShapedItem(IItemStack shapedItem) {
+	public WorkspaceObjects setShapedItem(ItemStack shapedItem) {
 		this.shapedItem = shapedItem;
 		return this;
 	}
 
-	public IItemStack getSaveItem() {
+	public ItemStack getSaveItem() {
 		return saveItem;
 	}
 
-	public WorkspaceObjects setSaveItem(IItemStack saveItem) {
+	public WorkspaceObjects setSaveItem(ItemStack saveItem) {
 		this.saveItem = saveItem;
 		return this;
 	}
 
-	public IItemStack getEditItem() {
+	public ItemStack getEditItem() {
 		return editItem;
 	}
 
-	public WorkspaceObjects setEditItem(IItemStack editItem) {
+	public WorkspaceObjects setEditItem(ItemStack editItem) {
 		this.editItem = editItem;
 		return this;
 	}
 
-	public IItemStack getDeleteItem() {
+	public ItemStack getDeleteItem() {
 		return deleteItem;
 	}
 
-	public WorkspaceObjects setDeleteItem(IItemStack deleteItem) {
+	public WorkspaceObjects setDeleteItem(ItemStack deleteItem) {
 		this.deleteItem = deleteItem;
 		return this;
 	}
 
-	public IItemStack getQuickCraftingItem() {
+	public ItemStack getQuickCraftingItem() {
 		return quickCraftingItem;
 	}
 
-	public WorkspaceObjects setQuickCraftingItem(IItemStack quickCraftingItem) {
+	public WorkspaceObjects setQuickCraftingItem(ItemStack quickCraftingItem) {
 		this.quickCraftingItem = quickCraftingItem;
 		return this;
 	}
@@ -232,11 +233,11 @@ public class WorkspaceObjects {
 		return this;
 	}
 
-	public IItemStack getManageRandomResultsItem() {
+	public ItemStack getManageRandomResultsItem() {
 		return manageRandomResultsItem;
 	}
 
-	public WorkspaceObjects setManageRandomResultsItem(IItemStack manageRandomResultsItem) {
+	public WorkspaceObjects setManageRandomResultsItem(ItemStack manageRandomResultsItem) {
 		this.manageRandomResultsItem = manageRandomResultsItem;
 		return this;
 	}
@@ -250,11 +251,11 @@ public class WorkspaceObjects {
 		return this;
 	}
 
-	public IItemStack getManageIngredientsItem() {
+	public ItemStack getManageIngredientsItem() {
 		return manageIngredientsItem;
 	}
 
-	public WorkspaceObjects setManageIngredientsItem(IItemStack manageRandomIngredientsItem) {
+	public WorkspaceObjects setManageIngredientsItem(ItemStack manageRandomIngredientsItem) {
 		this.manageIngredientsItem = manageRandomIngredientsItem;
 		return this;
 	}
@@ -313,29 +314,29 @@ public class WorkspaceObjects {
 		return this;
 	}
 
-	public IItemStack getManageRandomInvalidResultItem() {
+	public ItemStack getManageRandomInvalidResultItem() {
 		return manageRandomInvalidResultItem;
 	}
 
-	public WorkspaceObjects setManageRandomInvalidResultItem(IItemStack manageRandomInvalidResultItem) {
+	public WorkspaceObjects setManageRandomInvalidResultItem(ItemStack manageRandomInvalidResultItem) {
 		this.manageRandomInvalidResultItem = manageRandomInvalidResultItem;
 		return this;
 	}
 
-	public IItemStack getInputRecipeNameLeftItem() {
+	public ItemStack getInputRecipeNameLeftItem() {
 		return inputRecipeNameLeftItem;
 	}
 
-	public WorkspaceObjects setInputRecipeNameLeftItem(IItemStack inputRecipeNameLeft) {
+	public WorkspaceObjects setInputRecipeNameLeftItem(ItemStack inputRecipeNameLeft) {
 		this.inputRecipeNameLeftItem = inputRecipeNameLeft;
 		return this;
 	}
 
-	public IItemStack getInputRecipeNameRightItem() {
+	public ItemStack getInputRecipeNameRightItem() {
 		return inputRecipeNameRightItem;
 	}
 
-	public WorkspaceObjects setInputRecipeNameRightItem(IItemStack inputRecipeNameRight) {
+	public WorkspaceObjects setInputRecipeNameRightItem(ItemStack inputRecipeNameRight) {
 		this.inputRecipeNameRightItem = inputRecipeNameRight;
 		return this;
 	}
@@ -358,20 +359,20 @@ public class WorkspaceObjects {
 		return this;
 	}
 
-	public IItemStack getManageRecipeNameItem() {
+	public ItemStack getManageRecipeNameItem() {
 		return manageRecipeNameItem;
 	}
 
-	public WorkspaceObjects setManageRecipeNameItem(IItemStack manageRecipeName) {
+	public WorkspaceObjects setManageRecipeNameItem(ItemStack manageRecipeName) {
 		this.manageRecipeNameItem = manageRecipeName;
 		return this;
 	}
 
-	public IItemStack getViewIngredientsItem() {
+	public ItemStack getViewIngredientsItem() {
 		return viewIngredientsItem;
 	}
 
-	public WorkspaceObjects setViewIngredientsItem(IItemStack viewIngredientsItem) {
+	public WorkspaceObjects setViewIngredientsItem(ItemStack viewIngredientsItem) {
 		this.viewIngredientsItem = viewIngredientsItem;
 		return this;
 	}
@@ -385,11 +386,11 @@ public class WorkspaceObjects {
 		return this;
 	}
 
-	public IItemStack getViewRandomResultsItem() {
+	public ItemStack getViewRandomResultsItem() {
 		return viewRandomResultsItem;
 	}
 
-	public WorkspaceObjects setViewRandomResultsItem(IItemStack viewRandomResultsItem) {
+	public WorkspaceObjects setViewRandomResultsItem(ItemStack viewRandomResultsItem) {
 		this.viewRandomResultsItem = viewRandomResultsItem;
 		return this;
 	}

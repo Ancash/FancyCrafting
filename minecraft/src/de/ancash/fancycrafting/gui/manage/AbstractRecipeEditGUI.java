@@ -60,7 +60,7 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 		this.recipeName = recipe.getRecipeName();
 		category = recipe.getCategory();
 		this.result = recipe.getResult() == null || recipe.getResult().getType() == Material.AIR
-				? plugin.getWorkspaceObjects().getManageRandomInvalidResultItem().getOriginal()
+				? plugin.getWorkspaceObjects().getManageRandomInvalidResultItem()
 				: recipe.getResult();
 		if (recipe instanceof IShapedRecipe) {
 			IShapedRecipe shapedRandom = (IShapedRecipe) recipe;
@@ -96,14 +96,14 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 		ingredients = matrix.getArray();
 		newInventory(title, 36);
 		for (int i = 0; i < getSize(); i++)
-			setItem(plugin.getWorkspaceObjects().getBackgroundItem().getOriginal(), i);
+			setItem(plugin.getWorkspaceObjects().getBackgroundItem(), i);
 
-		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getDeleteItem().getOriginal(), 27, (a, b,
+		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getDeleteItem(), 27, (a, b,
 				c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractRecipeEditGUI::onRecipeDelete)));
-		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getSaveItem().getOriginal(), 35,
+		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getSaveItem(), 35,
 				(a, b, c, top) -> Optional.ofNullable(top && isRecipeValid() ? this : null)
 						.ifPresent(AbstractRecipeEditGUI::onRecipeSave)));
-		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getCloseItem().getOriginal(), 31,
+		addInventoryItem(new InventoryItem(this, plugin.getWorkspaceObjects().getCloseItem(), 31,
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(AbstractRecipeEditGUI::closeAll)));
 		addManageResult();
 		addManageIngredients();
@@ -120,7 +120,7 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 		addInventoryItem(
 				new InventoryItem(this,
 						ItemStackUtils.replacePlaceholder(
-								plugin.getWorkspaceObjects().getManageRecipeNameItem().getOriginal(), placeholder),
+								plugin.getWorkspaceObjects().getManageRecipeNameItem(), placeholder),
 						14, (a, b, c, top) -> Lambda.execIf(top, () -> {
 							IGUIManager.remove(getId());
 							StringInputGUI sig = new StringInputGUI(plugin, player, (str) -> {
@@ -130,8 +130,8 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 								return Tuple.of(str != null && !str.isEmpty(),
 										str == null || str.isEmpty() ? plugin.getResponse().INVALID_RECIPE_NAME : null);
 							});
-							sig.setLeft(plugin.getWorkspaceObjects().getInputRecipeNameLeftItem().getOriginal());
-							sig.setRight(plugin.getWorkspaceObjects().getInputRecipeNameRightItem().getOriginal());
+							sig.setLeft(plugin.getWorkspaceObjects().getInputRecipeNameLeftItem());
+							sig.setRight(plugin.getWorkspaceObjects().getInputRecipeNameRightItem());
 							sig.setText(recipeName);
 							sig.setTitle(plugin.getWorkspaceObjects().getInputRecipeNameTitle());
 							sig.open();
@@ -146,7 +146,7 @@ public abstract class AbstractRecipeEditGUI extends IGUI {
 				.ifPresent(self -> {
 					if (player.getInventory().firstEmpty() != -1) {
 						player.getInventory().addItem(result);
-						result = plugin.getWorkspaceObjects().getManageRandomInvalidResultItem().getOriginal();
+						result = plugin.getWorkspaceObjects().getManageRandomInvalidResultItem();
 						setItem(result, 12);
 					}
 				})));

@@ -1,0 +1,15 @@
+main-title: "Manage Blacklisted Recipes"
+add-recipe-to-blacklist:
+   title: "Add to blacklist"
+   item:
+      Amount: 1
+      NBTNexusItem:
+         type: SERIALIZED
+      UnspecificMeta:
+         Lore:
+           - '&7Add a recipe to the blacklist to'
+           - '&7prevent players from crafting it.'
+           - '&7Custom and vanilla recipes can be'
+           - '&7blacklisted.'
+         DisplayName: '&aAdd recipe to blacklist'
+      XMaterial: CHEST

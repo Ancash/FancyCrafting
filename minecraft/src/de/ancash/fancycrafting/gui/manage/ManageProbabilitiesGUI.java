@@ -75,7 +75,7 @@ public class ManageProbabilitiesGUI extends ItemInputIGUI {
 			addInventoryItem(invItem);
 			i++;
 		}
-		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCloseItem().getOriginal(), 53,
+		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCloseItem(), 53,
 				(a, b, c, top) -> Optional.ofNullable(top ? this : null).ifPresent(ManageProbabilitiesGUI::closeAll)));
 		IGUIManager.register(this, getId());
 		super.open();

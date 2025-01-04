@@ -36,7 +36,7 @@ public class RecipeMatchHandler extends RecipeResultSupplier {
 			workspace.setItem(workspace.getCurrentRecipe().getResult(),
 					workspace.getTemplate().getSlots().getResultSlot());
 			for (int i : workspace.getTemplate().getSlots().getCraftStateSlots())
-				workspace.setItem(pl.getWorkspaceObjects().getValidItem().getOriginal(), i);
+				workspace.setItem(pl.getWorkspaceObjects().getValidItem(), i);
 			workspace.getPlayer().updateInventory();
 		}
 	}
@@ -56,10 +56,10 @@ public class RecipeMatchHandler extends RecipeResultSupplier {
 
 	private void onNoRecipeMatch0() {
 		synchronized (workspace.getLock()) {
-			workspace.setItem(pl.getWorkspaceObjects().getInvalidItem().getOriginal(),
+			workspace.setItem(pl.getWorkspaceObjects().getInvalidItem(),
 					workspace.getTemplate().getSlots().getResultSlot());
 			for (int i : workspace.getTemplate().getSlots().getCraftStateSlots())
-				workspace.setItem(pl.getWorkspaceObjects().getInvalidItem().getOriginal(), i);
+				workspace.setItem(pl.getWorkspaceObjects().getInvalidItem(), i);
 			workspace.getPlayer().updateInventory();
 		}
 	}

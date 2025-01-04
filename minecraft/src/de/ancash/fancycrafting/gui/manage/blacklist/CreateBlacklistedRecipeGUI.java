@@ -22,8 +22,8 @@ public class CreateBlacklistedRecipeGUI extends CreateNormalRecipeGUI {
 						() -> new CreateBlacklistedRecipeGUI(plugin, owner, text).open(), 1),
 				(text) -> Tuple.of(text != null && !text.isEmpty(),
 						text == null || text.isEmpty() ? plugin.getResponse().INVALID_RECIPE_NAME : null))
-				.setLeft(plugin.getWorkspaceObjects().getInputRecipeNameLeftItem().getOriginal())
-				.setRight(plugin.getWorkspaceObjects().getInputRecipeNameRightItem().getOriginal())
+				.setLeft(plugin.getWorkspaceObjects().getInputRecipeNameLeftItem())
+				.setRight(plugin.getWorkspaceObjects().getInputRecipeNameRightItem())
 				.setTitle(plugin.getWorkspaceObjects().getInputRecipeNameTitle()).setText("").open(); //$NON-NLS-1$
 	}
 

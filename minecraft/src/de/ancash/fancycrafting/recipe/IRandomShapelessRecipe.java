@@ -63,12 +63,11 @@ public class IRandomShapelessRecipe extends IShapelessRecipe implements IRandomR
 		}
 	}
 
-	@SuppressWarnings("nls")
 	@Override
 	public String saveToString() throws IOException {
 		YamlFile temp = new YamlFile();
 		temp.set("recipe.name", recipeName);
-		temp.set("recipe.result", ItemStackUtils.itemStackToString(result.toItem()));
+		temp.set("recipe.result", result.toYaml());
 		temp.set("recipe.shaped", true);
 		temp.set("recipe.width", size);
 		temp.set("recipe.height", size);
@@ -77,10 +76,10 @@ public class IRandomShapelessRecipe extends IShapelessRecipe implements IRandomR
 		temp.set("recipe.category", category.getName());
 		for (int i = 0; i < getSerializedIngredients().size(); i++)
 			temp.set("recipe.ingredients." + i,
-					ItemStackUtils.itemStackToString(getSerializedIngredients().get(i).toItem()));
+					getSerializedIngredients().get(i).toYaml());
 		for (int i = 0; i < probList.size(); i++) {
 			Duplet<SerializedItem, Integer> d = probList.get(i);
-			temp.set("recipe.random-map." + i + ".item", ItemStackUtils.itemStackToString(d.getFirst().toItem())); //$NON-NLS-1$ //$NON-NLS-2$
+			temp.set("recipe.random-map." + i + ".item", d.getFirst().toYaml()); //$NON-NLS-1$ //$NON-NLS-2$
 			temp.set("recipe.random-map." + i + ".prob", d.getSecond()); //$NON-NLS-1$//$NON-NLS-2$
 		}
 		return temp.saveToString();

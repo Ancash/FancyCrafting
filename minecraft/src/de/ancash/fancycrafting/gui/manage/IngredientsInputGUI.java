@@ -40,21 +40,21 @@ public class IngredientsInputGUI extends ItemInputIGUI {
 
 	@Override
 	public void open() {
-		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCloseItem().getOriginal(), 53,
+		addInventoryItem(new InventoryItem(this, pl.getWorkspaceObjects().getCloseItem(), 53,
 				(d, e, f, top2) -> Optional.ofNullable(top2 ? this : null).ifPresent(IngredientsInputGUI::closeAll)));
 		for (int col = 0; col < 6; col++)
 			for (int row = 0; row < 8; row++)
 				setItem(ingredients[col * 8 + row], col * 9 + row);
-		addInventoryItem(new InventoryItem(this, shaped ? pl.getWorkspaceObjects().getShapedItem().getOriginal()
-				: pl.getWorkspaceObjects().getShapelessItem().getOriginal(), 44, (a, b, c, top) -> {
+		addInventoryItem(new InventoryItem(this, shaped ? pl.getWorkspaceObjects().getShapedItem()
+				: pl.getWorkspaceObjects().getShapelessItem(), 44, (a, b, c, top) -> {
 					if (top) {
 						shaped = !shaped;
-						setItem(shaped ? pl.getWorkspaceObjects().getShapedItem().getOriginal()
-								: pl.getWorkspaceObjects().getShapelessItem().getOriginal(), 44);
+						setItem(shaped ? pl.getWorkspaceObjects().getShapedItem()
+								: pl.getWorkspaceObjects().getShapelessItem(), 44);
 					}
 				}));
 		for (int i = 0; i < 4; i++)
-			setItem(pl.getWorkspaceObjects().getBackgroundItem().getOriginal(), i * 9 + 8);
+			setItem(pl.getWorkspaceObjects().getBackgroundItem(), i * 9 + 8);
 		IGUIManager.register(this, getId());
 		super.open();
 	}
@@ -70,7 +70,7 @@ public class IngredientsInputGUI extends ItemInputIGUI {
 
 	public static ItemStack getManageIngredientsItem(FancyCrafting pl, List<ItemStack> ings, int width, int heigth,
 			boolean shaped, boolean random) {
-		ItemStack item = pl.getWorkspaceObjects().getManageIngredientsItem().getOriginal();
+		ItemStack item = pl.getWorkspaceObjects().getManageIngredientsItem();
 		Map<String, String> placeholder = new HashMap<>();
 		ItemStack[] ingsa = new ItemStack[width * heigth];
 		for (int i = 0; i < ings.size(); i++)

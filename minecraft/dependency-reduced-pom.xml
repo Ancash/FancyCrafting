@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.ancash</groupId>
   <artifactId>fancycrafting</artifactId>
-  <version>4.10.0</version>
+  <version>4.11.0</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
@@ -51,6 +51,10 @@
       <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     </repository>
     <repository>
+      <id>spigot-repo-b</id>
+      <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+    </repository>
+    <repository>
       <id>github</id>
       <name>GitHub Ancash Apache Maven Packages</name>
       <url>https://maven.pkg.github.com/Ancash/ilibrary</url>
@@ -72,37 +76,19 @@
     <dependency>
       <groupId>de.ancash</groupId>
       <artifactId>ilibrary</artifactId>
-      <version>3.8.4</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>de.ancash</groupId>
-      <artifactId>nbtnexus</artifactId>
-      <version>1.1.0</version>
+      <version>3.13.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>net.essentialsx</groupId>
       <artifactId>EssentialsX</artifactId>
-      <version>2.19.0</version>
+      <version>2.20.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
       <version>1.19.2-R0.1-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.wolfyscript.customcrafting</groupId>
-      <artifactId>customcrafting-spigot</artifactId>
-      <version>4.16.7.2</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.wolfyscript.wolfyutilities</groupId>
-      <artifactId>wolfyutilities</artifactId>
-      <version>3.16.1.0</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

@@ -1,5 +1,5 @@
 package de.ancash.fancycrafting.recipe.crafting;
-
+/*
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -27,8 +27,8 @@ import me.wolfyscript.customcrafting.recipes.CustomRecipe;
 import me.wolfyscript.customcrafting.recipes.items.Ingredient;
 import me.wolfyscript.utilities.util.NamespacedKey;
 
-public class WolfyCustomCraftingMatcher {
-
+*/public class WolfyCustomCraftingMatcher {
+/*
 	@SuppressWarnings("nls")
 	public static final String CATEGORY = "WolfyCustomCraftingCache";
 
@@ -118,6 +118,6 @@ public class WolfyCustomCraftingMatcher {
 						.info("Loaded shapeless recipe " + nk.getKey() + " from CustomCrafting");
 			}
 		}
-	}
+	}*/
 
 }

@@ -39,7 +39,7 @@ public class EditRandomRecipeGUI extends AbstractRecipeEditGUI {
 	}
 
 	private void addManageProbabilities() {
-		ItemStack item = plugin.getWorkspaceObjects().getManageRandomResultsItem().getOriginal();
+		ItemStack item = plugin.getWorkspaceObjects().getManageRandomResultsItem();
 		StringBuilder builder = new StringBuilder();
 		int probSum = probabilityMap.values().stream().mapToInt(i -> Integer.valueOf(i)).sum();
 		Iterator<String> iter = random.getProbabilityMap().entrySet().stream()

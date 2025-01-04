@@ -1,8 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.ancash</groupId>
 	<artifactId>fancycrafting</artifactId>
-	<version>4.10.1</version>
+	<version>4.11.0</version>
 	<properties>
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
@@ -41,7 +43,8 @@
 								</relocation>
 								<relocation>
 									<pattern>com.cryptomorin.xseries</pattern>
-									<shadedPattern>de.ancash.minecraft.cryptomorin.xseries</shadedPattern>
+									<shadedPattern>
+										de.ancash.minecraft.cryptomorin.xseries</shadedPattern>
 								</relocation>
 							</relocations>
 						</configuration>
@@ -54,6 +57,10 @@
 		<repository>
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+		</repository>
+		<repository>
+			<id>spigot-repo-b</id>
+			<url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
 		</repository>
 		<repository>
 			<id>github</id>
@@ -77,26 +84,19 @@
 		<dependency>
 			<groupId>de.ancash</groupId>
 			<artifactId>ilibrary</artifactId>
-			<version>3.8.4</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>de.ancash</groupId>
-			<artifactId>nbtnexus</artifactId>
-			<version>1.1.0</version>
+			<version>3.13.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.essentialsx</groupId>
 			<artifactId>EssentialsX</artifactId>
-			<version>2.19.0</version>
+			<version>2.20.1</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.bstats</groupId>
 			<artifactId>bstats-bukkit</artifactId>
-			<version>3.0.2</version>
-			<scope>compile</scope>
+			<version>3.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
@@ -104,7 +104,7 @@
 			<version>1.19.2-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
+		<!---		<dependency>
 			<groupId>com.wolfyscript.customcrafting</groupId>
 			<artifactId>customcrafting-spigot</artifactId>
 			<version>4.16.7.2</version>
@@ -115,7 +115,7 @@
 			<artifactId>wolfyutilities</artifactId>
 			<version>3.16.1.0</version>
 			<scope>provided</scope>
-		</dependency>
+		</dependency>-->
 	</dependencies>
 	<distributionManagement>
 		<repository>
