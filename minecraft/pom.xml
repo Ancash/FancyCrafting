@@ -84,13 +84,7 @@
 		<dependency>
 			<groupId>de.ancash</groupId>
 			<artifactId>ilibrary</artifactId>
-			<version>3.13.0</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.essentialsx</groupId>
-			<artifactId>EssentialsX</artifactId>
-			<version>2.20.1</version>
+			<version>3.14.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
